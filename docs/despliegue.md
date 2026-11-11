@@ -1,10 +1,10 @@
 # Despliegue del back office en Vercel con Supabase
 
-El back office (`apps/backoffice`) corre en Vercel. La base de datos y los archivos van en Supabase, en región UE (Frankfurt), porque los datos tienen que quedar en la UE. Las funciones de Vercel corren en `fra1`, la misma ciudad que la base de datos (lo fija `apps/backoffice/vercel.json`).
+El back office (`apps/backoffice`) corre en Vercel. La base de datos y los archivos van en Supabase, en región UE (París), porque los datos tienen que quedar en la UE. Las funciones de Vercel corren en `cdg1` (París), la misma ciudad que la base de datos (lo fija `apps/backoffice/vercel.json`).
 
 ## 1. Supabase
 
-1. Crea un proyecto en https://supabase.com/dashboard con el nombre `bullhaus` y la región **Central EU (Frankfurt)**. Guarda la contraseña de la base de datos en un gestor de contraseñas.
+1. Crea un proyecto en https://supabase.com/dashboard con el nombre `bullhaus` y la región de la UE (el proyecto actual quedó en París, `eu-west-3`). Guarda la contraseña de la base de datos en un gestor de contraseñas.
 2. **Connect** → **ORMs** → **Prisma** muestra las dos URL:
    - `DATABASE_URL`: la del pooler, puerto 6543. Agrégale `?pgbouncer=true&connection_limit=1`.
    - `DIRECT_URL`: la conexión directa, puerto 5432.

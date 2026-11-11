@@ -94,16 +94,23 @@ async function createBucket(key, id) {
   fail(`No se pudo crear el bucket ${id} (estado ${res.status}). ¿La clave es la service_role?`);
 }
 
-console.log("\nConfiguración de producción de Bull Haus");
-console.log("Los valores no se muestran al escribir o pegar. Pega con clic derecho y pulsa Enter.\n");
-console.log("Supabase → botón Connect → pestaña ORM → Prisma.\n");
+// Direcciones que muestra Supabase en Connect → ORM → Prisma (no son secretas; falta la contraseña).
+const POOLED_TEMPLATE = "postgresql://postgres.jdxxbwhhqlgzityzpgez:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:6543/postgres?pgbouncer=true";
+const DIRECT_TEMPLATE = "postgresql://postgres.jdxxbwhhqlgzityzpgez:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:5432/postgres";
 
-const pooled = await ask("1/3 Pega DATABASE_URL (la del puerto 6543): ");
+console.log("\nConfiguración de producción de Bull Haus");
+console.log("Lo que pegues no se muestra en pantalla. Pega con Ctrl+V y pulsa Enter.\n");
+
+const dbPassword = await ask("1/2 Contraseña de la base de datos (la que elegiste al crear el proyecto en Supabase): ");
+if (!dbPassword) fail("La contraseña de la base de datos no puede quedar vacía");
+const encoded = encodeURIComponent(dbPassword);
+const pooled = POOLED_TEMPLATE.replace("[YOUR-PASSWORD]", encoded);
+const direct = DIRECT_TEMPLATE.replace("[YOUR-PASSWORD]", encoded);
 checkDbUrl("DATABASE_URL", pooled, 6543);
-const direct = await ask("2/3 Pega DIRECT_URL (la del puerto 5432): ");
 checkDbUrl("DIRECT_URL", direct, 5432);
-console.log("\nSupabase → Project Settings → API Keys → service_role → Reveal.\n");
-const serviceKey = await ask("3/3 Pega la clave service_role: ");
+
+console.log("\nSupabase → Project Settings → API Keys → service_role → Reveal → copiar.\n");
+const serviceKey = await ask("2/2 Clave service_role: ");
 if (serviceKey.length < 30) fail("Esa clave es demasiado corta: copia la service_role completa");
 
 const databaseUrl = withPoolerParams(pooled);
@@ -112,20 +119,21 @@ console.log("\nComprobando la clave con Supabase…");
 await createBucket(serviceKey, "fotos");
 await createBucket(serviceKey, "documentos");
 
-console.log("\nGuardando en Vercel…");
-vercelEnv("DATABASE_URL", databaseUrl, true);
-vercelEnv("DIRECT_URL", direct, true);
-vercelEnv("SUPABASE_SERVICE_ROLE_KEY", serviceKey, true);
-
 const dbEnv = { ...process.env, DATABASE_URL: databaseUrl, DIRECT_URL: direct };
 
 console.log("\nCreando las tablas…");
 const migrate = run(bin("pnpm"), ["--filter", "@bullhaus/db", "migrate:deploy"], { env: dbEnv });
 if (!migrate.ok) {
   console.error(migrate.out.split("\n").filter((l) => /error|P\d{4}/i.test(l)).slice(0, 5).join("\n"));
-  fail("No se pudieron crear las tablas. Revisa la contraseña dentro de las URL.");
+  fail("No se pudieron crear las tablas. ¿La contraseña de la base de datos es correcta? No se guardó nada en Vercel.");
 }
 console.log("  ✓ tablas creadas");
+
+// Solo se guarda en Vercel cuando la contraseña y la clave ya se comprobaron.
+console.log("\nGuardando en Vercel…");
+vercelEnv("DATABASE_URL", databaseUrl, true);
+vercelEnv("DIRECT_URL", direct, true);
+vercelEnv("SUPABASE_SERVICE_ROLE_KEY", serviceKey, true);
 
 const password = randomBytes(15).toString("base64url");
 console.log("\nCreando el administrador…");
