@@ -18,14 +18,22 @@ function fakeFetch(handler: (url: string, init?: RequestInit) => Response) {
 const header = (c: Call, name: string) => new Headers(c.init?.headers).get(name);
 
 describe("createSupabaseStorage", () => {
+  it("con una clave nueva (sb_secret_) solo envía apikey, sin Authorization", async () => {
+    const { fn, calls } = fakeFetch(() => new Response("{}", { status: 200 }));
+    const s = createSupabaseStorage("https://abc.supabase.co", "sb_secret_abc", fn);
+    await s.put("fotos", "a/b.webp", Buffer.from("x"), "image/webp");
+    expect(header(calls[0]!, "apikey")).toBe("sb_secret_abc");
+    expect(header(calls[0]!, "Authorization")).toBeNull();
+  });
+
   it("sube con upsert, tipo de contenido y la clave de servicio", async () => {
     const { fn, calls } = fakeFetch(() => new Response("{}", { status: 200 }));
-    const s = createSupabaseStorage("https://abc.supabase.co/", "srv", fn);
+    const s = createSupabaseStorage("https://abc.supabase.co/", "eyJ.legacy", fn);
     await s.put("fotos", "properties/p1/u1/md.webp", Buffer.from("x"), "image/webp");
     const c = calls[0]!;
     expect(c.url).toBe("https://abc.supabase.co/storage/v1/object/fotos/properties/p1/u1/md.webp");
     expect(c.init?.method).toBe("POST");
-    expect(header(c, "Authorization")).toBe("Bearer srv");
+    expect(header(c, "Authorization")).toBe("Bearer eyJ.legacy");
     expect(header(c, "x-upsert")).toBe("true");
     expect(header(c, "Content-Type")).toBe("image/webp");
   });

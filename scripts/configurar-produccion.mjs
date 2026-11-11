@@ -85,13 +85,13 @@ function vercelEnv(name, value, sensitive) {
 async function createBucket(key, id) {
   const res = await fetch(`${SUPABASE_URL}/storage/v1/bucket`, {
     method: "POST",
-    headers: { Authorization: `Bearer ${key}`, apikey: key, "Content-Type": "application/json" },
+    headers: { ...(key.startsWith("eyJ") ? { Authorization: `Bearer ${key}` } : {}), apikey: key, "Content-Type": "application/json" },
     body: JSON.stringify({ id, name: id, public: false }),
   });
   if (res.ok) return console.log(`  ✓ bucket privado "${id}" creado`);
   const body = await res.text();
   if (/already exists|Duplicate/i.test(body)) return console.log(`  ✓ bucket "${id}" ya existía`);
-  fail(`No se pudo crear el bucket ${id} (estado ${res.status}). ¿La clave es la service_role?`);
+  fail(`No se pudo crear el bucket ${id} (estado ${res.status}). ¿Copiaste la clave secreta completa (sb_secret_…)?`);
 }
 
 // Direcciones que muestra Supabase en Connect → ORM → Prisma (no son secretas; falta la contraseña).
@@ -110,8 +110,8 @@ checkDbUrl("DATABASE_URL", pooled, 6543);
 checkDbUrl("DIRECT_URL", direct, 5432);
 
 console.log("\nSupabase → Project Settings → API Keys → service_role → Reveal → copiar.\n");
-const serviceKey = await ask("2/2 Clave service_role: ");
-if (serviceKey.length < 30) fail("Esa clave es demasiado corta: copia la service_role completa");
+const serviceKey = await ask("2/2 Clave secreta (sb_secret_…): ");
+if (serviceKey.length < 30) fail("Esa clave es demasiado corta: usa el ícono de copiar de Secret keys");
 
 const databaseUrl = withPoolerParams(pooled);
 

@@ -19,7 +19,11 @@ const LIST_PAGE = 100;
 
 export function createSupabaseStorage(baseUrl: string, serviceKey: string, fetchImpl: FetchLike = fetch): StorageDriver {
   const root = `${baseUrl.replace(/\/+$/, "")}/storage/v1`;
-  const auth = { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey };
+  // Claves antiguas (JWT "eyJ…"): van también como Bearer. Claves nuevas ("sb_secret_…") no son JWT:
+  // solo van en apikey y Supabase las traduce al rol de servicio.
+  const auth: Record<string, string> = serviceKey.startsWith("eyJ")
+    ? { Authorization: `Bearer ${serviceKey}`, apikey: serviceKey }
+    : { apikey: serviceKey };
   const objectUrl = (bucket: string, key: string) =>
     `${root}/object/${encodeURIComponent(bucket)}/${key.split("/").map(encodeURIComponent).join("/")}`;
 
