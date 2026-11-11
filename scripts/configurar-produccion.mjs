@@ -4,7 +4,7 @@
 //   node scripts/configurar-produccion.mjs admin@empresa.cl
 import { spawnSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { stdin, stdout } from "node:process";
 import { fileURLToPath } from "node:url";
@@ -103,19 +103,39 @@ const POOLED_TEMPLATE = "postgresql://postgres.jdxxbwhhqlgzityzpgez:[YOUR-PASSWO
 const DIRECT_TEMPLATE = "postgresql://postgres.jdxxbwhhqlgzityzpgez:[YOUR-PASSWORD]@aws-0-eu-west-3.pooler.supabase.com:5432/postgres";
 
 console.log("\nConfiguración de producción de Bull Haus");
-console.log("Lo que pegues no se muestra en pantalla. Pega con Ctrl+V y pulsa Enter.\n");
 
-const dbPassword = await ask("1/2 Contraseña de la base de datos (la que elegiste al crear el proyecto en Supabase): ");
-if (!dbPassword) fail("La contraseña de la base de datos no puede quedar vacía");
+// Los datos se leen del archivo que la persona llena en el Bloc de notas; si no existe, se piden en la terminal.
+const SECRETS_FILE = join(ROOT, ".env.produccion");
+let dbPassword = "";
+let serviceKey = "";
+if (existsSync(SECRETS_FILE)) {
+  const values = Object.fromEntries(
+    readFileSync(SECRETS_FILE, "utf8")
+      .split(/\r?\n/)
+      .filter((l) => l.includes("=") && !l.trimStart().startsWith("#"))
+      .map((l) => [l.slice(0, l.indexOf("=")).trim(), l.slice(l.indexOf("=") + 1).trim().replace(/^"(.*)"$/, "$1")]),
+  );
+  dbPassword = values.CONTRASENA_BASE_DE_DATOS ?? "";
+  serviceKey = values.CLAVE_SECRETA ?? "";
+  console.log("Leyendo los datos de .env.produccion…");
+} else {
+  console.log("Lo que pegues no se muestra en pantalla. Pega con Ctrl+V y pulsa Enter.\n");
+  dbPassword = await ask("1/2 Contraseña de la base de datos: ");
+  serviceKey = await ask("2/2 Clave secreta (sb_secret_…): ");
+}
+if (!dbPassword) fail("Falta la contraseña de la base de datos (CONTRASENA_BASE_DE_DATOS)");
+if (dbPassword.startsWith("sb_secret_") || dbPassword.startsWith("sb_publishable_")) {
+  fail("En CONTRASENA_BASE_DE_DATOS pusiste una clave de API. Va la contraseña de la base de datos");
+}
+if (!serviceKey.startsWith("sb_secret_") && !serviceKey.startsWith("eyJ")) {
+  fail("CLAVE_SECRETA debe empezar con sb_secret_ (Supabase → API Keys → Secret keys → ícono de copiar)");
+}
+if (serviceKey.length < 30) fail("La clave secreta está incompleta: usa el ícono de copiar de Secret keys");
 const encoded = encodeURIComponent(dbPassword);
 const pooled = POOLED_TEMPLATE.replace("[YOUR-PASSWORD]", encoded);
 const direct = DIRECT_TEMPLATE.replace("[YOUR-PASSWORD]", encoded);
 checkDbUrl("DATABASE_URL", pooled, 6543);
 checkDbUrl("DIRECT_URL", direct, 5432);
-
-console.log("\nSupabase → Project Settings → API Keys → service_role → Reveal → copiar.\n");
-const serviceKey = await ask("2/2 Clave secreta (sb_secret_…): ");
-if (serviceKey.length < 30) fail("Esa clave es demasiado corta: usa el ícono de copiar de Secret keys");
 
 const databaseUrl = withPoolerParams(pooled);
 
@@ -161,6 +181,12 @@ if (existed) {
   writeFileSync(file, `# Acceso al back office en Vercel. No subir a git ni compartir.\nEMAIL=${ADMIN_EMAIL}\nPASSWORD=${password}\n`);
   console.log(`  ✓ ${ADMIN_EMAIL} creado. Su contraseña temporal está en ${file}`);
   console.log("    Al entrar por primera vez, el sistema te pedirá elegir una propia.");
+}
+
+// El archivo con los secretos ya no hace falta: Vercel los tiene guardados.
+if (existsSync(SECRETS_FILE)) {
+  rmSync(SECRETS_FILE);
+  console.log("\n  ✓ .env.produccion borrado (los datos quedaron solo en Vercel)");
 }
 
 console.log("\nListo. Vuelve al chat y escribe: listo\n");
