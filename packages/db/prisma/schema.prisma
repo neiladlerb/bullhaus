@@ -1,0 +1,236 @@
+// Esquema del paso 1 de docs/plataforma.md: núcleo del back office y propiedades.
+// Todas las tablas de negocio llevan tenantId para poder sumar otras inmobiliarias.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  corredor
+  marketing
+  finanzas
+  cumplimiento
+}
+
+enum Operation {
+  venta
+  arriendo
+}
+
+enum PropertyType {
+  casa
+  departamento
+  oficina
+  local
+  terreno
+  parcela
+  otro
+}
+
+enum Currency {
+  UF
+  CLP
+}
+
+enum PropertyStatus {
+  borrador
+  disponible
+  reservada
+  vendida
+  arrendada
+  retirada
+}
+
+enum PetsPolicy {
+  si
+  no
+  consultar
+}
+
+enum MediaKind {
+  foto
+  video
+}
+
+enum MediaSource {
+  panel
+  whatsapp
+  instagram
+  planilla
+}
+
+enum MandateStatus {
+  vigente
+  vencido
+  terminado
+}
+
+enum ClientKind {
+  natural
+  juridica
+}
+
+model Tenant {
+  id         String     @id @default(cuid())
+  name       String
+  slug       String     @unique
+  createdAt  DateTime   @default(now())
+  users      User[]
+  properties Property[]
+  clients    Client[]
+  auditLogs  AuditLog[]
+  imports    ImportBatch[]
+}
+
+model User {
+  id           String    @id @default(cuid())
+  tenantId     String
+  tenant       Tenant    @relation(fields: [tenantId], references: [id])
+  name         String
+  email        String
+  phone        String?
+  role         Role
+  passwordHash String
+  active       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  sessions     Session[]
+  properties   Property[] @relation("PropertyBroker")
+
+  @@unique([tenantId, email])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Property {
+  id                String         @id @default(cuid())
+  tenantId          String
+  tenant            Tenant         @relation(fields: [tenantId], references: [id])
+  code              String
+  operation         Operation
+  type              PropertyType
+  comuna            String
+  sector            String?
+  price             Decimal        @db.Decimal(14, 2)
+  currency          Currency
+  commonExpensesClp Int?
+  m2Useful          Decimal?       @db.Decimal(10, 2)
+  m2Land            Decimal?       @db.Decimal(12, 2)
+  bedrooms          Int?
+  bathrooms         Int?
+  parking           Int?
+  storage           Int?
+  pets              PetsPolicy?
+  furnished         Boolean?
+  availableFrom     DateTime?      @db.Date
+  status            PropertyStatus @default(borrador)
+  brokerId          String
+  broker            User           @relation("PropertyBroker", fields: [brokerId], references: [id])
+  addressPrivate    String?
+  instagramUrl      String?
+  adIds             String[]
+  description       String?
+  publishWeb        Boolean        @default(false)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  media             PropertyMedia[]
+  priceHistory      PropertyPriceHistory[]
+  mandates          Mandate[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId, status])
+}
+
+model PropertyMedia {
+  id         String      @id @default(cuid())
+  propertyId String
+  property   Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  kind       MediaKind   @default(foto)
+  storageKey String
+  sizes      Json
+  order      Int         @default(0)
+  isCover    Boolean     @default(false)
+  label      String?
+  source     MediaSource @default(panel)
+  createdAt  DateTime    @default(now())
+}
+
+model PropertyPriceHistory {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  price      Decimal  @db.Decimal(14, 2)
+  currency   Currency
+  changedAt  DateTime @default(now())
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  tenantId  String
+  tenant    Tenant     @relation(fields: [tenantId], references: [id])
+  kind      ClientKind @default(natural)
+  rut       String
+  name      String
+  email     String?
+  phone     String?
+  createdAt DateTime   @default(now())
+  mandates  Mandate[]
+
+  @@unique([tenantId, rut])
+}
+
+model Mandate {
+  id            String        @id @default(cuid())
+  propertyId    String
+  property      Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  ownerClientId String
+  owner         Client        @relation(fields: [ownerClientId], references: [id])
+  exclusive     Boolean
+  commissionPct Decimal       @db.Decimal(5, 2)
+  commissionTerms String?
+  signedAt      DateTime      @db.Date
+  expiresAt     DateTime      @db.Date
+  fileKey       String?
+  status        MandateStatus @default(vigente)
+  createdAt     DateTime      @default(now())
+}
+
+model ImportBatch {
+  id          String   @id @default(cuid())
+  tenantId    String
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  userId      String
+  fileName    String
+  created     Int
+  updated     Int
+  rejected    Int
+  errors      Json
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  actorId   String?
+  action    String
+  entity    String
+  entityId  String?
+  payload   Json?
+  createdAt DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+}

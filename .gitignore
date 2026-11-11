@@ -1,0 +1,9 @@
+node_modules/
+.next/
+.data/
+storage/
+.env
+.env.local
+*.log
+coverage/
+next-env.d.ts

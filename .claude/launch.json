@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "backoffice",
+      "runtimeExecutable": "C:/dev/tools/node-v22.23.4-win-x64/node.exe",
+      "runtimeArgs": ["node_modules/next/dist/bin/next", "dev", "--port", "3100"],
+      "cwd": "C:/dev/bullhaus/apps/backoffice",
+      "port": 3100
+    }
+  ]
+}

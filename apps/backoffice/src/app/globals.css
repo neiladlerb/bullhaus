@@ -1,0 +1,50 @@
+@import "tailwindcss";
+
+/* Identidad de Bull Haus, tomada de bullhaus.cl el 11/11/2026:
+   magenta #EA2B94, gris carbón #3F3F3E (barra de navegación), texto #464646,
+   títulos #3A464E, fondo #EBF1F5, tipografía Raleway. */
+@theme {
+  --color-brand: #ea2b94;
+  --color-brand-dark: #c8177a;
+  --color-ink: #3f3f3e;
+  --color-heading: #3a464e;
+  --color-muted: #6b7178;
+  --color-line: #dde4ea;
+  --color-paper: #ebf1f5;
+  --font-sans: var(--font-raleway), "Raleway", Arial, sans-serif;
+}
+
+body {
+  background: var(--color-paper);
+  color: #464646;
+}
+
+h1,
+h2 {
+  color: var(--color-heading);
+}
+
+@utility input {
+  @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:bg-paper disabled:text-muted;
+}
+@utility label {
+  @apply mb-1 block text-xs font-semibold text-muted;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-ink text-white hover:bg-black;
+}
+@utility btn-brand {
+  @apply btn bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-ghost {
+  @apply btn border border-line bg-white text-ink hover:bg-paper;
+}
+@utility card {
+  @apply rounded-lg border border-line bg-white;
+}
+@utility chip {
+  @apply inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold;
+}
