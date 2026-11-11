@@ -8,7 +8,7 @@ Cambio frente a la versión 1.0: el agente ya no capta inmobiliarias para nuestr
 
 ## 1. El cliente
 
-El 11/11/2026 el cliente cambió de MAKE a Bull Haus. Datos tomados de www.bullhaus.cl ese día:
+Datos tomados de www.bullhaus.cl el 11/11/2026:
 
 - Nombre: Bull Haus Propiedades, "Intermediación y Gestión Inmobiliaria".
 - Oficina: San Sebastián 2957, Las Condes. Email contacto@bullhaus.cl. WhatsApp y teléfono +56 9 9200 0211.

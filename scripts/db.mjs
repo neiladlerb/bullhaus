@@ -18,7 +18,7 @@ const pg = new EmbeddedPostgres({
 if (firstRun) await pg.initialise();
 await pg.start();
 if (firstRun) await pg.createDatabase("bullhaus");
-console.log("PostgreSQL listo en postgresql://make:make@localhost:5433/make");
+console.log("PostgreSQL listo en postgresql://bullhaus:bullhaus@localhost:5433/bullhaus");
 
 const stop = async () => {
   await pg.stop();

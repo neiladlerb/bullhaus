@@ -9,7 +9,7 @@ export async function GET() {
   return new Response(new Uint8Array(body), {
     headers: {
       "Content-Type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      "Content-Disposition": 'attachment; filename="planilla-propiedades-make.xlsx"',
+      "Content-Disposition": 'attachment; filename="planilla-propiedades-bullhaus.xlsx"',
     },
   });
 }
