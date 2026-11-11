@@ -8,3 +8,7 @@ storage/
 coverage/
 next-env.d.ts
 *.tsbuildinfo
+
+.vercel
+.env*
+!.env.example

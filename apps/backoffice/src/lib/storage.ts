@@ -21,10 +21,6 @@ const SUPABASE_BUCKETS: Record<Bucket, string> = {
   private: process.env.SUPABASE_BUCKET_PRIVATE ?? "documentos",
 };
 
-if (!supabase && process.env.VERCEL) {
-  throw new Error("Falta configurar SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY: en Vercel no hay disco persistente");
-}
-
 const ROOT = resolve(process.env.STORAGE_DIR ?? join(process.cwd(), "..", "..", "storage"));
 
 function safeKey(key: string): string {
@@ -60,7 +56,15 @@ const localDriver: StorageDriver = {
   },
 };
 
-const driver: StorageDriver = supabase ?? localDriver;
+// Se comprueba al usar un archivo, no al cargar el módulo: el build de Vercel carga
+// todas las rutas y no tiene por qué tener las claves.
+function driver(): StorageDriver {
+  if (supabase) return supabase;
+  if (process.env.VERCEL) {
+    throw new Error("Falta configurar SUPABASE_URL y SUPABASE_SERVICE_ROLE_KEY: en Vercel no hay disco persistente");
+  }
+  return localDriver;
+}
 const bucketName = (b: Bucket) => (supabase ? SUPABASE_BUCKETS[b] : b);
 
 function contentTypeFor(key: string): string {
@@ -71,15 +75,15 @@ function contentTypeFor(key: string): string {
 
 export async function putFile(bucket: Bucket, key: string, data: Buffer): Promise<void> {
   const k = safeKey(key);
-  await driver.put(bucketName(bucket), k, data, contentTypeFor(k));
+  await driver().put(bucketName(bucket), k, data, contentTypeFor(k));
 }
 
 export async function getFile(bucket: Bucket, key: string): Promise<Buffer | null> {
-  return driver.get(bucketName(bucket), safeKey(key));
+  return driver().get(bucketName(bucket), safeKey(key));
 }
 
 export async function removePrefix(bucket: Bucket, prefix: string): Promise<void> {
-  await driver.removePrefix(bucketName(bucket), safeKey(prefix));
+  await driver().removePrefix(bucketName(bucket), safeKey(prefix));
 }
 
 export const PHOTO_SIZES = { sm: 480, md: 1200, lg: 2000 } as const;
