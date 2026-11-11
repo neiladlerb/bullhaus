@@ -68,7 +68,11 @@ function withPoolerParams(url) {
 }
 
 function run(cmd, args, opts = {}) {
-  const res = spawnSync(cmd, args, { cwd: ROOT, shell: isWin, encoding: "utf8", ...opts });
+  // pnpm y npx llaman a "node": aseguramos que el Node portátil esté en el PATH del proceso hijo.
+  const baseEnv = opts.env ?? process.env;
+  const pathKey = Object.keys(baseEnv).find((k) => k.toLowerCase() === "path") ?? "PATH";
+  const env = { ...baseEnv, [pathKey]: `${NODE_DIR}${isWin ? ";" : ":"}${baseEnv[pathKey] ?? ""}` };
+  const res = spawnSync(cmd, args, { cwd: ROOT, shell: isWin, encoding: "utf8", ...opts, env });
   return { ok: res.status === 0, out: `${res.stdout ?? ""}${res.stderr ?? ""}` };
 }
 
@@ -124,7 +128,15 @@ const dbEnv = { ...process.env, DATABASE_URL: databaseUrl, DIRECT_URL: direct };
 console.log("\nCreando las tablas…");
 const migrate = run(bin("pnpm"), ["--filter", "@bullhaus/db", "migrate:deploy"], { env: dbEnv });
 if (!migrate.ok) {
-  console.error(migrate.out.split("\n").filter((l) => /error|P\d{4}/i.test(l)).slice(0, 5).join("\n"));
+  // Muestra el motivo sin secretos: oculta URLs de conexión, la contraseña y la clave.
+  const clean = migrate.out
+    .replaceAll(dbPassword, "***")
+    .replaceAll(encoded, "***")
+    .replaceAll(serviceKey, "***")
+    .replace(/postgres(ql)?:\/\/\S+/g, "postgresql://***");
+  const lines = clean.split("\n").map((l) => l.trim()).filter(Boolean);
+  const reason = lines.filter((l) => /P\d{4}|error|failed|authentication|can't reach|timed out|tenant/i.test(l));
+  console.error((reason.length ? reason : lines.slice(-8)).slice(0, 8).join("\n"));
   fail("No se pudieron crear las tablas. ¿La contraseña de la base de datos es correcta? No se guardó nada en Vercel.");
 }
 console.log("  ✓ tablas creadas");
