@@ -76,6 +76,8 @@ async function editableProperty(id: string) {
 }
 
 const MAX_PHOTO_BYTES = 15 * 1024 * 1024;
+// Vercel corta las peticiones sobre 4,5 MB: los PDF deben caber en una sola.
+const MAX_PDF_BYTES = 4 * 1024 * 1024;
 
 export async function uploadPhotosAction(_prev: FormState, form: FormData): Promise<FormState> {
   const { user, property } = await editableProperty(String(form.get("propertyId")));
@@ -175,8 +177,8 @@ export async function addMandateAction(_prev: FormState, form: FormData): Promis
   if (m.expiresAt <= m.signedAt) return { ok: false, message: "El vencimiento debe ser posterior a la firma.", values };
   const file = form.get("file");
   const hasFile = file instanceof File && file.size > 0;
-  if (hasFile && (file.type !== "application/pdf" || file.size > 20 * 1024 * 1024)) {
-    return { ok: false, message: "El archivo del mandato debe ser un PDF de hasta 20 MB.", values };
+  if (hasFile && (file.type !== "application/pdf" || file.size > MAX_PDF_BYTES)) {
+    return { ok: false, message: "El archivo del mandato debe ser un PDF de hasta 4 MB.", values };
   }
 
   const rut = formatRut(cleanRut(m.ownerRut));

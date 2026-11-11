@@ -2,12 +2,17 @@
 // Todas las tablas de negocio llevan tenantId para poder sumar otras inmobiliarias.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
+  // "native" para desarrollo; "rhel-openssl-3.0.x" es el entorno de las funciones de Vercel.
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
 }
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  // En Supabase: DATABASE_URL va por el pooler (puerto 6543, ?pgbouncer=true) y DIRECT_URL
+  // es la conexión directa que usan las migraciones. En local las dos son la misma.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 enum Role {

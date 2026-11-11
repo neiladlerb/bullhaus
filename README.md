@@ -45,3 +45,7 @@ packages/db         esquema Prisma, cliente y seed
 scripts/db.mjs      PostgreSQL local embebido
 docs/               propuesta, sistema IA, plataforma, contratos
 ```
+
+## Despliegue
+
+Vercel + Supabase (región UE): pasos en `docs/despliegue.md`.
