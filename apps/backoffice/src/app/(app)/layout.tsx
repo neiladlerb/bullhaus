@@ -11,7 +11,7 @@ interface NavItem {
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser();
+  const user = await requireUser(undefined, { allowPendingPasswordChange: true });
 
   const nav: NavItem[] = [
     { href: "/", label: "Inicio" },
@@ -26,6 +26,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: "#", label: "Control de gestión", soon: true },
     ...(can(user.role, "users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
     ...(can(user.role, "audit.read") ? [{ href: "/auditoria", label: "Auditoría" }] : []),
+    { href: "/cuenta", label: "Mi cuenta" },
   ];
 
   return (

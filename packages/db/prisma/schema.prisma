@@ -103,6 +103,9 @@ model User {
   role         Role
   passwordHash String
   active       Boolean   @default(true)
+  // true tras crear el usuario o restablecer su contraseña: debe elegir una propia al entrar.
+  mustChangePassword Boolean @default(false)
+  passwordChangedAt  DateTime?
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   sessions     Session[]

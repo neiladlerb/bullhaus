@@ -1,8 +1,8 @@
 "use server";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
-import { ROLES } from "@bullhaus/core";
-import { hashPassword } from "@bullhaus/core/server";
+import { passwordProblem, ROLES } from "@bullhaus/core";
+import { generateTemporaryPassword, hashPassword } from "@bullhaus/core/server";
 import { prisma } from "@bullhaus/db";
 import { audit } from "@/lib/audit";
 import { requireUser } from "@/lib/auth";
@@ -24,12 +24,14 @@ export async function createUserAction(
   const parsed = createSchema.safeParse(Object.fromEntries(form));
   if (!parsed.success) return { ok: false, message: parsed.error.issues.map((i) => i.message).join(". "), values };
   const { password, ...data } = parsed.data;
+  const problem = passwordProblem(password, { email: data.email, name: data.name });
+  if (problem) return { ok: false, message: `${problem}.`, values };
   const exists = await prisma.user.findUnique({ where: { tenantId_email: { tenantId: admin.tenantId, email: data.email } } });
   if (exists) return { ok: false, message: "Ya existe un usuario con ese email.", values };
-  const user = await prisma.user.create({ data: { ...data, tenantId: admin.tenantId, passwordHash: await hashPassword(password) } });
+  const user = await prisma.user.create({ data: { ...data, tenantId: admin.tenantId, passwordHash: await hashPassword(password), mustChangePassword: true } });
   await audit(admin, "user.create", "user", user.id, { email: user.email, role: user.role });
   revalidatePath("/usuarios");
-  return { ok: true, message: `Usuario ${user.email} creado. Entrégale la contraseña inicial por un canal seguro.` };
+  return { ok: true, message: `Usuario ${user.email} creado. Entrégale la contraseña inicial por un canal seguro: al entrar, tendrá que elegir una propia.` };
 }
 
 export async function updateUserAction(form: FormData): Promise<void> {
@@ -45,4 +47,35 @@ export async function updateUserAction(form: FormData): Promise<void> {
   if (!active) await prisma.session.deleteMany({ where: { userId: id } });
   await audit(admin, "user.update", "user", id, { role: { from: target.role, to: role.data }, active: { from: target.active, to: active } });
   revalidatePath("/usuarios");
+}
+
+export interface ResetState {
+  ok: boolean;
+  message: string;
+  /** Contraseña temporal: se muestra una sola vez al administrador y no se guarda en ningún lado. */
+  temporary?: string;
+}
+
+export async function resetPasswordAction(_prev: ResetState, form: FormData): Promise<ResetState> {
+  const admin = await requireUser("users.manage");
+  const id = String(form.get("id"));
+  const target = await prisma.user.findFirst({ where: { id, tenantId: admin.tenantId } });
+  if (!target) return { ok: false, message: "El usuario no existe." };
+  if (target.id === admin.id) return { ok: false, message: "Tu propia contraseña se cambia en Mi cuenta." };
+  if (!target.active) return { ok: false, message: "Activa al usuario antes de restablecer su contraseña." };
+
+  const temporary = generateTemporaryPassword();
+  await prisma.$transaction([
+    prisma.user.update({
+      where: { id },
+      data: { passwordHash: await hashPassword(temporary), mustChangePassword: true, passwordChangedAt: new Date() },
+    }),
+    prisma.session.deleteMany({ where: { userId: id } }),
+  ]);
+  await audit(admin, "user.password.reset", "user", id, { email: target.email });
+  return {
+    ok: true,
+    message: `Contraseña temporal de ${target.email}. Entrégasela por un canal seguro: al entrar, tendrá que elegir una propia.`,
+    temporary,
+  };
 }

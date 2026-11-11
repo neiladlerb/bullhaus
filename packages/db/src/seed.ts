@@ -21,7 +21,7 @@ if (existing) {
   console.log(`El administrador ${email} ya existe.`);
 } else {
   await prisma.user.create({
-    data: { tenantId: tenant.id, name: "Administrador", email, role: "admin", passwordHash: await hashPassword(password) },
+    data: { tenantId: tenant.id, name: "Administrador", email, role: "admin", passwordHash: await hashPassword(password), mustChangePassword: true },
   });
   console.log(`Administrador ${email} creado.`);
 }

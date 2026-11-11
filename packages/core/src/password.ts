@@ -26,3 +26,12 @@ export function newSessionToken(): { token: string; tokenHash: string } {
 export function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
+
+/** Contraseña temporal para un restablecimiento: 16 caracteres aleatorios, sin símbolos ambiguos. */
+export function generateTemporaryPassword(): string {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789";
+  const bytes = randomBytes(16);
+  let out = "";
+  for (const b of bytes) out += alphabet[b % alphabet.length];
+  return out;
+}

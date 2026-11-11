@@ -57,3 +57,11 @@ Lo ideal es que las vistas previas (Preview) usen un segundo proyecto de Supabas
 - **HEIC.** Las fotos HEIC de iPhone que el navegador no sabe abrir se envían tal cual; si pesan más de 4 MB, hay que exportarlas como JPG.
 - **Plan Hobby.** Sirve para probar, pero Vercel no permite uso comercial en Hobby. Para que Bull Haus lo use a diario hace falta el plan Pro.
 - **Dominio.** Cuando esté listo, conviene un subdominio propio, por ejemplo `panel.bullhaus.cl`, configurado en **Settings → Domains**.
+
+## 5. Usuarios y contraseñas
+
+- El primer administrador lo crea `scripts/configurar-produccion.mjs` (o `pnpm seed:env`) con una contraseña temporal.
+- Todos los demás se crean en **Usuarios** con una contraseña inicial. Quien entra con una contraseña inicial o temporal solo ve **Mi cuenta** hasta elegir una propia.
+- Cada persona cambia su contraseña en **Mi cuenta**; al hacerlo se cierran sus sesiones en otros equipos.
+- Si alguien la olvida, un administrador usa **Restablecer contraseña** en **Usuarios**: el sistema genera una temporal de 16 caracteres, la muestra una sola vez y cierra todas las sesiones de esa persona.
+- Mínimo 12 caracteres, sin el nombre ni el email de la persona. Cada cambio y restablecimiento queda en la auditoría.
