@@ -52,4 +52,13 @@ if (res.status !== 0) {
   fail("No se pudo restablecer. ¿La contraseña de la base de datos es correcta?");
 }
 console.log(`  ✓ Contraseña temporal guardada en ${OUT_FILE}`);
+
+// Si la contraseña de la base se cambió en Supabase, Vercel queda al día (si no cambió, no pasa nada).
+for (const [name, value] of [["DATABASE_URL", env.DATABASE_URL], ["DIRECT_URL", env.DIRECT_URL]]) {
+  for (const target of ["production", "preview"]) {
+    const r = spawnSync(join(NODE_DIR, isWin ? "npx.cmd" : "npx"), ["--yes", "vercel@latest", "env", "add", name, target, "--force", "--sensitive"], { cwd: ROOT, shell: isWin, encoding: "utf8", env, input: value });
+    if (r.status !== 0) fail(`La contraseña se restableció, pero no se pudo actualizar ${name} en Vercel`);
+  }
+}
+console.log("  ✓ Conexión a la base actualizada en Vercel");
 console.log("\nListo. Vuelve al chat y escribe: listo\n");
