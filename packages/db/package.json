@@ -10,6 +10,7 @@
     "migrate:deploy": "prisma migrate deploy",
     "seed": "tsx --env-file=../../.env src/seed.ts",
     "seed:env": "tsx src/seed.ts",
+    "reset-admin": "tsx src/reset-admin.ts",
     "typecheck": "tsc --noEmit",
     "postinstall": "prisma generate"
   },
