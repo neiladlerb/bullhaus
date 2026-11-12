@@ -101,6 +101,8 @@ model Tenant {
   contracts      Contract[]
   invoices       Invoice[]
   agentSettings  AgentSetting[]
+  socialAgent    SocialAgentSetting?
+  socialAgentEvents SocialAgentEvent[]
   knowledge      KnowledgeItem[]
   conversations  Conversation[]
   socialAccounts SocialAccount[]
@@ -168,6 +170,8 @@ model Property {
   furnished         Boolean?
   availableFrom     DateTime?              @db.Date
   status            PropertyStatus         @default(borrador)
+  // Primera vez que quedó disponible: base del indicador de días en vender o arrendar.
+  listedAt          DateTime?
   brokerId          String
   broker            User                   @relation("PropertyBroker", fields: [brokerId], references: [id])
   addressPrivate    String?
@@ -492,6 +496,8 @@ model Deal {
   commissionOwner  Decimal     @db.Decimal(6, 2)
   commissionClient Decimal     @db.Decimal(6, 2)
   brokerId         String
+  // Salida al mercado de la propiedad en esta operación (se copia de la ficha al reservar).
+  listedAt         DateTime?
   reservedAt       DateTime
   stageChangedAt   DateTime    @default(now())
   closedAt         DateTime?
@@ -858,7 +864,7 @@ model SocialPost {
   property     Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   format       PostFormat
   status       SocialPostStatus @default(publicado)
-  /// Serie editorial, p. ej. "Bull te asesora".
+  /// Serie editorial, p. ej. "Bull Haus te asesora".
   series       String?
   topic        String?
   title        String?
@@ -874,6 +880,8 @@ model SocialPost {
   saves        Int              @default(0)
   shares       Int              @default(0)
   clicks       Int              @default(0)
+  /// Borrador preparado por el agente de redes sociales (siempre pasa por aprobación humana).
+  byAgent      Boolean          @default(false)
   isDemo       Boolean          @default(false)
 
   @@index([tenantId, publishedAt])
@@ -1016,4 +1024,43 @@ model LeadTask {
   createdAt   DateTime   @default(now())
 
   @@index([tenantId, status, dueAt])
+}
+
+// Agente de redes sociales: prepara publicaciones desde las fichas aprobadas y la biblioteca de consejos,
+// responde comentarios y mensajes con las reglas del asistente virtual y deriva lo que no puede resolver.
+// Nunca publica sin aprobación de una persona de Bull Haus.
+model SocialAgentSetting {
+  id               String           @id @default(cuid())
+  tenantId         String           @unique
+  tenant           Tenant           @relation(fields: [tenantId], references: [id])
+  enabled          Boolean          @default(false)
+  platforms        SocialPlatform[] @default([instagram, facebook, linkedin])
+  postsPerWeek     Int              @default(3)
+  draftNewListings Boolean          @default(true)
+  replyComments    Boolean          @default(true)
+  tone             String           @default("Cercano y profesional. Frases cortas, sin exageraciones ni emojis en exceso.")
+  updatedAt        DateTime         @updatedAt
+}
+
+enum SocialAgentEventKind {
+  borrador
+  respuesta_comentario
+  respuesta_mensaje
+  derivacion
+  informe
+}
+
+/// Bitácora del agente de redes. El resumen describe la acción; nunca guarda el texto del mensaje del contacto.
+model SocialAgentEvent {
+  id        String               @id @default(cuid())
+  tenantId  String
+  tenant    Tenant               @relation(fields: [tenantId], references: [id])
+  kind      SocialAgentEventKind
+  platform  SocialPlatform
+  summary   String
+  postId    String?
+  at        DateTime             @default(now())
+  isDemo    Boolean              @default(false)
+
+  @@index([tenantId, at])
 }

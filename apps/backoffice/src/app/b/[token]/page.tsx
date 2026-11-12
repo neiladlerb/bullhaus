@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
-import { BULLHAUS_PUBLIC, formatPrice, TYPE_LABELS, waLink } from "@bullhaus/core";
+import { BULLHAUS_PUBLIC, formatPrice, SALES_PROCESS, TYPE_LABELS, waLink } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { Logo } from "@/components/logo";
 import { getCurrentUser } from "@/lib/auth";
@@ -22,20 +22,12 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   return {
     metadataBase: new URL(new URL(await brochureUrl(b.token)).origin),
     title: `${b.title} · Bull Haus`,
-    description: b.intro ?? "Bull Haus Propiedades · intermediación y gestión inmobiliaria",
+    description: b.intro ?? "Bull Haus Propiedades · venta, arriendo y asesoría inmobiliaria",
     robots: { index: false },
     openGraph: { title: b.title, description: b.intro ?? undefined, images: cover?.lg ? [`/media/${cover.lg}`] : undefined },
   };
 }
 
-const SERVICES = [
-  { title: "Valorización", text: "Un corredor visita tu propiedad y te entrega una valorización fundamentada con información de mercado." },
-  { title: "Fotos y ficha", text: "Fotografías de tu propiedad y una ficha clara, sin datos que no hayas confirmado." },
-  { title: "Difusión", text: "Publicación en bullhaus.cl, Instagram, Facebook, LinkedIn y portales, más campañas dirigidas." },
-  { title: "Visitas acompañadas", text: "Filtramos a los interesados y te contamos qué dijo cada uno después de la visita." },
-  { title: "Oferta y contratos", text: "Verificamos la identidad de las partes y preparamos la documentación con revisión legal." },
-  { title: "Cierre", text: "Te acompañamos en la promesa, la escritura y la entrega." },
-];
 
 export default async function BrochurePage({ params, searchParams }: Params) {
   const { token } = await params;
@@ -162,12 +154,14 @@ export default async function BrochurePage({ params, searchParams }: Params) {
         <div className="mx-auto max-w-4xl space-y-12 px-5 py-10">
           <section>
             <h2 className="text-2xl font-light">Así trabajamos <span className="font-semibold">tu propiedad</span></h2>
-            <ol className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {SERVICES.map((s, i) => (
-                <li key={s.title} className="rounded-2xl bg-paper p-5">
-                  <span className="text-sm font-semibold text-brand">{String(i + 1).padStart(2, "0")}</span>
-                  <h3 className="mt-1 font-semibold">{s.title}</h3>
-                  <p className="mt-1 text-sm text-muted">{s.text}</p>
+            <ol className="mt-6 divide-y divide-line border-y border-line">
+              {SALES_PROCESS.map((step) => (
+                <li key={step.title} className="grid gap-2 py-5 sm:grid-cols-[10rem_1fr]">
+                  <h3 className="font-semibold">{step.title}</h3>
+                  <div>
+                    <p className="text-sm leading-relaxed">{step.tasks.join(". ")}.</p>
+                    <p className="mt-1.5 text-xs text-muted"><span className="font-medium text-brand">Tecnología.</span> {step.tech}.</p>
+                  </div>
                 </li>
               ))}
             </ol>

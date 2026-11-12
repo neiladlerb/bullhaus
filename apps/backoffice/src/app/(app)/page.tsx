@@ -2,6 +2,7 @@ import Link from "next/link";
 import { can, daysUntil, formatDate, OPEN_STAGES, rate, seesOnlyOwnProperties, SOCIAL_SOURCES, STAGE_LABELS, STATUS_LABELS, PROPERTY_STATUSES, santiagoToDate, TIMEZONE } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { Bars, Kpi } from "@/components/bars";
+import { MarketTimeCard } from "@/components/market-time";
 import { requireUser } from "@/lib/auth";
 import { leadScope, since } from "@/lib/leads";
 
@@ -66,6 +67,10 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </Link>
         ))}
       </section>
+
+      <div className="mt-8">
+        <MarketTimeCard tenantId={user.tenantId} compact />
+      </div>
 
       {showLeads && (
         <section className="mt-8 grid gap-4 lg:grid-cols-3">

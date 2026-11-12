@@ -13,11 +13,13 @@ const BOOKED = ["visita_agendada", "tasacion_agendada", "llamada_agendada"];
 export default async function AgentesPage() {
   const user = await requireUser("agents.read");
   const where = { tenantId: user.tenantId, startedAt: { gte: since(30) } };
-  const [convs, settings, demo, flagged] = await Promise.all([
+  const [convs, settings, demo, flagged, social, socialDrafts] = await Promise.all([
     prisma.conversation.findMany({ where, select: { channel: true, outcome: true, status: true, costUsd: true, optedOut: true, _count: { select: { messages: true } } } }),
     prisma.agentSetting.findMany({ where: { tenantId: user.tenantId } }),
     prisma.conversation.count({ where: { tenantId: user.tenantId, isDemo: true } }),
     prisma.conversation.count({ where: { ...where, flagged: true } }),
+    prisma.socialAgentSetting.findUnique({ where: { tenantId: user.tenantId } }),
+    prisma.socialPost.count({ where: { tenantId: user.tenantId, byAgent: true, status: "en_revision" } }),
   ]);
   const total = convs.length;
   const booked = convs.filter((c) => BOOKED.includes(c.outcome ?? "")).length;
@@ -31,7 +33,7 @@ export default async function AgentesPage() {
     <div className="max-w-6xl space-y-6">
       <div>
         <h1 className="text-2xl font-semibold">Agentes IA</h1>
-        <p className="mt-1 text-sm text-muted">Asistente virtual de Bull Haus en WhatsApp, Instagram, Facebook y teléfono. Últimos 30 días.</p>
+        <p className="mt-1 text-sm text-muted">Asistente virtual de Bull Haus en WhatsApp, Instagram, Facebook y teléfono, y agente de redes sociales. Últimos 30 días.</p>
       </div>
       {demo > 0 && <SimulatedNote what="Las conversaciones son ficticias y siguen las reglas del agente real." integration="WhatsApp, Meta, telefonía y Claude" />}
       <AgentTabs active="resumen" />
@@ -97,6 +99,16 @@ export default async function AgentesPage() {
             </Link>
           );
         })}
+        <Link href="/agentes/redes" className="card p-4 hover:border-ink md:col-span-2 lg:col-span-4">
+          <div className="flex items-center justify-between">
+            <p className="font-medium">Agente de redes sociales</p>
+            {social?.enabled ? <Chip tone="green">Encendido</Chip> : <Chip tone="gray">Apagado</Chip>}
+          </div>
+          <p className="mt-2 text-xs text-muted">
+            Prepara publicaciones de Instagram, Facebook y LinkedIn con las fichas aprobadas y responde comentarios.{" "}
+            {socialDrafts ? `${socialDrafts} publicaciones esperan tu aprobación.` : "Sin publicaciones pendientes de aprobación."}
+          </p>
+        </Link>
       </section>
     </div>
   );

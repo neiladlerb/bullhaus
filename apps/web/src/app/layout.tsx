@@ -10,7 +10,7 @@ const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", displa
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.SITE_URL ?? "https://www.bullhaus.cl"),
-  title: { default: "Bull Haus Propiedades · Intermediación y gestión inmobiliaria", template: "%s · Bull Haus Propiedades" },
+  title: { default: "Bull Haus Propiedades · Venta, arriendo y asesoría inmobiliaria", template: "%s · Bull Haus Propiedades" },
   description:
     "Casas, departamentos y oficinas en venta y arriendo en el sector oriente de Santiago y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar.",
   openGraph: { siteName: "Bull Haus Propiedades", locale: "es_CL", type: "website" },

@@ -40,6 +40,7 @@ const NAV = [
   { href: "/propiedades?operacion=arriendo", label: "Arriendo" },
   { href: "/vender", label: "Vende o arrienda tu propiedad" },
   { href: "/#servicios", label: "Servicios" },
+  { href: "/#como-vendemos", label: "Cómo vendemos" },
   { href: "/#equipo", label: "Equipo" },
   { href: "/#contacto", label: "Contacto" },
 ];
@@ -92,7 +93,7 @@ export function Footer() {
         <div className="md:col-span-2">
           <Logo light />
           <p className="mt-4 max-w-sm text-sm leading-relaxed">
-            Intermediación y gestión inmobiliaria en el sector oriente de Santiago y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar.
+            Venta, arriendo y asesoría inmobiliaria en el sector oriente de Santiago y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar.
           </p>
         </div>
         <div className="text-sm">

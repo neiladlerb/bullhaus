@@ -113,14 +113,14 @@ export async function importSiteListing(user: CurrentUser, code: string): Promis
     const existing = await prisma.property.findUnique({ where: { tenantId_code: { tenantId: user.tenantId, code: bo } } });
     let propertyId: string;
     if (existing) {
-      await prisma.property.update({ where: { id: existing.id }, data });
+      await prisma.property.update({ where: { id: existing.id }, data: { ...data, ...(status === "disponible" && !existing.listedAt ? { listedAt: new Date() } : {}) } });
       if (!existing.price.equals(data.price) || existing.currency !== data.currency) {
         await prisma.propertyPriceHistory.create({ data: { propertyId: existing.id, price: data.price, currency: data.currency } });
       }
       propertyId = existing.id;
       result.updated++;
     } else {
-      const created = await prisma.property.create({ data: { ...data, tenantId: user.tenantId, code: bo, brokerId: broker.id, adIds: [] } });
+      const created = await prisma.property.create({ data: { ...data, listedAt: status === "disponible" ? new Date() : null, tenantId: user.tenantId, code: bo, brokerId: broker.id, adIds: [] } });
       await prisma.propertyPriceHistory.create({ data: { propertyId: created.id, price: data.price, currency: data.currency } });
       propertyId = created.id;
       result.created++;

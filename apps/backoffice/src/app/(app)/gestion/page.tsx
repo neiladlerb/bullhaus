@@ -4,6 +4,7 @@ import { prisma } from "@bullhaus/db";
 import { Bars, Kpi } from "@/components/bars";
 import { Chip, SimulatedNote } from "@/components/demo";
 import { PairColumns } from "@/components/line-chart";
+import { MarketTimeCard } from "@/components/market-time";
 import { requireUser } from "@/lib/auth";
 import { DAY, since } from "@/lib/leads";
 
@@ -98,6 +99,8 @@ export default async function GestionPage({ searchParams }: { searchParams: Prom
         <Kpi label="Costo por visita" value={visits ? clp(spend / visits) : "—"} sub={`${num(visits)} visitas y tasaciones`} />
         <Kpi label="Retorno (comisión / inversión)" value={spend ? `${roas.toLocaleString("es-CL", { maximumFractionDigits: 1 })}x` : "—"} sub={`${clp(commission)} de comisión facturada`} />
       </section>
+
+      <MarketTimeCard tenantId={t} />
 
       <section className="grid gap-4 lg:grid-cols-3">
         <div className="card p-5">

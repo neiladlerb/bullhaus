@@ -115,7 +115,7 @@ export async function saveProperty(
 
   if (!existing) {
     const created = await prisma.property.create({
-      data: { ...data, tenantId: user.tenantId, priceHistory: { create: { price: data.price, currency: data.currency } } },
+      data: { ...data, listedAt: data.status === "disponible" ? new Date() : null, tenantId: user.tenantId, priceHistory: { create: { price: data.price, currency: data.currency } } },
     });
     await audit(user, "property.create", "property", created.id, { code: created.code, source: opts.source });
     return { id: created.id, created: true };
@@ -124,7 +124,7 @@ export async function saveProperty(
   const priceChanged = !existing.price.equals(data.price) || existing.currency !== data.currency;
   await prisma.property.update({
     where: { id: existing.id },
-    data: { ...data, ...(priceChanged ? { priceHistory: { create: { price: data.price, currency: data.currency } } } : {}) },
+    data: { ...data, ...(data.status === "disponible" && !existing.listedAt ? { listedAt: new Date() } : {}), ...(priceChanged ? { priceHistory: { create: { price: data.price, currency: data.currency } } } : {}) },
   });
   await audit(user, "property.update", "property", existing.id, {
     code: input.code,

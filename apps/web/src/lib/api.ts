@@ -90,3 +90,21 @@ export function filterProperties(all: PublicProperty[], f: Filters): PublicPrope
 
 /** Formato de código como en el sitio anterior: 109958 → 109.958. */
 export const displayCode = (code: string) => code.replace(/^(\d{3})(\d{3})/, "$1.$2");
+
+export interface PublicIndicators {
+  venta: { avgDays: number; count: number } | null;
+  arriendo: { avgDays: number; count: number } | null;
+  closedLast12m: number;
+}
+
+/** Cifras de operaciones reales de los últimos 12 meses. Si no hay suficientes, vienen en null. */
+export async function getIndicators(): Promise<PublicIndicators> {
+  const empty: PublicIndicators = { venta: null, arriendo: null, closedLast12m: 0 };
+  try {
+    const res = await fetch(`${BACKOFFICE_URL}/api/publico/indicadores`, { next: { revalidate: 3600 } });
+    if (!res.ok) return empty;
+    return (await res.json()) as PublicIndicators;
+  } catch {
+    return empty;
+  }
+}

@@ -1,17 +1,11 @@
 import Link from "next/link";
-import { TYPE_LABELS } from "@bullhaus/core";
+import { SALES_PROCESS, TYPE_LABELS } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
 import { CONTACT, Header, PropertyCard, SocialBand } from "@/components/site";
-import { COAST, getProperties, photoUrl } from "@/lib/api";
+import { COAST, getIndicators, getProperties, photoUrl } from "@/lib/api";
 
 export const revalidate = 300;
 
-const SERVICES = [
-  { title: "Intermediación", text: "Compra, venta y arriendo de casas, departamentos, oficinas, terrenos y parcelas, con acompañamiento de principio a fin." },
-  { title: "Gestión inmobiliaria", text: "Administración y gestión de propiedades y proyectos en la Región Metropolitana y la V Región costa." },
-  { title: "Asesoría", text: "Te acompañamos a evaluar, negociar y concretar cada decisión con información clara." },
-  { title: "Valorizaciones", text: "Un corredor visita tu propiedad y te entrega una valorización para publicarla con un precio bien fundamentado." },
-];
 
 const TEAM = [
   { name: "Rodrigo Abbott Irarrázaval", role: "Socio · Broker inmobiliario", email: "rodrigo@bullhaus.cl", photo: "/equipo/rodrigo.jpg" },
@@ -34,7 +28,7 @@ const initials = (n: string) =>
     .join("");
 
 export default async function Home() {
-  const all = await getProperties();
+  const [all, indicators] = await Promise.all([getProperties(), getIndicators()]);
   const featured = [...all].filter((p) => p.photos.length).sort((a, b) => (a.currency === b.currency ? b.price - a.price : a.currency === "UF" ? -1 : 1));
   const venta = all.filter((p) => p.operation === "venta").length;
   const arriendo = all.filter((p) => p.operation === "arriendo").length;
@@ -51,7 +45,7 @@ export default async function Home() {
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/20 to-black/35" />
         <Header overlay />
         <div className="wrap pb-14 pt-40">
-          <p className="eyebrow text-white/90">Intermediación y gestión inmobiliaria</p>
+          <p className="eyebrow text-white/90">Venta, arriendo y asesoría inmobiliaria</p>
           <h1 className="mt-4 max-w-3xl text-4xl font-light leading-tight md:text-6xl">
             Gestión inmobiliaria <span className="font-semibold">profesional</span>, de principio a fin
           </h1>
@@ -113,23 +107,88 @@ export default async function Home() {
       </section>
 
       <section id="servicios" className="bg-sand py-20">
-        <div className="wrap grid gap-12 lg:grid-cols-[1fr_2fr]">
-          <div>
-            <p className="eyebrow">Servicios</p>
-            <h2 className="mt-2 text-3xl font-light md:text-4xl">Un acompañamiento profesional y humano</h2>
-            <p className="mt-4 text-muted">
-              Comprar, vender, arrendar, evaluar, desarrollar y negociar son desafíos importantes. Sabemos por experiencia que una propiedad también son sueños e historias.
-            </p>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {SERVICES.map((s, i) => (
-              <div key={s.title} className="rounded-2xl bg-white p-6 ring-1 ring-line">
-                <span className="text-sm font-semibold text-brand">0{i + 1}</span>
-                <h3 className="mt-2 text-lg font-semibold">{s.title}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-muted">{s.text}</p>
+        <div className="wrap">
+          <p className="eyebrow">Servicios</p>
+          <div className="mt-6 grid gap-x-16 gap-y-12 border-t border-coal/15 pt-10 lg:grid-cols-2">
+            <div>
+              <h2 className="text-3xl font-light md:text-4xl">Venta y arriendo</h2>
+              <p className="mt-4 max-w-lg leading-relaxed text-muted">
+                Casas, departamentos, oficinas, terrenos y parcelas en el sector oriente de Santiago y la V Región costa. Un corredor lleva tu propiedad desde la valorización hasta la entrega de llaves.
+              </p>
+              <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm font-semibold">
+                <Link href="/propiedades?operacion=venta" className="underline underline-offset-4">Propiedades en venta</Link>
+                <Link href="/propiedades?operacion=arriendo" className="underline underline-offset-4">Propiedades en arriendo</Link>
+                <Link href="/vender" className="underline underline-offset-4">Pedir una valorización</Link>
               </div>
-            ))}
+            </div>
+            <div>
+              <h2 className="text-3xl font-light md:text-4xl">Asesoría en la compra</h2>
+              <p className="mt-4 max-w-lg leading-relaxed text-muted">
+                Para inversión o para vivir. Te ayudamos a concretar la mejor opción: buscamos contigo, revisamos los documentos de la propiedad y te acompañamos en la oferta, la promesa y la escritura.
+              </p>
+              <a href="#contacto" className="mt-6 inline-block text-sm font-semibold underline underline-offset-4">Conversemos</a>
+            </div>
           </div>
+        </div>
+      </section>
+
+      <section id="como-vendemos" className="wrap py-20">
+        <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+          <div>
+            <p className="eyebrow">Cómo vendemos tu propiedad</p>
+            <h2 className="mt-2 text-3xl font-light md:text-4xl">Somos tecnología de punta para lograr todos tus objetivos</h2>
+            <p className="mt-4 text-muted">
+              Detrás de cada propiedad hay un corredor de Bull Haus. La tecnología hace que nada quede sin respuesta ni sin seguimiento.
+            </p>
+            {(indicators.venta || indicators.arriendo || all.length > 0) && (
+              <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-t border-line pt-6">
+                {indicators.venta && (
+                  <div>
+                    <dt className="text-sm text-muted">Días promedio en vender</dt>
+                    <dd className="mt-1 text-4xl font-light tabular-nums">{indicators.venta.avgDays}</dd>
+                  </div>
+                )}
+                {indicators.arriendo && (
+                  <div>
+                    <dt className="text-sm text-muted">Días promedio en arrendar</dt>
+                    <dd className="mt-1 text-4xl font-light tabular-nums">{indicators.arriendo.avgDays}</dd>
+                  </div>
+                )}
+                {indicators.closedLast12m >= 5 && (
+                  <div>
+                    <dt className="text-sm text-muted">Operaciones cerradas en 12 meses</dt>
+                    <dd className="mt-1 text-4xl font-light tabular-nums">{indicators.closedLast12m}</dd>
+                  </div>
+                )}
+                {all.length > 0 && (
+                  <div>
+                    <dt className="text-sm text-muted">Propiedades disponibles hoy</dt>
+                    <dd className="mt-1 text-4xl font-light tabular-nums">{all.length}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-sm text-muted">Corredores desde</dt>
+                  <dd className="mt-1 text-4xl font-light tabular-nums">2012</dd>
+                </div>
+                {(indicators.venta || indicators.arriendo) && (
+                  <p className="col-span-2 text-xs text-muted">Días desde que la propiedad sale al mercado hasta la reserva, operaciones de los últimos 12 meses.</p>
+                )}
+              </dl>
+            )}
+          </div>
+          <ol className="divide-y divide-line border-y border-line">
+            {SALES_PROCESS.map((step) => (
+              <li key={step.title} className="grid gap-3 py-6 md:grid-cols-[11rem_1fr]">
+                <h3 className="font-semibold">{step.title}</h3>
+                <div>
+                  <p className="leading-relaxed text-ink/85">{step.tasks.join(". ")}.</p>
+                  <p className="mt-2 text-sm text-muted">
+                    <span className="font-medium text-brand">Tecnología.</span> {step.tech}.
+                  </p>
+                </div>
+              </li>
+            ))}
+          </ol>
         </div>
       </section>
 

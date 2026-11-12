@@ -80,8 +80,11 @@ export async function loadDemoDeals(user: CurrentUser, owners: Map<string, Owner
     if (s.leadName && s.leadName.split(" ").length >= 2) buyer.name = `${s.leadName} ${buyer.name.split(" ").pop()}`;
     const buyerId = randomUUID();
     clients.push({ id: buyerId, tenantId, ...buyer, phone: s.leadPhone ?? buyer.phone, isDemo: true, createdAt: s.reservedAt });
+    // Días en el mercado hasta la reserva: más cortos en los últimos meses, para que la tendencia se vea.
+    const age = Math.min(1, Math.max(0, (now - s.reservedAt.getTime()) / (365 * DAY)));
+    const market = (op === "venta" ? 58 + r() * 45 : 9 + r() * 14) * (0.7 + 0.55 * age);
     deals.push({
-      id, tenantId, number: number++, propertyId: p.id, leadId: s.leadId, operation: op, stage: s.stage, price: p.price, currency: p.currency,
+      id, tenantId, listedAt: new Date(s.reservedAt.getTime() - Math.round(market) * DAY), number: number++, propertyId: p.id, leadId: s.leadId, operation: op, stage: s.stage, price: p.price, currency: p.currency,
       commissionOwner: op === "venta" ? 2 : 0.5, commissionClient: op === "venta" ? 2 : 0.5, brokerId: s.brokerId, reservedAt: s.reservedAt, stageChangedAt: s.stageAt,
       closedAt: s.stage === "cerrada" ? s.stageAt : null, lostReason: s.stage === "caida" ? "El comprador no obtuvo el crédito hipotecario" : null, isDemo: true, createdAt: s.reservedAt,
     });

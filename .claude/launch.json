@@ -4,9 +4,26 @@
     {
       "name": "backoffice",
       "runtimeExecutable": "C:/dev/tools/node-v22.23.4-win-x64/node.exe",
-      "runtimeArgs": ["node_modules/next/dist/bin/next", "dev", "--port", "3100"],
+      "runtimeArgs": [
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "--port",
+        "3100"
+      ],
       "cwd": "C:/dev/bullhaus/apps/backoffice",
       "port": 3100
+    },
+    {
+      "name": "web",
+      "runtimeExecutable": "C:/dev/tools/node-v22.23.4-win-x64/node.exe",
+      "runtimeArgs": [
+        "node_modules/next/dist/bin/next",
+        "dev",
+        "--port",
+        "3200"
+      ],
+      "cwd": "C:/dev/bullhaus/apps/web",
+      "port": 3200
     }
   ]
 }

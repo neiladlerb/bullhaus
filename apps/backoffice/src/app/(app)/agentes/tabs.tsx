@@ -1,9 +1,10 @@
 import Link from "next/link";
 
-export function AgentTabs({ active }: { active: "resumen" | "bandeja" | "ajustes" }) {
+export function AgentTabs({ active }: { active: "resumen" | "bandeja" | "redes" | "ajustes" }) {
   const tabs = [
     { key: "resumen", href: "/agentes", label: "Resumen" },
     { key: "bandeja", href: "/agentes/bandeja", label: "Bandeja de conversaciones" },
+    { key: "redes", href: "/agentes/redes", label: "Agente de redes sociales" },
     { key: "ajustes", href: "/agentes/ajustes", label: "Ajustes y base de conocimiento" },
   ] as const;
   return (
