@@ -46,7 +46,9 @@ export function decodeEntities(s: string): string {
   });
 }
 
-const clean = (s: string) => decodeEntities(s.replace(/<[^>]*>/g, "")).replace(/\s+/g, " ").trim();
+// Espacios especiales (no separables, finos) a espacio normal: son invisibles y algunas bases los rechazan.
+const spaces = (s: string) => s.replace(/[   ​ ]/g, " ");
+const clean = (s: string) => spaces(decodeEntities(s.replace(/<[^>]*>/g, ""))).replace(/\s+/g, " ").trim();
 
 function between(html: string, start: string, end: string): string {
   const i = html.indexOf(start);
@@ -92,14 +94,34 @@ export function parseSiteListing(html: string): SiteListing {
   ) as Operation[];
   const prices = [...ficha.matchAll(/property__price-primary'>\s*([^<]+)</g)].map((m) => clean(m[1]!));
   const offers: SiteOffer[] = [];
+  let foreign = false;
+  let perM2 = false;
   ops.forEach((operation, i) => {
     const raw = prices[i];
     if (!raw) return;
+    // El back office maneja UF y pesos, y no convierte monedas: un precio en dólares no se importa.
+    if (/^(US\$|USD)/i.test(raw)) {
+      foreign = true;
+      return;
+    }
+    // Precio por m² (bodegas, oficinas): la ficha no da un total y no lo calculamos.
+    if (/\/\s*m2|\/\s*m²/i.test(raw)) {
+      perM2 = true;
+      return;
+    }
     const currency: Currency = /^UF/i.test(raw) ? "UF" : "CLP";
     const price = num(raw);
     if (price && price > 0) offers.push({ operation, price, currency });
   });
-  if (offers.length === 0) throw new SiteListingError(`La ficha ${code} no tiene operación ni precio`);
+  if (offers.length === 0) {
+    throw new SiteListingError(
+      foreign
+        ? `La ficha ${code} tiene precio en US$: cárgala a mano en UF o pesos`
+        : perM2
+          ? `La ficha ${code} tiene precio por m²: cárgala a mano con el precio total`
+          : `La ficha ${code} no tiene operación ni precio`,
+    );
+  }
 
   const title = clean(/<h4>([^<]+ en [^<]+)<\/h4>/.exec(ficha)?.[1] ?? "");
   const [typeText = "", comuna = ""] = title.split(/ en (.+)/);
@@ -121,7 +143,7 @@ export function parseSiteListing(html: string): SiteListing {
 
   const descHtml = between(html, "property-description content'>", "<div class='tabs'>").replace(/<h4>[\s\S]*?<\/h4>/, "");
   const description =
-    decodeEntities(descHtml.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, ""))
+    spaces(decodeEntities(descHtml.replace(/<br\s*\/?>/gi, "\n").replace(/<[^>]*>/g, "")))
       .split("\n")
       .map((l) => l.replace(/[ \t]+/g, " ").trim())
       .join("\n")

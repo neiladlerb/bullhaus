@@ -36,7 +36,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
     prisma.lead.groupBy({ by: ["source"], where: last30, _count: true }),
     prisma.lead.groupBy({ by: ["kind"], where: last30, _count: true }),
     prisma.lead.count({ where: { ...scope, createdAt: { gte: since(60), lt: since(30) } } }),
-    prisma.lead.count({ where: { ...last30, stage: "ganado" } }),
+    prisma.lead.count({ where: { ...scope, stage: "ganado", stageChangedAt: { gte: since(30) } } }),
     prisma.lead.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -88,7 +88,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
         <Kpi label="Leads nuevos" value={total30.toLocaleString("es-CL")} sub={prev30 ? `${delta >= 0 ? "+" : ""}${delta} % vs. 30 días anteriores` : undefined} />
         <Kpi label="Desde redes sociales" value={social30.toLocaleString("es-CL")} sub={`${rate(social30, total30)} del total`} />
         <Kpi label="Propietarios (captación)" value={owners30.toLocaleString("es-CL")} sub={`${rate(owners30, total30)} del total`} />
-        <Kpi label="Cerrados en el período" value={won30.toLocaleString("es-CL")} sub={`${rate(won30, total30)} de conversión`} />
+        <Kpi label="Cerrados en el período" value={won30.toLocaleString("es-CL")} sub="cierres y mandatos firmados" />
       </section>
 
       <section className="grid gap-4 lg:grid-cols-3">

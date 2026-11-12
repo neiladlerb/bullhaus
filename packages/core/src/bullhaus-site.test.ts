@@ -64,6 +64,20 @@ describe("parseSiteListing", () => {
     expect(l.bedrooms).toBeUndefined();
   });
 
+  it("no importa un precio en dólares ni lo convierte", () => {
+    expect(() => parseSiteListing(fixture("109796"))).toThrow(/US\$/);
+  });
+
+  it("no calcula un total a partir de un precio por m²", () => {
+    const html = fixture("109960").replace("$ 1.450.000<span", "UF 0,80/m2<span");
+    expect(() => parseSiteListing(html)).toThrow(/por m²/);
+  });
+
+  it("cambia los espacios especiales por espacios normales", () => {
+    const html = fixture("109958").replace("Excelente", "Excelente ");
+    expect(parseSiteListing(html).headline).not.toMatch(/ /);
+  });
+
   it("rechaza una página que no es una ficha", () => {
     expect(() => parseSiteListing("<html><body>Inicio</body></html>")).toThrow(SiteListingError);
   });

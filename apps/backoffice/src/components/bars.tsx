@@ -4,11 +4,11 @@ export function Bars({ rows, format = (n) => n.toLocaleString("es-CL") }: { rows
   return (
     <ul className="space-y-2">
       {rows.map((r) => (
-        <li key={r.label} className="grid grid-cols-[8.5rem_1fr_auto] items-center gap-3 text-sm">
+        <li key={r.label} className="grid grid-cols-[minmax(0,7.5rem)_minmax(3rem,1fr)_auto] items-center gap-3 text-sm">
           <span className="truncate text-muted" title={r.label}>
             {r.label}
           </span>
-          <span className="h-2.5 rounded-full bg-paper">
+          <span className="block h-2.5 overflow-hidden rounded-full bg-paper">
             <span className={`block h-full rounded-full ${r.accent ? "bg-brand" : "bg-ink/70"}`} style={{ width: `${(r.value / max) * 100}%` }} />
           </span>
           <span className="tabular-nums">
@@ -28,9 +28,9 @@ export function WeekColumns({ weeks }: { weeks: { label: string; social: number;
     <div>
       <div className="flex h-36 items-end gap-1.5">
         {weeks.map((w) => (
-          <div key={w.label} className="flex flex-1 flex-col items-center justify-end gap-1" title={`${w.label}: ${w.social} de redes, ${w.other} de otras fuentes`}>
+          <div key={w.label} className="flex h-full flex-1 flex-col items-center justify-end gap-1" title={`${w.label}: ${w.social} de redes, ${w.other} de otras fuentes`}>
             <span className="text-[10px] tabular-nums text-muted">{w.social + w.other}</span>
-            <div className="flex w-full flex-col justify-end overflow-hidden rounded-t" style={{ height: `${((w.social + w.other) / max) * 100}%` }}>
+            <div className="flex w-full flex-col justify-end overflow-hidden rounded-t" style={{ height: `calc((100% - 1rem) * ${(w.social + w.other) / max})` }}>
               <div className="bg-brand" style={{ flex: w.social }} />
               <div className="bg-ink/25" style={{ flex: w.other }} />
             </div>

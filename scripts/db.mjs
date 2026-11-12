@@ -15,6 +15,8 @@ const pg = new EmbeddedPostgres({
   password: "bullhaus",
   port,
   persistent: true,
+  // UTF-8 como Supabase; en Windows initdb usaría WIN1252 y rechazaría caracteres válidos.
+  initdbFlags: ["--encoding=UTF8", "--locale=C"],
 });
 
 if (firstRun) await pg.initialise();

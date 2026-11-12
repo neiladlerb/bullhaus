@@ -14,10 +14,10 @@ const SERVICES = [
 ];
 
 const TEAM = [
-  { name: "Rodrigo Abbott Irarrázaval", role: "Socio · Broker inmobiliario", email: "rodrigo@bullhaus.cl", photo: "/equipo/rodrigo.png" },
-  { name: "Alejandro Steinsapir Stitchkin", role: "Socio · Broker inmobiliario", email: "alejandro@bullhaus.cl", photo: null },
+  { name: "Rodrigo Abbott Irarrázaval", role: "Socio · Broker inmobiliario", email: "rodrigo@bullhaus.cl", photo: "/equipo/rodrigo.jpg" },
+  { name: "Alejandro Steinsapir Stitchkin", role: "Socio · Broker inmobiliario", email: "alejandro@bullhaus.cl", photo: "/equipo/alejandro.png" },
   { name: "Sandra Cáceres", role: "Broker inmobiliario", email: "sandra@bullhaus.cl", photo: "/equipo/sandra.png" },
-  { name: "Manuel José Vial", role: "Broker inmobiliario V Región costa", email: "manuel@bullhaus.cl", photo: "/equipo/manuel.jpg" },
+  { name: "Manuel José Vial", role: "Broker inmobiliario V Región costa", email: "manuel@bullhaus.cl", photo: null },
   { name: "Santiago Andrés Krogh", role: "Broker", email: "santiago@bullhaus.cl", photo: "/equipo/santiago.jpg" },
 ];
 
