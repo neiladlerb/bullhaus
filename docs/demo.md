@@ -23,6 +23,8 @@ Versión 1.0, 12/11/2026. Cómo está separada la demostración del sistema prod
 
 Se carga en **Carga de datos → Datos de demostración** y se borra con el botón de al lado.
 
+En producción, el build de Vercel hace la carga inicial solo cuando la cartera está vacía (`apps/backoffice/scripts/bootstrap.ts`): importa las fichas de www.bullhaus.cl con sus fotos, crea los borradores de campañas en revisión y carga la demostración. Si la cartera ya tiene propiedades no hace nada; `BOOTSTRAP_DISABLED=1` la desactiva. Las fichas con precio en US$ o por m² se saltan y hay que cargarlas a mano.
+
 ## 3. Qué muestra la demo
 
 | Módulo | Qué se ve | Real o simulado |

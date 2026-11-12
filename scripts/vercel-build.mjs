@@ -19,6 +19,10 @@ if (process.env.VERCEL_ENV === "production") {
   }
   console.log("Aplicando migraciones pendientes…");
   run("pnpm", ["--filter", "@bullhaus/db", "migrate:deploy"], root);
+  // Si la cartera está vacía, importa bullhaus.cl y carga la demostración (apps/backoffice/scripts/bootstrap.ts).
+  // Nunca hace fallar el despliegue.
+  console.log("Carga inicial de datos…");
+  spawnSync("pnpm", ["exec", "tsx", "--conditions=react-server", "scripts/bootstrap.ts"], { cwd: join(root, "apps", "backoffice"), stdio: "inherit", shell: process.platform === "win32" });
 }
 
 run("pnpm", ["exec", "next", "build"], join(root, "apps", "backoffice"));

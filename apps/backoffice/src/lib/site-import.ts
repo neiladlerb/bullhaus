@@ -40,17 +40,20 @@ async function brokerFor(tenantId: string, email: string | undefined): Promise<{
   const existing = await prisma.user.findUnique({ where: { tenantId_email: { tenantId, email: wanted } } });
   if (existing) return { id: existing.id, created: false };
   // Cuenta sin acceso hasta que un administrador le restablezca la contraseña desde Usuarios.
-  const user = await prisma.user.create({
-    data: {
-      tenantId,
-      email: wanted,
-      name: TEAM[wanted] ?? wanted.split("@")[0]!,
-      role: "corredor",
-      passwordHash: await hashPassword(randomBytes(24).toString("base64url")),
-      mustChangePassword: true,
-    },
-  });
-  return { id: user.id, created: true };
+  // upsert: con importaciones en paralelo, dos fichas del mismo corredor pueden llegar a la vez.
+  const passwordHash = await hashPassword(randomBytes(24).toString("base64url"));
+  try {
+    const user = await prisma.user.upsert({
+      where: { tenantId_email: { tenantId, email: wanted } },
+      create: { tenantId, email: wanted, name: TEAM[wanted] ?? wanted.split("@")[0]!, role: "corredor", passwordHash, mustChangePassword: true },
+      update: {},
+    });
+    return { id: user.id, created: true };
+  } catch {
+    const again = await prisma.user.findUnique({ where: { tenantId_email: { tenantId, email: wanted } } });
+    if (!again) throw new Error(`No se pudo crear el corredor ${wanted}`);
+    return { id: again.id, created: false };
+  }
 }
 
 function statusFor(listing: SiteListing, operation: "venta" | "arriendo"): PropertyStatus {
