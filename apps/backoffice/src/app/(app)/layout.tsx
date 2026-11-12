@@ -17,15 +17,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     { href: "/", label: "Inicio" },
     { href: "/propiedades", label: "Propiedades" },
     ...(can(user.role, "properties.import") ? [{ href: "/propiedades/importar", label: "Importar planilla" }] : []),
-    { href: "#", label: "Pipeline", soon: true },
+    ...(can(user.role, "leads.read")
+      ? [
+          { href: "/leads", label: "Leads y RRSS" },
+          { href: "/pipeline", label: "Pipeline" },
+        ]
+      : []),
+    ...(can(user.role, "campaigns.read") ? [{ href: "/campanas", label: "Campañas Instagram" }] : []),
     { href: "#", label: "Agentes IA", soon: true },
-    { href: "#", label: "Contenido y redes", soon: true },
     { href: "#", label: "KYC", soon: true },
     { href: "#", label: "Contratos", soon: true },
     { href: "#", label: "Facturación", soon: true },
     { href: "#", label: "Control de gestión", soon: true },
     ...(can(user.role, "users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
     ...(can(user.role, "audit.read") ? [{ href: "/auditoria", label: "Auditoría" }] : []),
+    ...(can(user.role, "site.import") ? [{ href: "/datos", label: "Carga de datos" }] : []),
     { href: "/cuenta", label: "Mi cuenta" },
   ];
 

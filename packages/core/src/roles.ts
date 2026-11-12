@@ -17,13 +17,24 @@ export type Permission =
   | "properties.import"
   | "mandates.write"
   | "users.manage"
-  | "audit.read";
+  | "audit.read"
+  | "leads.read"
+  | "leads.write"
+  | "campaigns.read"
+  | "campaigns.write"
+  | "campaigns.approve"
+  | "site.import"
+  | "demo.manage";
 
 const MATRIX: Record<Role, readonly Permission[]> = {
-  admin: ["properties.read", "properties.write", "properties.import", "mandates.write", "users.manage", "audit.read"],
-  corredor: ["properties.read", "properties.write", "properties.import", "mandates.write"],
-  marketing: ["properties.read"],
-  finanzas: ["properties.read"],
+  admin: [
+    "properties.read", "properties.write", "properties.import", "mandates.write", "users.manage", "audit.read",
+    "leads.read", "leads.write", "campaigns.read", "campaigns.write", "campaigns.approve", "site.import", "demo.manage",
+  ],
+  corredor: ["properties.read", "properties.write", "properties.import", "mandates.write", "leads.read", "leads.write", "campaigns.read"],
+  // Marketing prepara campañas; aprobarlas (y activar presupuesto) queda en administración.
+  marketing: ["properties.read", "leads.read", "campaigns.read", "campaigns.write"],
+  finanzas: ["properties.read", "campaigns.read"],
   cumplimiento: ["properties.read"],
 };
 

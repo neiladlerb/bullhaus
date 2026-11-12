@@ -8,7 +8,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
   // En Supabase: DATABASE_URL va por el pooler (puerto 6543, ?pgbouncer=true) y DIRECT_URL
   // es la conexión directa que usan las migraciones. En local las dos son la misma.
   url       = env("DATABASE_URL")
@@ -82,34 +82,38 @@ enum ClientKind {
 }
 
 model Tenant {
-  id         String     @id @default(cuid())
+  id         String        @id @default(cuid())
   name       String
-  slug       String     @unique
-  createdAt  DateTime   @default(now())
+  slug       String        @unique
+  createdAt  DateTime      @default(now())
   users      User[]
   properties Property[]
   clients    Client[]
   auditLogs  AuditLog[]
   imports    ImportBatch[]
+  leads      Lead[]
+  campaigns  Campaign[]
 }
 
 model User {
-  id           String    @id @default(cuid())
-  tenantId     String
-  tenant       Tenant    @relation(fields: [tenantId], references: [id])
-  name         String
-  email        String
-  phone        String?
-  role         Role
-  passwordHash String
-  active       Boolean   @default(true)
+  id                 String     @id @default(cuid())
+  tenantId           String
+  tenant             Tenant     @relation(fields: [tenantId], references: [id])
+  name               String
+  email              String
+  phone              String?
+  role               Role
+  passwordHash       String
+  active             Boolean    @default(true)
   // true tras crear el usuario o restablecer su contraseña: debe elegir una propia al entrar.
-  mustChangePassword Boolean @default(false)
+  mustChangePassword Boolean    @default(false)
   passwordChangedAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  sessions     Session[]
-  properties   Property[] @relation("PropertyBroker")
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+  sessions           Session[]
+  properties         Property[] @relation("PropertyBroker")
+  leads              Lead[]     @relation("LeadBroker")
+  approvedCampaigns  Campaign[] @relation("CampaignApprover")
 
   @@unique([tenantId, email])
 }
@@ -124,39 +128,48 @@ model Session {
 }
 
 model Property {
-  id                String         @id @default(cuid())
+  id                String                 @id @default(cuid())
   tenantId          String
-  tenant            Tenant         @relation(fields: [tenantId], references: [id])
+  tenant            Tenant                 @relation(fields: [tenantId], references: [id])
   code              String
   operation         Operation
   type              PropertyType
   comuna            String
   sector            String?
-  price             Decimal        @db.Decimal(14, 2)
+  price             Decimal                @db.Decimal(14, 2)
   currency          Currency
   commonExpensesClp Int?
-  m2Useful          Decimal?       @db.Decimal(10, 2)
-  m2Land            Decimal?       @db.Decimal(12, 2)
+  m2Useful          Decimal?               @db.Decimal(10, 2)
+  m2Land            Decimal?               @db.Decimal(12, 2)
   bedrooms          Int?
   bathrooms         Int?
   parking           Int?
   storage           Int?
   pets              PetsPolicy?
   furnished         Boolean?
-  availableFrom     DateTime?      @db.Date
-  status            PropertyStatus @default(borrador)
+  availableFrom     DateTime?              @db.Date
+  status            PropertyStatus         @default(borrador)
   brokerId          String
-  broker            User           @relation("PropertyBroker", fields: [brokerId], references: [id])
+  broker            User                   @relation("PropertyBroker", fields: [brokerId], references: [id])
   addressPrivate    String?
   instagramUrl      String?
   adIds             String[]
   description       String?
-  publishWeb        Boolean        @default(false)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @updatedAt
+  // Frase corta de la ficha pública (p. ej. "Excelente luminoso 2D 2B, metro Ñuñoa").
+  headline          String?
+  features          String[]
+  details           Json?
+  // Origen de la ficha cuando se importó desde el sitio anterior.
+  sourceUrl         String?
+  isDemo            Boolean                @default(false)
+  publishWeb        Boolean                @default(false)
+  createdAt         DateTime               @default(now())
+  updatedAt         DateTime               @updatedAt
   media             PropertyMedia[]
   priceHistory      PropertyPriceHistory[]
   mandates          Mandate[]
+  leads             Lead[]
+  posts             CampaignPost[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
@@ -201,32 +214,32 @@ model Client {
 }
 
 model Mandate {
-  id            String        @id @default(cuid())
-  propertyId    String
-  property      Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
-  ownerClientId String
-  owner         Client        @relation(fields: [ownerClientId], references: [id])
-  exclusive     Boolean
-  commissionPct Decimal       @db.Decimal(5, 2)
+  id              String        @id @default(cuid())
+  propertyId      String
+  property        Property      @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  ownerClientId   String
+  owner           Client        @relation(fields: [ownerClientId], references: [id])
+  exclusive       Boolean
+  commissionPct   Decimal       @db.Decimal(5, 2)
   commissionTerms String?
-  signedAt      DateTime      @db.Date
-  expiresAt     DateTime      @db.Date
-  fileKey       String?
-  status        MandateStatus @default(vigente)
-  createdAt     DateTime      @default(now())
+  signedAt        DateTime      @db.Date
+  expiresAt       DateTime      @db.Date
+  fileKey         String?
+  status          MandateStatus @default(vigente)
+  createdAt       DateTime      @default(now())
 }
 
 model ImportBatch {
-  id          String   @id @default(cuid())
-  tenantId    String
-  tenant      Tenant   @relation(fields: [tenantId], references: [id])
-  userId      String
-  fileName    String
-  created     Int
-  updated     Int
-  rejected    Int
-  errors      Json
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  userId    String
+  fileName  String
+  created   Int
+  updated   Int
+  rejected  Int
+  errors    Json
+  createdAt DateTime @default(now())
 }
 
 model AuditLog {
@@ -241,4 +254,154 @@ model AuditLog {
   createdAt DateTime @default(now())
 
   @@index([tenantId, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// Leads, pipeline y campañas (docs/plataforma.md, pipeline; docs/sistema-ia.md, redes).
+// isDemo marca los datos de demostración para poder borrarlos de una vez.
+
+enum LeadKind {
+  comprador
+  arrendatario
+  propietario
+}
+
+enum LeadSource {
+  instagram
+  facebook
+  whatsapp
+  web
+  portal
+  referido
+}
+
+// Etapas comunes; las etiquetas cambian según el tipo (visita vs. tasación, oferta vs. mandato).
+enum LeadStage {
+  nuevo
+  contactado
+  calificado
+  visita
+  propuesta
+  ganado
+  perdido
+}
+
+enum CampaignObjective {
+  captacion
+  venta
+  arriendo
+}
+
+enum CampaignStatus {
+  borrador
+  en_revision
+  aprobada
+  activa
+  pausada
+  finalizada
+}
+
+enum PostFormat {
+  post
+  carrusel
+  reel
+  historia
+}
+
+enum PostStatus {
+  borrador
+  aprobado
+  publicado
+}
+
+model Lead {
+  id             String      @id @default(cuid())
+  tenantId       String
+  tenant         Tenant      @relation(fields: [tenantId], references: [id])
+  kind           LeadKind
+  source         LeadSource
+  stage          LeadStage   @default(nuevo)
+  name           String
+  phone          String?
+  email          String?
+  comuna         String?
+  // Lo que busca (comprador/arrendatario) u ofrece (propietario), en palabras del contacto.
+  interest       String?
+  budget         Decimal?    @db.Decimal(14, 2)
+  budgetCurrency Currency?
+  propertyId     String?
+  property       Property?   @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  campaignId     String?
+  campaign       Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  brokerId       String?
+  broker         User?       @relation("LeadBroker", fields: [brokerId], references: [id])
+  lostReason     String?
+  notes          String?
+  isDemo         Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+  stageChangedAt DateTime    @default(now())
+  events         LeadEvent[]
+
+  @@index([tenantId, kind, stage])
+  @@index([tenantId, createdAt])
+}
+
+model LeadEvent {
+  id        String     @id @default(cuid())
+  leadId    String
+  lead      Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  actorId   String?
+  fromStage LeadStage?
+  toStage   LeadStage?
+  note      String?
+  createdAt DateTime   @default(now())
+}
+
+model Campaign {
+  id           String            @id @default(cuid())
+  tenantId     String
+  tenant       Tenant            @relation(fields: [tenantId], references: [id])
+  name         String
+  objective    CampaignObjective
+  status       CampaignStatus    @default(borrador)
+  audience     String
+  // El presupuesto no se activa sin aprobación de una persona de Bull Haus (CLAUDE.md).
+  budgetClp    Int?
+  startsAt     DateTime?         @db.Date
+  endsAt       DateTime?         @db.Date
+  createdById  String?
+  approvedById String?
+  approvedBy   User?             @relation("CampaignApprover", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+  impressions  Int               @default(0)
+  reach        Int               @default(0)
+  clicks       Int               @default(0)
+  spendClp     Int               @default(0)
+  isDemo       Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+  posts        CampaignPost[]
+  leads        Lead[]
+
+  @@index([tenantId, status])
+}
+
+model CampaignPost {
+  id           String     @id @default(cuid())
+  campaignId   String
+  campaign     Campaign   @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  propertyId   String?
+  property     Property?  @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  format       PostFormat
+  hook         String
+  caption      String
+  hashtags     String[]
+  cta          String
+  status       PostStatus @default(borrador)
+  scheduledAt  DateTime?
+  approvedById String?
+  approvedAt   DateTime?
+  order        Int        @default(0)
+  createdAt    DateTime   @default(now())
 }

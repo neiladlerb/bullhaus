@@ -1,0 +1,29 @@
+import type { Metadata } from "next";
+import { Raleway } from "next/font/google";
+import { CookieConsent } from "@/components/consent";
+import { Footer, WhatsAppFloat } from "@/components/site";
+import "./globals.css";
+
+const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", display: "swap" });
+
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.SITE_URL ?? "https://www.bullhaus.cl"),
+  title: { default: "Bull Haus Propiedades · Intermediación y gestión inmobiliaria", template: "%s · Bull Haus Propiedades" },
+  description:
+    "Casas, departamentos y oficinas en venta y arriendo en el sector oriente de Santiago y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar.",
+  openGraph: { siteName: "Bull Haus Propiedades", locale: "es_CL", type: "website" },
+  icons: { icon: "/logo-bullhaus.png" },
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="es-CL" className={raleway.variable}>
+      <body className="min-h-screen font-sans antialiased">
+        {children}
+        <Footer />
+        <WhatsAppFloat />
+        <CookieConsent metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+      </body>
+    </html>
+  );
+}

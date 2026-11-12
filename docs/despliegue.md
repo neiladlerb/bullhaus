@@ -17,7 +17,7 @@ El back office (`apps/backoffice`) corre en Vercel. La base de datos y los archi
 
 ## 2. Migraciones y usuario inicial
 
-Desde tu equipo, con las URL de Supabase (no se ejecutan en cada deploy, para que una vista previa nunca toque la base de producción):
+Los deploys de **producción** del back office aplican solos las migraciones pendientes antes de compilar (`scripts/vercel-build.mjs`, con la `DIRECT_URL` que ya tiene Vercel). Las vistas previas no migran. Si hace falta hacerlo a mano, desde tu equipo:
 
 ```bash
 cd /c/dev/bullhaus/packages/db
@@ -26,7 +26,7 @@ DATABASE_URL="<url del pooler>" DIRECT_URL="<url directa>" pnpm migrate:deploy
 DATABASE_URL="<url del pooler>" DIRECT_URL="<url directa>" SEED_ADMIN_EMAIL="<tu email>" SEED_ADMIN_PASSWORD="<contraseña de 12+ caracteres>" pnpm seed:env
 ```
 
-Cada migración nueva se aplica igual, antes de desplegar el código que la necesita.
+El administrador inicial se crea con `scripts/configurar-produccion.mjs` (ver la sección 5).
 
 ## 3. Vercel
 
@@ -65,3 +65,22 @@ Lo ideal es que las vistas previas (Preview) usen un segundo proyecto de Supabas
 - Cada persona cambia su contraseña en **Mi cuenta**; al hacerlo se cierran sus sesiones en otros equipos.
 - Si alguien la olvida, un administrador usa **Restablecer contraseña** en **Usuarios**: el sistema genera una temporal de 16 caracteres, la muestra una sola vez y cierra todas las sesiones de esa persona.
 - Mínimo 12 caracteres, sin el nombre ni el email de la persona. Cada cambio y restablecimiento queda en la auditoría.
+
+## 6. Sitio web público (`apps/web`)
+
+El sitio público es un segundo proyecto de Vercel (`bullhaus-web`, Root Directory `apps/web`, región `cdg1`). No tiene credenciales de la base de datos: lee las fichas desde la API pública del back office (`/api/publico/propiedades`), que solo entrega propiedades **disponibles** y marcadas **Publicar en la web**, sin la dirección exacta ni datos del propietario. Las fotos salen por `/media` del back office.
+
+| Variable | Proyecto | Valor |
+|---|---|---|
+| `BACKOFFICE_URL` | web | URL del back office, sin barra final |
+| `WEB_API_KEY` | web y back office | La misma clave aleatoria en los dos. Permite que los formularios de la web creen leads (fuente "Sitio web") |
+| `SITE_URL` | web | Dominio público, p. ej. `https://www.bullhaus.cl` |
+| `NEXT_PUBLIC_META_PIXEL_ID` | web (opcional) | Píxel de Meta. Solo se carga si la persona acepta las cookies |
+
+## 7. Carga de datos
+
+**Carga de datos** (menú del back office, solo administradores):
+
+1. **Propiedades de bullhaus.cl**: lee cada ficha del sitio anterior y la crea o actualiza, con su corredor (si no existe, se crea sin acceso hasta que un administrador le restablezca la contraseña) y hasta 8 fotos. Se puede repetir sin duplicar. Venta y arriendo de una misma propiedad quedan como dos fichas (la de arriendo con sufijo `-A`).
+2. **Campañas de Instagram**: borradores de captación, venta y arriendo con textos tomados de las fichas. Quedan en revisión hasta que un administrador las aprueba en **Campañas Instagram**.
+3. **Datos de demostración**: leads ficticios, movimientos del pipeline y campañas pasadas con métricas, marcados `isDemo`. Se borran con un botón. Antes de usar el sistema con clientes reales, bórralos.

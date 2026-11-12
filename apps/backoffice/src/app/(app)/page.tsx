@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { daysUntil, formatDate, seesOnlyOwnProperties, STATUS_LABELS, PROPERTY_STATUSES } from "@bullhaus/core";
+import { can, daysUntil, formatDate, OPEN_STAGES, rate, seesOnlyOwnProperties, SOCIAL_SOURCES, STAGE_LABELS, STATUS_LABELS, PROPERTY_STATUSES } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
+import { Bars, Kpi } from "@/components/bars";
 import { requireUser } from "@/lib/auth";
+import { leadScope, since } from "@/lib/leads";
 
 export default async function HomePage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await requireUser();
@@ -18,6 +20,17 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       orderBy: { expiresAt: "asc" },
     }),
   ]);
+  const showLeads = can(user.role, "leads.read");
+  const ls = leadScope(user);
+  const [leads30, social30, owners30, openByStage, pendingCampaigns] = showLeads
+    ? await Promise.all([
+        prisma.lead.count({ where: { ...ls, createdAt: { gte: since(30) } } }),
+        prisma.lead.count({ where: { ...ls, createdAt: { gte: since(30) }, source: { in: [...SOCIAL_SOURCES] } } }),
+        prisma.lead.count({ where: { ...ls, createdAt: { gte: since(30) }, kind: "propietario" } }),
+        prisma.lead.groupBy({ by: ["stage"], where: { ...ls, kind: { not: "propietario" }, stage: { in: [...OPEN_STAGES] } }, _count: true }),
+        prisma.campaign.count({ where: { tenantId: user.tenantId, status: "en_revision" } }),
+      ])
+    : [0, 0, 0, [], 0];
   const count = (s: string) => byStatus.find((b) => b.status === s)?._count ?? 0;
 
   return (
@@ -36,6 +49,23 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
           </Link>
         ))}
       </section>
+
+      {showLeads && (
+        <section className="mt-8 grid gap-4 lg:grid-cols-3">
+          <div className="grid grid-cols-2 gap-3 lg:col-span-2">
+            <Link href="/leads"><Kpi label="Leads últimos 30 días" value={leads30.toLocaleString("es-CL")} /></Link>
+            <Link href="/leads?fuente=instagram"><Kpi label="Desde redes sociales" value={social30.toLocaleString("es-CL")} sub={`${rate(social30, leads30)} del total`} /></Link>
+            <Link href="/pipeline?p=captacion"><Kpi label="Propietarios para captar" value={owners30.toLocaleString("es-CL")} sub="últimos 30 días" /></Link>
+            <Link href="/campanas"><Kpi label="Campañas por aprobar" value={String(pendingCampaigns)} /></Link>
+          </div>
+          <Link href="/pipeline" className="card p-5 hover:border-ink">
+            <h2 className="font-medium">Pipeline de demanda</h2>
+            <div className="mt-4">
+              <Bars rows={OPEN_STAGES.map((s) => ({ label: STAGE_LABELS.demanda[s], value: openByStage.find((b) => b.stage === s)?._count ?? 0, accent: s === "propuesta" }))} />
+            </div>
+          </Link>
+        </section>
+      )}
 
       <section className="mt-8 grid gap-4 md:grid-cols-2">
         <div className="card p-5">

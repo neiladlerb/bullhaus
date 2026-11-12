@@ -1,0 +1,43 @@
+@import "tailwindcss";
+
+/* Identidad de Bull Haus (bullhaus.cl): magenta #EA2B94, carbón #3F3F3E, Raleway. */
+@theme {
+  --color-brand: #ea2b94;
+  --color-brand-dark: #c8177a;
+  --color-ink: #2f2f2e;
+  --color-coal: #3f3f3e;
+  --color-muted: #6b6f74;
+  --color-line: #e6e2dc;
+  --color-sand: #f6f3ef;
+  --font-sans: var(--font-raleway), "Raleway", Arial, sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+body {
+  background: #fff;
+  color: var(--color-ink);
+}
+
+@utility wrap {
+  @apply mx-auto w-full max-w-6xl px-4 md:px-6;
+}
+@utility eyebrow {
+  @apply text-xs font-semibold uppercase tracking-[0.25em] text-brand;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50;
+}
+@utility btn-brand {
+  @apply btn bg-brand text-white hover:bg-brand-dark;
+}
+@utility btn-dark {
+  @apply btn bg-coal text-white hover:bg-black;
+}
+@utility btn-line {
+  @apply btn border border-current hover:bg-black/5;
+}
+@utility field {
+  @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand;
+}
