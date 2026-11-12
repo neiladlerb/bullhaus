@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
 import { CookieConsent } from "@/components/consent";
 import { Footer, WhatsAppFloat } from "@/components/site";
+import { UfCalculator } from "@/components/uf-calculator";
+import { getUf } from "@/lib/uf";
 import "./globals.css";
 
 const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", display: "swap" });
@@ -15,13 +17,15 @@ export const metadata: Metadata = {
   icons: { icon: "/logo-bullhaus.png" },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const uf = await getUf();
   return (
     <html lang="es-CL" className={raleway.variable}>
       <body className="min-h-screen font-sans antialiased">
         {children}
         <Footer />
         <WhatsAppFloat />
+        <UfCalculator uf={uf} />
         <CookieConsent metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
       </body>
     </html>

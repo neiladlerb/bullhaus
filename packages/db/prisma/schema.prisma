@@ -35,6 +35,8 @@ enum PropertyType {
   local
   terreno
   parcela
+  bodega
+  estacionamiento
   otro
 }
 

@@ -64,6 +64,8 @@ const TYPES: [RegExp, PropertyType][] = [
   [/^local/i, "local"],
   [/^(terreno|sitio|lote)/i, "terreno"],
   [/^parcela/i, "parcela"],
+  [/^bodega/i, "bodega"],
+  [/^estacionamiento/i, "estacionamiento"],
 ];
 
 const STATUS: [RegExp, PropertyStatus][] = [

@@ -4,7 +4,7 @@ import { z } from "zod";
 import { parseChileanDate, parseChileanNumber } from "./format";
 
 export const OPERATIONS = ["venta", "arriendo"] as const;
-export const PROPERTY_TYPES = ["casa", "departamento", "oficina", "local", "terreno", "parcela", "otro"] as const;
+export const PROPERTY_TYPES = ["casa", "departamento", "oficina", "local", "terreno", "parcela", "bodega", "estacionamiento", "otro"] as const;
 export const CURRENCIES = ["UF", "CLP"] as const;
 export const PROPERTY_STATUSES = ["borrador", "disponible", "reservada", "vendida", "arrendada", "retirada"] as const;
 export const PETS = ["si", "no", "consultar"] as const;
@@ -31,6 +31,8 @@ export const TYPE_LABELS: Record<PropertyType, string> = {
   local: "Local comercial",
   terreno: "Terreno",
   parcela: "Parcela",
+  bodega: "Bodega",
+  estacionamiento: "Estacionamiento",
   otro: "Otro",
 };
 

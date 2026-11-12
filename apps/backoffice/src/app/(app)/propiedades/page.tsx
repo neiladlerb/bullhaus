@@ -20,6 +20,7 @@ export default async function PropertiesPage({ searchParams }: { searchParams: P
           <p className="mt-1 text-sm text-muted">{properties.length} resultado{properties.length === 1 ? "" : "s"}</p>
         </div>
         <div className="flex gap-2">
+          <Link href="/propiedades/precios" className="btn-ghost">Revisión de precios</Link>
           {can(user.role, "properties.import") && <Link href="/propiedades/importar" className="btn-ghost">Importar planilla</Link>}
           {can(user.role, "properties.write") && <Link href="/propiedades/nueva" className="btn-brand">Nueva propiedad</Link>}
         </div>

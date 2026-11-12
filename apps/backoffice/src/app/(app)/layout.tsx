@@ -1,7 +1,9 @@
 import Link from "next/link";
 import { can, ROLE_LABELS } from "@bullhaus/core";
 import { Logo } from "@/components/logo";
+import { UfCalculator } from "@/components/uf-calculator";
 import { requireUser } from "@/lib/auth";
+import { getUf } from "@/lib/uf";
 import { logoutAction } from "../login/actions";
 
 interface NavItem {
@@ -11,7 +13,7 @@ interface NavItem {
 }
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
-  const user = await requireUser(undefined, { allowPendingPasswordChange: true });
+  const [user, uf] = await Promise.all([requireUser(undefined, { allowPendingPasswordChange: true }), getUf()]);
 
   const nav: NavItem[] = [
     { href: "/", label: "Inicio" },
@@ -64,6 +66,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </div>
       </aside>
       <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">{children}</main>
+      <UfCalculator uf={uf} />
     </div>
   );
 }
