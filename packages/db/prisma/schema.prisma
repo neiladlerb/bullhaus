@@ -84,17 +84,31 @@ enum ClientKind {
 }
 
 model Tenant {
-  id         String        @id @default(cuid())
-  name       String
-  slug       String        @unique
-  createdAt  DateTime      @default(now())
-  users      User[]
-  properties Property[]
-  clients    Client[]
-  auditLogs  AuditLog[]
-  imports    ImportBatch[]
-  leads      Lead[]
-  campaigns  Campaign[]
+  id             String             @id @default(cuid())
+  name           String
+  slug           String             @unique
+  createdAt      DateTime           @default(now())
+  users          User[]
+  properties     Property[]
+  clients        Client[]
+  auditLogs      AuditLog[]
+  imports        ImportBatch[]
+  leads          Lead[]
+  campaigns      Campaign[]
+  deals          Deal[]
+  kycCases       KycCase[]
+  templates      ContractTemplate[]
+  contracts      Contract[]
+  invoices       Invoice[]
+  agentSettings  AgentSetting[]
+  knowledge      KnowledgeItem[]
+  conversations  Conversation[]
+  socialAccounts SocialAccount[]
+  socialPosts    SocialPost[]
+  adMetrics      AdMetricDaily[]
+  webMetrics     WebMetricDaily[]
+  brochures      Brochure[]
+  leadTasks      LeadTask[]
 }
 
 model User {
@@ -110,12 +124,15 @@ model User {
   // true tras crear el usuario o restablecer su contraseña: debe elegir una propia al entrar.
   mustChangePassword Boolean    @default(false)
   passwordChangedAt  DateTime?
+  // Usuarios que crea la demostración (Cumplimiento, Finanzas): se borran con ella.
+  isDemo             Boolean    @default(false)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
   sessions           Session[]
   properties         Property[] @relation("PropertyBroker")
   leads              Lead[]     @relation("LeadBroker")
   approvedCampaigns  Campaign[] @relation("CampaignApprover")
+  tasks              LeadTask[] @relation("TaskOwner")
 
   @@unique([tenantId, email])
 }
@@ -172,6 +189,13 @@ model Property {
   mandates          Mandate[]
   leads             Lead[]
   posts             CampaignPost[]
+  legal             PropertyLegal?
+  documents         PropertyDocument[]
+  deals             Deal[]
+  contracts         Contract[]
+  conversations     Conversation[]
+  socialPosts       SocialPost[]
+  brochures         Brochure[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
@@ -201,16 +225,26 @@ model PropertyPriceHistory {
 }
 
 model Client {
-  id        String     @id @default(cuid())
-  tenantId  String
-  tenant    Tenant     @relation(fields: [tenantId], references: [id])
-  kind      ClientKind @default(natural)
-  rut       String
-  name      String
-  email     String?
-  phone     String?
-  createdAt DateTime   @default(now())
-  mandates  Mandate[]
+  id            String      @id @default(cuid())
+  tenantId      String
+  tenant        Tenant      @relation(fields: [tenantId], references: [id])
+  kind          ClientKind  @default(natural)
+  rut           String
+  name          String
+  email         String?
+  phone         String?
+  // Datos para contratos: en producción salen del KYC aprobado (docs/contratos.md, sección 2).
+  nationality   String?
+  maritalStatus String?
+  maritalRegime String?
+  profession    String?
+  address       String?
+  isDemo        Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  mandates      Mandate[]
+  parties       DealParty[]
+  kycCases      KycCase[]
+  invoices      Invoice[]
 
   @@unique([tenantId, rut])
 }
@@ -228,7 +262,9 @@ model Mandate {
   expiresAt       DateTime      @db.Date
   fileKey         String?
   status          MandateStatus @default(vigente)
+  isDemo          Boolean       @default(false)
   createdAt       DateTime      @default(now())
+  contracts       Contract[]
 }
 
 model ImportBatch {
@@ -275,6 +311,8 @@ enum LeadSource {
   web
   portal
   referido
+  linkedin
+  email
 }
 
 // Etapas comunes; las etiquetas cambian según el tipo (visita vs. tasación, oferta vs. mandato).
@@ -317,33 +355,40 @@ enum PostStatus {
 }
 
 model Lead {
-  id             String      @id @default(cuid())
+  id             String          @id @default(cuid())
   tenantId       String
-  tenant         Tenant      @relation(fields: [tenantId], references: [id])
+  tenant         Tenant          @relation(fields: [tenantId], references: [id])
   kind           LeadKind
   source         LeadSource
-  stage          LeadStage   @default(nuevo)
+  stage          LeadStage       @default(nuevo)
   name           String
   phone          String?
   email          String?
   comuna         String?
   // Lo que busca (comprador/arrendatario) u ofrece (propietario), en palabras del contacto.
   interest       String?
-  budget         Decimal?    @db.Decimal(14, 2)
+  budget         Decimal?        @db.Decimal(14, 2)
   budgetCurrency Currency?
   propertyId     String?
-  property       Property?   @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  property       Property?       @relation(fields: [propertyId], references: [id], onDelete: SetNull)
   campaignId     String?
-  campaign       Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  campaign       Campaign?       @relation(fields: [campaignId], references: [id], onDelete: SetNull)
   brokerId       String?
-  broker         User?       @relation("LeadBroker", fields: [brokerId], references: [id])
+  broker         User?           @relation("LeadBroker", fields: [brokerId], references: [id])
   lostReason     String?
   notes          String?
-  isDemo         Boolean     @default(false)
-  createdAt      DateTime    @default(now())
-  updatedAt      DateTime    @updatedAt
-  stageChangedAt DateTime    @default(now())
+  isDemo         Boolean         @default(false)
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  stageChangedAt DateTime        @default(now())
   events         LeadEvent[]
+  deals          Deal[]
+  conversations  Conversation[]
+  tasks          LeadTask[]
+  brochureShares BrochureShare[] @relation("ShareLead")
+  /// Brochure desde el que dejó sus datos, si llegó por uno.
+  brochureId     String?
+  brochure       Brochure?       @relation(fields: [brochureId], references: [id], onDelete: SetNull)
 
   @@index([tenantId, kind, stage])
   @@index([tenantId, createdAt])
@@ -406,4 +451,569 @@ model CampaignPost {
   approvedAt   DateTime?
   order        Int        @default(0)
   createdAt    DateTime   @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Operaciones, KYC, contratos y facturación (docs/plataforma.md 3.4 a 3.6, docs/contratos.md).
+// Regla demo/producción: un registro con isDemo = true solo usa proveedores simulados, y un
+// registro real nunca pasa por un proveedor simulado (apps/backoffice/src/lib/providers).
+
+enum DealStage {
+  reserva
+  promesa
+  contrato
+  escritura
+  cerrada
+  caida
+}
+
+enum PartyRole {
+  vendedor
+  comprador
+  arrendador
+  arrendatario
+  codeudor
+}
+
+model Deal {
+  id               String      @id @default(cuid())
+  tenantId         String
+  tenant           Tenant      @relation(fields: [tenantId], references: [id])
+  number           Int
+  propertyId       String
+  property         Property    @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  leadId           String?
+  lead             Lead?       @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  operation        Operation
+  stage            DealStage   @default(reserva)
+  price            Decimal     @db.Decimal(14, 2)
+  currency         Currency
+  // Comisión con cada lado: % del precio en venta, meses de renta en arriendo.
+  commissionOwner  Decimal     @db.Decimal(6, 2)
+  commissionClient Decimal     @db.Decimal(6, 2)
+  brokerId         String
+  reservedAt       DateTime
+  stageChangedAt   DateTime    @default(now())
+  closedAt         DateTime?
+  lostReason       String?
+  isDemo           Boolean     @default(false)
+  createdAt        DateTime    @default(now())
+  parties          DealParty[]
+  kycCases         KycCase[]
+  contracts        Contract[]
+  invoices         Invoice[]
+
+  @@unique([tenantId, number])
+  @@index([tenantId, stage])
+}
+
+model DealParty {
+  id       String    @id @default(cuid())
+  dealId   String
+  deal     Deal      @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  clientId String
+  client   Client    @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  role     PartyRole
+
+  @@unique([dealId, clientId, role])
+}
+
+enum KycStatus {
+  pendiente
+  enviado
+  en_revision
+  aprobado
+  rechazado
+}
+
+enum RiskLevel {
+  bajo
+  medio
+  alto
+}
+
+// Solo resultados y declaraciones. Las imágenes del carnet y la biometría quedan en el proveedor
+// o en el almacenamiento privado de KYC: nunca en esta base, en logs ni en un modelo de IA.
+model KycCase {
+  id               String         @id @default(cuid())
+  tenantId         String
+  tenant           Tenant         @relation(fields: [tenantId], references: [id])
+  clientId         String
+  client           Client         @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  dealId           String?
+  deal             Deal?          @relation(fields: [dealId], references: [id], onDelete: SetNull)
+  status           KycStatus      @default(pendiente)
+  token            String         @unique
+  provider         String
+  providerRef      String?
+  identityVerified Boolean?
+  livenessPassed   Boolean?
+  listsClear       Boolean?
+  pep              Boolean?
+  pepRole          String?
+  fundsOrigin      String?
+  riskScore        Int?
+  riskLevel        RiskLevel?
+  sentAt           DateTime?
+  submittedAt      DateTime?
+  reviewedAt       DateTime?
+  reviewerId       String?
+  reviewNote       String?
+  expiresAt        DateTime?
+  isDemo           Boolean        @default(false)
+  createdAt        DateTime       @default(now())
+  accessLog        KycAccessLog[]
+
+  @@index([tenantId, status])
+}
+
+model KycAccessLog {
+  id        String   @id @default(cuid())
+  caseId    String
+  case      KycCase  @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  userId    String
+  action    String
+  createdAt DateTime @default(now())
+}
+
+// Datos legales extraídos de los certificados y confirmados por una persona (no de la ficha comercial).
+model PropertyLegal {
+  id               String    @id @default(cuid())
+  propertyId       String    @unique
+  property         Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  address          String
+  unit             String?
+  region           String
+  fojas            String
+  registryNumber   String
+  registryYear     Int
+  conservador      String
+  rolAvaluo        String
+  avaluoFiscalClp  Int
+  titleM2          Decimal?  @db.Decimal(10, 2)
+  registeredOwners String
+  liens            String?
+  liensCertDate    DateTime? @db.Date
+  boundaries       String?
+  confirmedAt      DateTime?
+  confirmedById    String?
+  isDemo           Boolean   @default(false)
+}
+
+model PropertyDocument {
+  id         String   @id @default(cuid())
+  propertyId String
+  property   Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  kind       String
+  issuedAt   DateTime @db.Date
+  fileKey    String?
+  isDemo     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+}
+
+enum ContractKind {
+  orden_corretaje
+  carta_oferta
+  contrato_arriendo
+  minuta_promesa
+}
+
+enum ContractStatus {
+  borrador
+  enviado
+  firmado
+  anulado
+}
+
+model ContractTemplate {
+  id               String       @id @default(cuid())
+  tenantId         String
+  tenant           Tenant       @relation(fields: [tenantId], references: [id])
+  kind             ContractKind
+  version          String
+  body             String
+  // Sin aprobación de abogado no hay contrato real. Las plantillas de demostración (isDemo)
+  // solo generan documentos de demostración, con marca de agua.
+  approvedByLawyer String?
+  approvedAt       DateTime?
+  isDemo           Boolean      @default(false)
+  createdAt        DateTime     @default(now())
+  contracts        Contract[]
+}
+
+model Contract {
+  id         String           @id @default(cuid())
+  tenantId   String
+  tenant     Tenant           @relation(fields: [tenantId], references: [id])
+  number     Int
+  kind       ContractKind
+  status     ContractStatus   @default(borrador)
+  propertyId String
+  property   Property         @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  dealId     String?
+  deal       Deal?            @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  mandateId  String?
+  mandate    Mandate?         @relation(fields: [mandateId], references: [id], onDelete: Cascade)
+  templateId String
+  template   ContractTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  // Copia congelada de los datos usados: un cambio posterior en la ficha o el KYC no la altera.
+  data       Json
+  body       String
+  sentAt     DateTime?
+  signedAt   DateTime?
+  isDemo     Boolean          @default(false)
+  createdAt  DateTime         @default(now())
+
+  @@unique([tenantId, number])
+  @@index([tenantId, kind])
+}
+
+enum InvoiceKind {
+  factura
+  nota_credito
+}
+
+enum InvoiceStatus {
+  borrador
+  aprobada
+  emitida
+  pagada
+  vencida
+  anulada
+}
+
+model Invoice {
+  id           String        @id @default(cuid())
+  tenantId     String
+  tenant       Tenant        @relation(fields: [tenantId], references: [id])
+  kind         InvoiceKind   @default(factura)
+  status       InvoiceStatus @default(borrador)
+  folio        Int?
+  dealId       String?
+  deal         Deal?         @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  clientId     String
+  client       Client        @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  concept      String
+  amountUf     Decimal?      @db.Decimal(12, 2)
+  ufValue      Decimal?      @db.Decimal(10, 2)
+  netClp       Int
+  ivaClp       Int
+  totalClp     Int
+  provider     String
+  approvedById String?
+  approvedAt   DateTime?
+  issuedAt     DateTime?
+  dueAt        DateTime?
+  paidAt       DateTime?
+  isDemo       Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+
+  @@index([tenantId, status])
+}
+
+// ---------------------------------------------------------------------------
+// Agentes IA: ajustes, base de conocimiento y conversaciones (docs/plataforma.md 3.2).
+
+enum Channel {
+  whatsapp
+  instagram
+  facebook
+  voz
+}
+
+enum ConversationStatus {
+  agente
+  humano
+  cerrada
+}
+
+enum MessageRole {
+  contacto
+  agente
+  corredor
+  sistema
+}
+
+model AgentSetting {
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  channel        Channel
+  enabled        Boolean  @default(false)
+  assistantName  String   @default("Asistente virtual de Bull Haus")
+  hoursFrom      String   @default("08:00")
+  hoursTo        String   @default("22:00")
+  maxRejections  Int      @default(2)
+  stopWords      String[] @default(["BAJA", "STOP", "NO MOLESTAR"])
+  handoffRules   String?
+  visitMinutes   Int      @default(45)
+  minNoticeHours Int      @default(3)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, channel])
+}
+
+model KnowledgeItem {
+  id        String   @id @default(cuid())
+  tenantId  String
+  tenant    Tenant   @relation(fields: [tenantId], references: [id])
+  title     String
+  body      String
+  isDemo    Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+model Conversation {
+  id            String             @id @default(cuid())
+  tenantId      String
+  tenant        Tenant             @relation(fields: [tenantId], references: [id])
+  channel       Channel
+  status        ConversationStatus @default(agente)
+  contactName   String
+  contactHandle String
+  leadId        String?
+  lead          Lead?              @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  propertyId    String?
+  property      Property?          @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  // visita_agendada, tasacion_agendada, llamada_agendada, derivada, baja, informacion, sin_respuesta
+  outcome       String?
+  optedOut      Boolean            @default(false)
+  flagged       Boolean            @default(false)
+  costUsd       Decimal            @default(0) @db.Decimal(8, 4)
+  startedAt     DateTime
+  lastMessageAt DateTime
+  isDemo        Boolean            @default(false)
+  messages      Message[]
+
+  @@index([tenantId, lastMessageAt])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole
+  body           String
+  tool           String?
+  createdAt      DateTime
+}
+
+// ---------------------------------------------------------------------------
+// Redes sociales y control de gestión (docs/plataforma.md 3.7). En la demo, connectedVia = "demo".
+
+enum SocialPlatform {
+  instagram
+  facebook
+  linkedin
+}
+
+/// Flujo editorial: nada se publica sin aprobación de una persona de Bull Haus.
+enum SocialPostStatus {
+  borrador
+  en_revision
+  aprobado
+  publicado
+  rechazado
+}
+
+enum AdPlatform {
+  meta
+  google
+}
+
+model SocialAccount {
+  id           String         @id @default(cuid())
+  tenantId     String
+  tenant       Tenant         @relation(fields: [tenantId], references: [id])
+  platform     SocialPlatform
+  handle       String
+  name         String
+  followers    Int
+  connectedVia String
+  isDemo       Boolean        @default(false)
+  daily        SocialDaily[]
+  posts        SocialPost[]
+}
+
+model SocialDaily {
+  id            String        @id @default(cuid())
+  accountId     String
+  account       SocialAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  date          DateTime      @db.Date
+  followers     Int
+  reach         Int
+  profileVisits Int
+  messages      Int
+
+  @@unique([accountId, date])
+}
+
+model SocialPost {
+  id           String           @id @default(cuid())
+  tenantId     String
+  tenant       Tenant           @relation(fields: [tenantId], references: [id])
+  accountId    String
+  account      SocialAccount    @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  propertyId   String?
+  property     Property?        @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  format       PostFormat
+  status       SocialPostStatus @default(publicado)
+  /// Serie editorial, p. ej. "Bull te asesora".
+  series       String?
+  topic        String?
+  title        String?
+  caption      String
+  scheduledAt  DateTime?
+  approvedById String?
+  approvedAt   DateTime?
+  publishedAt  DateTime?
+  reach        Int              @default(0)
+  impressions  Int              @default(0)
+  likes        Int              @default(0)
+  comments     Int              @default(0)
+  saves        Int              @default(0)
+  shares       Int              @default(0)
+  clicks       Int              @default(0)
+  isDemo       Boolean          @default(false)
+
+  @@index([tenantId, publishedAt])
+}
+
+model AdMetricDaily {
+  id           String     @id @default(cuid())
+  tenantId     String
+  tenant       Tenant     @relation(fields: [tenantId], references: [id])
+  platform     AdPlatform
+  campaignId   String?
+  campaignName String
+  date         DateTime   @db.Date
+  spendClp     Int
+  impressions  Int
+  clicks       Int
+  leads        Int
+  isDemo       Boolean    @default(false)
+
+  @@index([tenantId, date])
+}
+
+model WebMetricDaily {
+  id             String   @id @default(cuid())
+  tenantId       String
+  tenant         Tenant   @relation(fields: [tenantId], references: [id])
+  date           DateTime @db.Date
+  sessions       Int
+  users          Int
+  propertyViews  Int
+  whatsappClicks Int
+  forms          Int
+  isDemo         Boolean  @default(false)
+
+  @@unique([tenantId, date])
+}
+
+// ---------------------------------------------------------------------------
+// Brochures de captación, venta y arriendo, y compromisos de contacto del pipeline
+
+enum BrochureKind {
+  captacion
+  venta
+  arriendo
+}
+
+/// Un brochure solo se comparte aprobado por una persona de Bull Haus (CLAUDE.md).
+enum BrochureStatus {
+  borrador
+  en_revision
+  aprobado
+  archivado
+}
+
+enum ShareChannel {
+  whatsapp
+  instagram
+  facebook
+  linkedin
+  email
+  enlace
+}
+
+/// El contenido no se guarda como texto libre: la página se arma desde la ficha aprobada (venta/arriendo)
+/// o desde los datos de Bull Haus (captación) cada vez que se abre.
+model Brochure {
+  id           String          @id @default(cuid())
+  tenantId     String
+  tenant       Tenant          @relation(fields: [tenantId], references: [id])
+  kind         BrochureKind
+  propertyId   String?
+  property     Property?       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  title        String
+  /// Bajada opcional escrita por una persona; se revisa en la aprobación.
+  intro        String?
+  token        String          @unique
+  status       BrochureStatus  @default(borrador)
+  createdById  String?
+  approvedById String?
+  approvedAt   DateTime?
+  views        Int             @default(0)
+  isDemo       Boolean         @default(false)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+  shares       BrochureShare[]
+  leads        Lead[]
+
+  @@index([tenantId, status])
+}
+
+model BrochureShare {
+  id         String       @id @default(cuid())
+  tenantId   String
+  brochureId String
+  brochure   Brochure     @relation(fields: [brochureId], references: [id], onDelete: Cascade)
+  channel    ShareChannel
+  leadId     String?
+  lead       Lead?        @relation("ShareLead", fields: [leadId], references: [id], onDelete: SetNull)
+  sentById   String?
+  sentAt     DateTime     @default(now())
+  openedAt   DateTime?
+  opens      Int          @default(0)
+  isDemo     Boolean      @default(false)
+
+  @@index([brochureId, sentAt])
+}
+
+enum TaskKind {
+  llamar
+  whatsapp
+  email
+  visita
+  seguimiento
+}
+
+enum TaskStatus {
+  pendiente
+  hecho
+  cancelado
+}
+
+/// Compromiso de contacto con un lead: qué, cuándo y por qué canal. Los mensajes por WhatsApp o email los
+/// envía el corredor desde su aplicación (enlace con el texto prearmado); el sistema no escribe solo.
+model LeadTask {
+  id          String     @id @default(cuid())
+  tenantId    String
+  tenant      Tenant     @relation(fields: [tenantId], references: [id])
+  leadId      String
+  lead        Lead       @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  ownerId     String?
+  owner       User?      @relation("TaskOwner", fields: [ownerId], references: [id])
+  kind        TaskKind
+  title       String
+  dueAt       DateTime
+  templateKey String?
+  status      TaskStatus @default(pendiente)
+  doneAt      DateTime?
+  note        String?
+  isDemo      Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+
+  @@index([tenantId, status, dueAt])
 }

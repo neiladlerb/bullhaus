@@ -13,5 +13,5 @@ export function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!login|media|api/publico|_next|favicon.ico).*)"],
+  matcher: ["/((?!login|media|api/publico|verificacion|b/|_next|favicon.ico).*)"],
 };

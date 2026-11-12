@@ -52,13 +52,17 @@ export default async function DatosPage() {
       <section className="card p-5">
         <h2 className="font-medium">3. Datos de demostración</h2>
         <p className="mt-1 text-sm text-muted">
-          Leads ficticios de los últimos 90 días (Instagram, Facebook, WhatsApp, web, portales y referidos), su avance en el pipeline y campañas pasadas con métricas.
-          Van marcados como demostración y se borran con un clic. Ningún agente les escribe.
+          Arma una demostración completa sobre la cartera real: leads de 90 días, campañas con gasto diario, propietarios con KYC y certificados, una orden de corretaje por
+          cada propiedad, operaciones de los últimos 12 meses con cartas oferta, promesas, contratos de arriendo y facturas, conversaciones de los agentes, las cuentas de
+          Instagram y Facebook con 120 días de métricas, la página de LinkedIn con la serie “Bull Haus te asesora”, brochures con sus envíos y compromisos de contacto en el pipeline, Google Ads y Google Analytics simulados, y usuarios de Cumplimiento y Finanzas.
+        </p>
+        <p className="mt-2 text-sm text-muted">
+          Todo va marcado como demostración (isDemo), usa solo integraciones simuladas y se borra con un clic sin tocar las propiedades ni los usuarios reales. Ningún agente escribe a estos contactos. Ver docs/demo.md.
         </p>
         <p className="mt-2 text-sm">{demoLeads} leads de demostración cargados.</p>
         <div className="mt-4 flex flex-wrap gap-3">
           <ActionButton action="loadDemoAction" label={demoLeads ? "Volver a generar" : "Cargar datos de demostración"} variant="btn-primary" />
-          {demoLeads > 0 && <ActionButton action="clearDemoAction" label="Borrar datos de demostración" confirm="Se borrarán todos los leads y campañas de demostración. ¿Continuar?" />}
+          {demoLeads > 0 && <ActionButton action="clearDemoAction" label="Borrar datos de demostración" confirm="Se borrarán todos los datos de demostración (leads, campañas, contratos, operaciones, facturas, conversaciones, redes y usuarios demo). Las propiedades y usuarios reales no se tocan. ¿Continuar?" />}
         </div>
       </section>
     </div>

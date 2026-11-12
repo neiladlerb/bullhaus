@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { can, daysUntil, formatDate, OPEN_STAGES, rate, seesOnlyOwnProperties, SOCIAL_SOURCES, STAGE_LABELS, STATUS_LABELS, PROPERTY_STATUSES } from "@bullhaus/core";
+import { can, daysUntil, formatDate, OPEN_STAGES, rate, seesOnlyOwnProperties, SOCIAL_SOURCES, STAGE_LABELS, STATUS_LABELS, PROPERTY_STATUSES, santiagoToDate, TIMEZONE } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { Bars, Kpi } from "@/components/bars";
 import { requireUser } from "@/lib/auth";
@@ -32,6 +32,14 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       ])
     : [0, 0, 0, [], 0];
   const count = (s: string) => byStatus.find((b) => b.status === s)?._count ?? 0;
+  // Recordatorio de compromisos: lo vencido y lo de hoy, de los leads que ve esta persona.
+  const endOfToday = santiagoToDate(new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE }).format(new Date()), "23:59");
+  const [dueToday, overdue] = showLeads
+    ? await Promise.all([
+        prisma.leadTask.count({ where: { tenantId: user.tenantId, status: "pendiente", dueAt: { lte: endOfToday }, lead: ls } }),
+        prisma.leadTask.count({ where: { tenantId: user.tenantId, status: "pendiente", dueAt: { lt: new Date() }, lead: ls } }),
+      ])
+    : [0, 0];
 
   return (
     <div className="max-w-5xl">
@@ -40,6 +48,15 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
       )}
       <h1 className="text-2xl font-semibold">Hola, {user.name.split(" ")[0]}</h1>
       <p className="mt-1 text-sm text-muted">{own ? "Tus propiedades" : "Cartera de Bull Haus"} al {formatDate(new Date())}.</p>
+      {dueToday > 0 && (
+        <Link href="/pipeline" className={`mt-5 flex items-center justify-between gap-3 rounded-md px-4 py-3 text-sm ${overdue ? "bg-red-50 text-red-900" : "bg-amber-50 text-amber-900"}`}>
+          <span>
+            <strong>{dueToday} {dueToday === 1 ? "compromiso" : "compromisos"} de contacto para hoy</strong>
+            {overdue ? `, ${overdue} vencidos` : ""}.
+          </span>
+          <span className="underline">Ver en el pipeline</span>
+        </Link>
+      )}
 
       <section className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {PROPERTY_STATUSES.map((s) => (

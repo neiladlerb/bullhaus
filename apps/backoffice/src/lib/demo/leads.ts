@@ -2,14 +2,14 @@ import "server-only";
 import { randomUUID } from "node:crypto";
 import { OPEN_STAGES, type LeadKind, type LeadSource, type LeadStage } from "@bullhaus/core";
 import { prisma, Prisma } from "@bullhaus/db";
-import type { CurrentUser } from "./auth";
-import { audit } from "./audit";
+import type { CurrentUser } from "../auth";
+import { audit } from "../audit";
 
 // Datos de demostración: leads, movimientos del pipeline y campañas pasadas con métricas.
 // Todo lleva isDemo = true para poder borrarlo de una vez. Los contactos son ficticios
 // y ningún agente debe escribirles (el worker filtra isDemo).
 
-function rng(seed: number) {
+export function rng(seed: number) {
   let a = seed >>> 0;
   return () => {
     a = (a + 0x6d2b79f5) >>> 0;
@@ -20,8 +20,8 @@ function rng(seed: number) {
   };
 }
 
-const FIRST = ["Catalina", "Martín", "Josefa", "Benjamín", "Antonia", "Tomás", "Florencia", "Vicente", "Isidora", "Matías", "Trinidad", "Joaquín", "Fernanda", "Sebastián", "Valentina", "Cristóbal", "Constanza", "Felipe", "Magdalena", "Ignacio", "Paula", "Diego", "Javiera", "Nicolás", "Carolina", "Francisco", "María José", "Andrés", "Camila", "Pablo"];
-const LAST = ["González", "Muñoz", "Rojas", "Díaz", "Pérez", "Soto", "Contreras", "Silva", "Martínez", "Sepúlveda", "Morales", "Rodríguez", "López", "Fuentes", "Hernández", "Torres", "Araya", "Flores", "Espinoza", "Valenzuela", "Castillo", "Tapia", "Reyes", "Gutiérrez", "Larraín", "Errázuriz", "Ossa", "Vial", "Matte", "Edwards"];
+export const FIRST = ["Catalina", "Martín", "Josefa", "Benjamín", "Antonia", "Tomás", "Florencia", "Vicente", "Isidora", "Matías", "Trinidad", "Joaquín", "Fernanda", "Sebastián", "Valentina", "Cristóbal", "Constanza", "Felipe", "Magdalena", "Ignacio", "Paula", "Diego", "Javiera", "Nicolás", "Carolina", "Francisco", "María José", "Andrés", "Camila", "Pablo"];
+export const LAST = ["González", "Muñoz", "Rojas", "Díaz", "Pérez", "Soto", "Contreras", "Silva", "Martínez", "Sepúlveda", "Morales", "Rodríguez", "López", "Fuentes", "Hernández", "Torres", "Araya", "Flores", "Espinoza", "Valenzuela", "Castillo", "Tapia", "Reyes", "Gutiérrez", "Larraín", "Errázuriz", "Ossa", "Vial", "Matte", "Edwards"];
 const OWNER_COMUNAS = ["Las Condes", "Vitacura", "Lo Barnechea", "Providencia", "Ñuñoa", "Zapallar", "Cachagua", "Maitencillo", "Papudo", "Viña del Mar"];
 const OWNER_INTEREST = ["Casa 4D 3B que quiere vender", "Departamento 3D 2B para arrendar", "Departamento 2D 2B para vender", "Casa en condominio para vender", "Parcela para vender", "Casa de playa para arrendar en temporada", "Oficina para arrendar"];
 const LOST = ["No volvió a responder", "Compró con otra corredora", "Presupuesto fuera de rango", "Decidió no vender por ahora", "Encontró arriendo por su cuenta"];
@@ -29,8 +29,9 @@ const LOST = ["No volvió a responder", "Compró con otra corredora", "Presupues
 const KINDS: [LeadKind, number][] = [["comprador", 0.48], ["arrendatario", 0.27], ["propietario", 0.25]];
 const SOURCES: [LeadSource, number][] = [["instagram", 0.38], ["facebook", 0.14], ["whatsapp", 0.18], ["web", 0.14], ["portal", 0.1], ["referido", 0.06]];
 
-function weighted<T>(r: () => number, items: [T, number][]): T {
-  let x = r();
+/** Elige según pesos (no hace falta que sumen 1). */
+export function weighted<T>(r: () => number, items: [T, number][]): T {
+  let x = r() * items.reduce((a, [, w]) => a + w, 0);
   for (const [v, w] of items) if ((x -= w) <= 0) return v;
   return items[items.length - 1]![0];
 }
@@ -47,8 +48,7 @@ function finalStage(r: () => number, ageDays: number): LeadStage {
 
 const day = 86_400_000;
 
-export async function loadDemoData(user: CurrentUser): Promise<{ leads: number; campaigns: number }> {
-  await clearDemoData(user);
+export async function loadDemoLeads(user: CurrentUser): Promise<{ leads: number; campaigns: number }> {
   const r = rng(20261111);
   const now = Date.now();
   const brokers = await prisma.user.findMany({ where: { tenantId: user.tenantId, active: true, role: { in: ["corredor", "admin"] } }, select: { id: true } });
@@ -154,7 +154,7 @@ export async function loadDemoData(user: CurrentUser): Promise<{ leads: number; 
   return { leads: leads.length, campaigns: campaigns.length };
 }
 
-export async function clearDemoData(user: CurrentUser): Promise<void> {
+export async function clearDemoLeads(user: CurrentUser): Promise<void> {
   await prisma.lead.deleteMany({ where: { tenantId: user.tenantId, isDemo: true } });
   await prisma.campaign.deleteMany({ where: { tenantId: user.tenantId, isDemo: true } });
 }

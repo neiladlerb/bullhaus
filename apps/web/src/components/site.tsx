@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { formatPrice, TYPE_LABELS } from "@bullhaus/core";
-import { displayCode, photoUrl, type PublicProperty } from "@/lib/api";
+import { BACKOFFICE_URL, displayCode, photoUrl, type PublicProperty } from "@/lib/api";
+
+/** Acceso de corredores y equipo al back office. */
+export const BACKOFFICE_LOGIN = `${BACKOFFICE_URL}/login`;
 
 export const CONTACT = {
   whatsapp: "+56 9 9200 0211",
@@ -55,9 +58,15 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
             </Link>
           ))}
         </nav>
-        <a href={CONTACT.whatsappUrl} className="btn-brand hidden sm:inline-flex" target="_blank" rel="noopener">
-          WhatsApp
-        </a>
+        <div className="hidden items-center gap-4 sm:flex">
+          <SocialIcons className="hidden xl:inline-flex" />
+          <a href={BACKOFFICE_LOGIN} className="text-sm font-medium opacity-80 hover:opacity-100 hover:underline hover:underline-offset-8" rel="nofollow">
+            Ingreso corredores
+          </a>
+          <a href={CONTACT.whatsappUrl} className="btn-brand inline-flex" target="_blank" rel="noopener">
+            WhatsApp
+          </a>
+        </div>
         <details className="relative lg:hidden">
           <summary className="cursor-pointer list-none rounded-full border border-current px-3 py-1.5 text-sm">Menú</summary>
           <nav className="absolute right-0 mt-2 w-64 rounded-xl bg-white p-2 text-ink shadow-xl">
@@ -66,6 +75,9 @@ export function Header({ overlay = false }: { overlay?: boolean }) {
                 {n.label}
               </Link>
             ))}
+            <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 block rounded-lg border-t border-line px-3 py-2 text-sm text-muted hover:bg-sand">
+              Ingreso corredores
+            </a>
           </nav>
         </details>
       </div>
@@ -121,11 +133,71 @@ export function Footer() {
                 Privacidad y cookies
               </Link>
             </li>
+            <li>
+              <a href={BACKOFFICE_LOGIN} rel="nofollow" className="hover:text-white">
+                Ingreso corredores (back office)
+              </a>
+            </li>
           </ul>
         </div>
       </div>
       <p className="wrap border-t border-white/10 py-5 text-xs text-white/50">© {new Date().getFullYear()} Bull Haus Intermediación y Gestión Inmobiliaria</p>
     </footer>
+  );
+}
+
+const IG_PATH =
+  "M12 2.2c3.2 0 3.6 0 4.8.1 1.2.1 1.8.2 2.2.4.6.2 1 .5 1.4.9.4.4.7.8.9 1.4.2.4.4 1 .4 2.2.1 1.3.1 1.6.1 4.8s0 3.6-.1 4.8c-.1 1.2-.2 1.8-.4 2.2-.2.6-.5 1-.9 1.4-.4.4-.8.7-1.4.9-.4.2-1 .4-2.2.4-1.3.1-1.6.1-4.8.1s-3.6 0-4.8-.1c-1.2-.1-1.8-.2-2.2-.4-.6-.2-1-.5-1.4-.9-.4-.4-.7-.8-.9-1.4-.2-.4-.4-1-.4-2.2C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.8c.1-1.2.2-1.8.4-2.2.2-.6.5-1 .9-1.4.4-.4.8-.7 1.4-.9.4-.2 1-.4 2.2-.4C8.4 2.2 8.8 2.2 12 2.2zm0 3.1a6.7 6.7 0 1 0 0 13.4 6.7 6.7 0 0 0 0-13.4zm0 11a4.3 4.3 0 1 1 0-8.6 4.3 4.3 0 0 1 0 8.6zm6.9-11.3a1.6 1.6 0 1 1-3.1 0 1.6 1.6 0 0 1 3.1 0z";
+const FB_PATH = "M13.5 21.9v-8h2.7l.4-3.1h-3.1V8.8c0-.9.3-1.5 1.6-1.5h1.7V4.5c-.3 0-1.3-.1-2.4-.1-2.4 0-4 1.5-4 4.1v2.3H7.6v3.1h2.8v8h3.1z";
+
+export const SOCIAL = [
+  { key: "instagram", label: "Instagram", handle: "@bullhaus_propiedades", url: CONTACT.instagram, path: IG_PATH },
+  { key: "facebook", label: "Facebook", handle: "BullHauspropiedades", url: CONTACT.facebook, path: FB_PATH },
+] as const;
+
+/** Íconos de redes. Son enlaces simples: no cargan scripts de Meta (las etiquetas de publicidad esperan al consentimiento de cookies). */
+export function SocialIcons({ className = "" }: { className?: string }) {
+  return (
+    <span className={`inline-flex items-center gap-2 ${className}`}>
+      {SOCIAL.map((s) => (
+        <a key={s.key} href={s.url} target="_blank" rel="noopener" aria-label={`${s.label} de Bull Haus`} className="flex h-9 w-9 items-center justify-center rounded-full border border-current/40 opacity-85 transition hover:opacity-100">
+          <svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor" aria-hidden="true">
+            <path d={s.path} />
+          </svg>
+        </a>
+      ))}
+    </span>
+  );
+}
+
+export function SocialBand() {
+  return (
+    <section className="py-16">
+      <div className="wrap flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+        <div>
+          <p className="eyebrow text-brand">Síguenos</p>
+          <h2 className="mt-2 text-3xl font-light">
+            Propiedades nuevas, recorridos y consejos <span className="font-semibold">cada semana</span>
+          </h2>
+          <p className="mt-2 max-w-xl text-muted">Publicamos primero en nuestras redes. También puedes escribirnos por mensaje directo.</p>
+        </div>
+        <div className="flex flex-wrap gap-3">
+          {SOCIAL.map((s) => (
+            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex items-center gap-3 rounded-2xl bg-sand px-5 py-4 ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-lg">
+              <span className={`flex h-10 w-10 items-center justify-center rounded-full text-white ${s.key === "instagram" ? "bg-gradient-to-tr from-[#f58529] via-[#dd2a7b] to-[#8134af]" : "bg-[#1877f2]"}`}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
+                  <path d={s.path} />
+                </svg>
+              </span>
+              <span>
+                <span className="block text-sm font-semibold">{s.label}</span>
+                <span className="block text-sm text-muted">{s.handle}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
   );
 }
 

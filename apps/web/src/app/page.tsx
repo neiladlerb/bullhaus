@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { TYPE_LABELS } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
-import { CONTACT, Header, PropertyCard } from "@/components/site";
+import { CONTACT, Header, PropertyCard, SocialBand } from "@/components/site";
 import { COAST, getProperties, photoUrl } from "@/lib/api";
 
 export const revalidate = 300;
@@ -36,7 +36,6 @@ const initials = (n: string) =>
 export default async function Home() {
   const all = await getProperties();
   const featured = [...all].filter((p) => p.photos.length).sort((a, b) => (a.currency === b.currency ? b.price - a.price : a.currency === "UF" ? -1 : 1));
-  const hero = featured.find((p) => p.type === "casa") ?? featured[0];
   const venta = all.filter((p) => p.operation === "venta").length;
   const arriendo = all.filter((p) => p.operation === "arriendo").length;
   const comunas = [...new Set(all.map((p) => p.comuna))].sort((a, b) => a.localeCompare(b, "es"));
@@ -46,18 +45,19 @@ export default async function Home() {
   return (
     <>
       <section className="relative isolate flex min-h-[88vh] items-end overflow-hidden bg-coal text-white">
-        {hero?.photos[0] && (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl(hero.photos[0].lg)} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-70" />
-        )}
-        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/80 via-black/30 to-black/40" />
+        {/* Foto fija de la cartera: la portada nunca queda en negro aunque la API no responda. */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/hero-casa.webp" alt="" fetchPriority="high" className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/20 to-black/35" />
         <Header overlay />
         <div className="wrap pb-14 pt-40">
           <p className="eyebrow text-white/90">Intermediación y gestión inmobiliaria</p>
           <h1 className="mt-4 max-w-3xl text-4xl font-light leading-tight md:text-6xl">
-            Propiedades en el sector oriente de Santiago y la <span className="font-semibold">V Región costa</span>
+            Gestión inmobiliaria <span className="font-semibold">profesional</span>, de principio a fin
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-white/85">Te acompañamos a comprar, vender o arrendar con asesoría cercana y profesional.</p>
+          <p className="mt-5 max-w-xl text-lg text-white/85">
+            Compra, venta y arriendo en el sector oriente de Santiago y la V Región costa, con un corredor que te acompaña en cada paso.
+          </p>
 
           <form action="/propiedades" className="mt-8 grid max-w-4xl gap-2 rounded-2xl bg-white p-2 text-ink shadow-2xl sm:grid-cols-[1fr_1fr_1fr_auto]">
             <select name="operacion" className="field border-0" aria-label="Operación" defaultValue="venta">
@@ -139,10 +139,8 @@ export default async function Home() {
           const img = zp[i === 0 ? 1 : 0]?.photos[0];
           return (
             <Link key={z.name} href={i === 0 ? "/propiedades?zona=santiago" : "/propiedades?zona=costa"} className="group relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-3xl bg-coal p-8 text-white">
-              {img && (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={photoUrl(img.md)} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-75 transition duration-700 group-hover:scale-105" />
-              )}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img ? photoUrl(img.md) : i === 0 ? "/zona-santiago.webp" : "/zona-costa.webp"} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 to-transparent" />
               <div>
                 <h3 className="text-2xl font-semibold">{z.name}</h3>
@@ -215,6 +213,8 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      <SocialBand />
 
       <section id="contacto" className="wrap grid gap-12 py-20 lg:grid-cols-[1fr_1.4fr]">
         <div>

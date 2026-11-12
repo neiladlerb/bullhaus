@@ -1,7 +1,9 @@
 import Link from "next/link";
-import { can, daysUntil, formatPrice, LEAD_STAGES, OPEN_STAGES, rate, SOURCE_LABELS, STAGE_LABELS, type Pipeline } from "@bullhaus/core";
+import { can, daysUntil, dueState, formatDateTimeCl, formatPrice, LEAD_STAGES, OPEN_STAGES, rate, SOURCE_LABELS, STAGE_LABELS, santiagoToDate, TASK_KIND_LABELS, TIMEZONE, type Pipeline } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { Kpi } from "@/components/bars";
+import { Chip } from "@/components/demo";
+import { DUE_TONE } from "@/components/tones";
 import { requireUser } from "@/lib/auth";
 import { leadScope, since } from "@/lib/leads";
 import { moveLeadAction } from "./actions";
@@ -14,16 +16,25 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
   const where = { ...leadScope(user), kind: { in: [...kinds] } };
   const editable = can(user.role, "leads.write");
 
-  const [open, closed90, byStage90] = await Promise.all([
+  // Fin del día de hoy en Santiago: lo que vence hasta entonces es "hoy" o "vencido".
+  const endOfToday = santiagoToDate(new Intl.DateTimeFormat("en-CA", { timeZone: TIMEZONE }).format(new Date()), "23:59");
+  const [open, closed90, byStage90, reminders] = await Promise.all([
     prisma.lead.findMany({
       where: { ...where, stage: { in: [...OPEN_STAGES] } },
       orderBy: { stageChangedAt: "desc" },
-      include: { property: { select: { id: true, code: true, comuna: true } }, broker: { select: { name: true } } },
+      include: { property: { select: { id: true, code: true, comuna: true } }, broker: { select: { name: true } }, tasks: { where: { status: "pendiente" }, orderBy: { dueAt: "asc" }, take: 1 } },
       take: 400,
     }),
     prisma.lead.groupBy({ by: ["stage"], where: { ...where, stage: { in: ["ganado", "perdido"] }, stageChangedAt: { gte: since(90) } }, _count: true }),
     prisma.lead.groupBy({ by: ["stage"], where: { ...where, createdAt: { gte: since(90) } }, _count: true }),
+    prisma.leadTask.findMany({
+      where: { tenantId: user.tenantId, status: "pendiente", dueAt: { lte: endOfToday }, lead: { ...where, stage: { in: [...OPEN_STAGES] } } },
+      orderBy: { dueAt: "asc" },
+      take: 40,
+      include: { lead: { select: { id: true, name: true, isDemo: true } }, owner: { select: { name: true } } },
+    }),
   ]);
+  const overdue = reminders.filter((t) => dueState(t.dueAt) === "vencido").length;
 
   const labels = STAGE_LABELS[pipeline];
   const won = closed90.find((c) => c.stage === "ganado")?._count ?? 0;
@@ -57,13 +68,40 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
       </div>
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <Kpi label="Abiertos" value={open.length.toLocaleString("es-CL")} />
+        <Kpi label="Abiertos" value={open.length.toLocaleString("es-CL")} sub={`${open.filter((l) => !l.tasks.length).length} sin próximo compromiso`} />
         <Kpi label={`${labels.ganado} (90 días)`} value={won.toLocaleString("es-CL")} sub={`${rate(won, won + lost)} de los cerrados`} />
         <Kpi label="Perdidos (90 días)" value={lost.toLocaleString("es-CL")} />
         {pipeline === "demanda" ? (
           <Kpi label="En etapa de oferta" value={pipelineValue ? formatPrice(pipelineValue, "UF") : "—"} sub="Suma de precios en UF de las propiedades" />
         ) : (
           <Kpi label="Tasaciones agendadas" value={String(open.filter((l) => l.stage === "visita").length)} />
+        )}
+      </section>
+
+      <section className="card p-5">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-medium">Compromisos de hoy y vencidos</h2>
+          <span className="text-xs text-muted">{reminders.length} para hoy · {overdue} vencidos</span>
+        </div>
+        {reminders.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">Nada pendiente para hoy.</p>
+        ) : (
+          <ul className="mt-3 grid gap-2 md:grid-cols-2">
+            {reminders.map((t) => {
+              const due = dueState(t.dueAt);
+              return (
+                <li key={t.id}>
+                  <Link href={`/leads/${t.lead.id}`} className="flex items-start gap-2 rounded-md border border-line p-2.5 text-sm hover:bg-paper">
+                    <Chip tone={DUE_TONE[due]}>{due === "vencido" ? "Vencido" : formatDateTimeCl(t.dueAt).slice(11)}</Chip>
+                    <span className="min-w-0">
+                      <span className="font-medium">{t.lead.name}</span> · {TASK_KIND_LABELS[t.kind]}
+                      <span className="block truncate text-xs text-muted">{t.title} · {t.owner?.name ?? "sin responsable"}{due === "vencido" ? ` · ${formatDateTimeCl(t.dueAt)}` : ""}</span>
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
         )}
       </section>
 
@@ -98,7 +136,7 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
                     return (
                       <li key={l.id} className="card p-3 text-sm">
                         <p className="font-medium">
-                          {l.name}
+                          <Link href={`/leads/${l.id}`} className="hover:underline">{l.name}</Link>
                           {l.isDemo && <span className="chip ml-1 bg-paper text-[10px] text-muted">demo</span>}
                         </p>
                         <p className="mt-0.5 text-xs text-muted">
@@ -106,6 +144,14 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
                           {l.kind === "propietario" && l.comuna ? ` · ${l.comuna}` : ""}
                         </p>
                         {l.budget && l.budgetCurrency && <p className="mt-0.5 text-xs tabular-nums">{formatPrice(Number(l.budget), l.budgetCurrency)}</p>}
+                        {l.tasks[0] ? (
+                          <p className="mt-1 flex items-center gap-1 text-[11px]">
+                            <Chip tone={DUE_TONE[dueState(l.tasks[0].dueAt)]}>{TASK_KIND_LABELS[l.tasks[0].kind]}</Chip>
+                            <span className="truncate text-muted">{formatDateTimeCl(l.tasks[0].dueAt)}</span>
+                          </p>
+                        ) : (
+                          <p className="mt-1 text-[11px] text-amber-700">Sin próximo compromiso</p>
+                        )}
                         <p className={`mt-1 text-[11px] ${idle > 7 ? "text-amber-700" : "text-muted"}`}>
                           {l.broker?.name ?? "Sin asignar"} · {idle === 0 ? "hoy" : `hace ${idle} d`}
                         </p>

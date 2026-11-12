@@ -1,7 +1,19 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { can, canEditProperty, daysUntil, formatDate, formatPrice, seesOnlyOwnProperties } from "@bullhaus/core";
+import { can, canEditProperty, CONTRACT_KIND_LABELS, CONTRACT_STATUS_LABELS, daysUntil, dealStageLabel, formatDate, formatPrice, seesOnlyOwnProperties } from "@bullhaus/core";
+import { prisma } from "@bullhaus/db";
+import { DemoTag } from "@/components/demo";
 import { requireUser } from "@/lib/auth";
+
+const DOC_LABELS: Record<string, string> = {
+  dominio_vigente: "Dominio vigente",
+  hipotecas_gravamenes: "Hipotecas y gravámenes",
+  avaluo_fiscal: "Avalúo fiscal",
+  deuda_contribuciones: "Deuda de contribuciones",
+  titulo: "Título",
+  recepcion_final: "Recepción final",
+  numero: "Certificado de número",
+};
 import { propertyToFormValues } from "@/lib/form-values";
 import { activeBrokers, getProperty } from "@/lib/properties";
 import { StatusChip } from "@/components/status-chip";
@@ -20,6 +32,12 @@ export default async function PropertyPage({ params, searchParams }: { params: P
   const lock = seesOnlyOwnProperties(user.role);
   const brokers = lock ? [{ email: property.broker.email, name: property.broker.name }] : await activeBrokers(user.tenantId);
   const media = [...property.media].sort((a, b) => a.order - b.order);
+  const [legal, documents, contracts, deals] = await Promise.all([
+    prisma.propertyLegal.findUnique({ where: { propertyId: property.id } }),
+    prisma.propertyDocument.findMany({ where: { propertyId: property.id }, orderBy: { issuedAt: "desc" } }),
+    can(user.role, "contracts.read") ? prisma.contract.findMany({ where: { propertyId: property.id }, orderBy: { createdAt: "asc" }, select: { id: true, number: true, kind: true, status: true, createdAt: true } }) : [],
+    can(user.role, "deals.read") ? prisma.deal.findMany({ where: { propertyId: property.id }, orderBy: { reservedAt: "asc" }, select: { id: true, number: true, stage: true, operation: true } }) : [],
+  ]);
 
   return (
     <div className="max-w-5xl">
@@ -113,6 +131,43 @@ export default async function PropertyPage({ params, searchParams }: { params: P
           </ul>
         )}
         {editable && can(user.role, "mandates.write") && <MandateForm propertyId={property.id} />}
+      </section>
+
+      <section className="card mt-6 p-6">
+        <h2 className="mb-1 font-medium">
+          Legal y contratos
+          {legal?.isDemo && <DemoTag />}
+        </h2>
+        <p className="mb-4 text-xs text-muted">Datos de los certificados (no de la ficha comercial), confirmados por una persona. Con ellos se arman los contratos.</p>
+        {legal ? (
+          <dl className="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
+            <div className="flex justify-between gap-3"><dt className="text-muted">Dirección según título</dt><dd className="text-right">{legal.address}{legal.unit ? `, ${legal.unit}` : ""}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">Inscripción</dt><dd className="text-right">fs. {legal.fojas} N° {legal.registryNumber} de {legal.registryYear}, CBR {legal.conservador}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">Rol de avalúo</dt><dd>{legal.rolAvaluo}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">Avalúo fiscal</dt><dd className="tabular-nums">{formatPrice(legal.avaluoFiscalClp, "CLP")}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">Propietario inscrito</dt><dd className="text-right">{legal.registeredOwners}</dd></div>
+            <div className="flex justify-between gap-3"><dt className="text-muted">Gravámenes</dt><dd className="text-right">{legal.liens ?? "No registra"}</dd></div>
+            <div className="flex justify-between gap-3 sm:col-span-2"><dt className="text-muted">Certificados cargados</dt><dd className="text-right">{documents.map((d) => `${DOC_LABELS[d.kind] ?? d.kind} (${formatDate(d.issuedAt)})`).join(" · ") || "—"}</dd></div>
+          </dl>
+        ) : (
+          <p className="text-sm text-muted">Faltan los certificados de la propiedad: sin ellos no se generan contratos.</p>
+        )}
+        {(contracts.length > 0 || deals.length > 0) && (
+          <ul className="mt-4 divide-y divide-line border-t border-line text-sm">
+            {contracts.map((c) => (
+              <li key={c.id} className="flex justify-between py-2">
+                <Link href={`/contratos/${c.id}`} className="hover:underline">{CONTRACT_KIND_LABELS[c.kind]} N° {c.number}</Link>
+                <span className="text-xs text-muted">{formatDate(c.createdAt)} · {CONTRACT_STATUS_LABELS[c.status]}</span>
+              </li>
+            ))}
+            {deals.map((d) => (
+              <li key={d.id} className="flex justify-between py-2">
+                <Link href={`/operaciones/${d.id}`} className="hover:underline">Operación {d.number}</Link>
+                <span className="text-xs text-muted">{dealStageLabel(d.stage, d.operation)}</span>
+              </li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="card mt-6 p-6">

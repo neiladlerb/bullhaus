@@ -24,18 +24,36 @@ export type Permission =
   | "campaigns.write"
   | "campaigns.approve"
   | "site.import"
-  | "demo.manage";
+  | "demo.manage"
+  | "agents.read"
+  | "agents.manage"
+  | "deals.read"
+  | "deals.write"
+  | "kyc.read"
+  | "kyc.review"
+  | "contracts.read"
+  | "contracts.write"
+  | "billing.read"
+  | "billing.approve"
+  | "analytics.read"
+  | "integrations.read";
 
 const MATRIX: Record<Role, readonly Permission[]> = {
   admin: [
     "properties.read", "properties.write", "properties.import", "mandates.write", "users.manage", "audit.read",
     "leads.read", "leads.write", "campaigns.read", "campaigns.write", "campaigns.approve", "site.import", "demo.manage",
+    "agents.read", "agents.manage", "deals.read", "deals.write", "kyc.read", "contracts.read", "contracts.write", "billing.read",
+    "analytics.read", "integrations.read",
   ],
-  corredor: ["properties.read", "properties.write", "properties.import", "mandates.write", "leads.read", "leads.write", "campaigns.read"],
+  corredor: [
+    "properties.read", "properties.write", "properties.import", "mandates.write", "leads.read", "leads.write", "campaigns.read",
+    "agents.read", "deals.read", "deals.write", "kyc.read", "contracts.read", "contracts.write",
+  ],
   // Marketing prepara campañas; aprobarlas (y activar presupuesto) queda en administración.
-  marketing: ["properties.read", "leads.read", "campaigns.read", "campaigns.write"],
-  finanzas: ["properties.read", "campaigns.read"],
-  cumplimiento: ["properties.read"],
+  marketing: ["properties.read", "leads.read", "campaigns.read", "campaigns.write", "agents.read", "analytics.read"],
+  // Solo Finanzas aprueba y emite documentos tributarios; solo Cumplimiento revisa y aprueba KYC (CLAUDE.md).
+  finanzas: ["properties.read", "campaigns.read", "deals.read", "billing.read", "billing.approve", "analytics.read"],
+  cumplimiento: ["properties.read", "deals.read", "kyc.read", "kyc.review", "contracts.read"],
 };
 
 export function can(role: Role, permission: Permission): boolean {

@@ -3,6 +3,7 @@ import { can, ROLE_LABELS } from "@bullhaus/core";
 import { Logo } from "@/components/logo";
 import { UfCalculator } from "@/components/uf-calculator";
 import { requireUser } from "@/lib/auth";
+import { hasDemoData } from "@/lib/demo";
 import { getUf } from "@/lib/uf";
 import { logoutAction } from "../login/actions";
 
@@ -14,6 +15,7 @@ interface NavItem {
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, uf] = await Promise.all([requireUser(undefined, { allowPendingPasswordChange: true }), getUf()]);
+  const demo = await hasDemoData(user.tenantId);
 
   const nav: NavItem[] = [
     { href: "/", label: "Inicio" },
@@ -23,14 +25,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       ? [
           { href: "/leads", label: "Leads y RRSS" },
           { href: "/pipeline", label: "Pipeline" },
+          { href: "/brochures", label: "Brochures" },
         ]
       : []),
-    ...(can(user.role, "campaigns.read") ? [{ href: "/campanas", label: "Campañas Instagram" }] : []),
-    { href: "#", label: "Agentes IA", soon: true },
-    { href: "#", label: "KYC", soon: true },
-    { href: "#", label: "Contratos", soon: true },
-    { href: "#", label: "Facturación", soon: true },
-    { href: "#", label: "Control de gestión", soon: true },
+    ...(can(user.role, "deals.read") ? [{ href: "/operaciones", label: "Operaciones" }] : []),
+    ...(can(user.role, "campaigns.read")
+      ? [
+          { href: "/campanas", label: "Campañas Instagram" },
+          { href: "/redes", label: "Redes sociales" },
+        ]
+      : []),
+    ...(can(user.role, "agents.read") ? [{ href: "/agentes", label: "Agentes IA" }] : []),
+    ...(can(user.role, "kyc.read") ? [{ href: "/kyc", label: "KYC" }] : []),
+    ...(can(user.role, "contracts.read") ? [{ href: "/contratos", label: "Contratos" }] : []),
+    ...(can(user.role, "billing.read") ? [{ href: "/facturacion", label: "Facturación" }] : []),
+    ...(can(user.role, "analytics.read") ? [{ href: "/gestion", label: "Control de gestión" }] : []),
+    ...(can(user.role, "integrations.read") ? [{ href: "/integraciones", label: "Integraciones" }] : []),
     ...(can(user.role, "users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
     ...(can(user.role, "audit.read") ? [{ href: "/auditoria", label: "Auditoría" }] : []),
     ...(can(user.role, "site.import") ? [{ href: "/datos", label: "Carga de datos" }] : []),
@@ -65,7 +75,19 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           </form>
         </div>
       </aside>
-      <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">{children}</main>
+      <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">
+        {demo && (
+          <p className="mb-5 flex flex-wrap items-center gap-2 rounded-md bg-violet-600 px-4 py-2 text-sm text-white print:hidden">
+            <strong>Modo demostración.</strong> Hay datos ficticios cargados y las integraciones externas están simuladas.
+            {can(user.role, "demo.manage") && (
+              <Link href="/datos" className="underline">
+                Administrar
+              </Link>
+            )}
+          </p>
+        )}
+        {children}
+      </main>
       <UfCalculator uf={uf} />
     </div>
   );

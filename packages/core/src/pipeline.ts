@@ -1,7 +1,7 @@
 // Leads y pipeline: tipos, etapas y etiquetas visibles (docs/plataforma.md).
 
 export const LEAD_KINDS = ["comprador", "arrendatario", "propietario"] as const;
-export const LEAD_SOURCES = ["instagram", "facebook", "whatsapp", "web", "portal", "referido"] as const;
+export const LEAD_SOURCES = ["instagram", "facebook", "whatsapp", "web", "portal", "referido", "linkedin", "email"] as const;
 export const LEAD_STAGES = ["nuevo", "contactado", "calificado", "visita", "propuesta", "ganado", "perdido"] as const;
 
 export type LeadKind = (typeof LEAD_KINDS)[number];
@@ -21,6 +21,8 @@ export const SOURCE_LABELS: Record<LeadSource, string> = {
   web: "Sitio web",
   portal: "Portales",
   referido: "Referido",
+  linkedin: "LinkedIn",
+  email: "Email",
 };
 
 /** Redes sociales: las fuentes que cuentan en el tablero de RRSS. */

@@ -25,9 +25,9 @@ export async function createDraftsAction(): Promise<string> {
 
 export async function loadDemoAction(): Promise<string> {
   const user = await requireUser("demo.manage");
-  const { leads, campaigns } = await loadDemoData(user);
+  const s = await loadDemoData(user);
   revalidatePath("/", "layout");
-  return `Datos de demostración cargados: ${leads} leads y ${campaigns} campañas con métricas.`;
+  return `Demostración cargada: ${s.leads} leads, ${s.campaigns} campañas, ${s.contracts} contratos, ${s.deals} operaciones, ${s.invoices} facturas, ${s.conversations} conversaciones, ${s.posts} publicaciones, ${s.brochures} brochures y ${s.tasks} compromisos de contacto.`;
 }
 
 export async function clearDemoAction(): Promise<string> {
