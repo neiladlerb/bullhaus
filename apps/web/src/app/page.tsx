@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { SALES_PROCESS, TYPE_LABELS } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
+import { ProcessCarousel } from "@/components/process-carousel";
 import { CONTACT, Header, PropertyCard, SocialBand } from "@/components/site";
 import { COAST, getIndicators, getProperties, photoUrl } from "@/lib/api";
 
@@ -106,6 +107,24 @@ export default async function Home() {
         )}
       </section>
 
+      <section className="wrap grid gap-6 pb-20 md:grid-cols-2">
+        {ZONES.map((z, i) => {
+          const zp = featured.filter((p) => (i === 0 ? !COAST.includes(p.comuna) : COAST.includes(p.comuna)));
+          const img = zp[i === 0 ? 1 : 0]?.photos[0];
+          return (
+            <Link key={z.name} href={i === 0 ? "/propiedades?zona=santiago" : "/propiedades?zona=costa"} className="group relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-3xl bg-coal p-8 text-white">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={img ? photoUrl(img.md) : i === 0 ? "/zona-santiago.webp" : "/zona-costa.webp"} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105" />
+              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 to-transparent" />
+              <div>
+                <h3 className="text-2xl font-semibold">{z.name}</h3>
+                <p className="mt-1 text-white/80">{z.detail}</p>
+              </div>
+            </Link>
+          );
+        })}
+      </section>
+
       <section id="servicios" className="bg-sand py-20">
         <div className="wrap">
           <p className="eyebrow">Servicios</p>
@@ -133,81 +152,51 @@ export default async function Home() {
       </section>
 
       <section id="como-vendemos" className="wrap py-20">
-        <div className="grid gap-10 lg:grid-cols-[1fr_2fr]">
+        <div className="grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-end">
           <div>
             <p className="eyebrow">Cómo vendemos tu propiedad</p>
-            <h2 className="mt-2 text-3xl font-light md:text-4xl">Somos tecnología de punta para lograr todos tus objetivos</h2>
-            <p className="mt-4 text-muted">
-              Detrás de cada propiedad hay un corredor de Bull Haus. La tecnología hace que nada quede sin respuesta ni sin seguimiento.
-            </p>
-            {(indicators.venta || indicators.arriendo || all.length > 0) && (
-              <dl className="mt-8 grid grid-cols-2 gap-x-6 gap-y-6 border-t border-line pt-6">
-                {indicators.venta && (
-                  <div>
-                    <dt className="text-sm text-muted">Días promedio en vender</dt>
-                    <dd className="mt-1 text-4xl font-light tabular-nums">{indicators.venta.avgDays}</dd>
-                  </div>
-                )}
-                {indicators.arriendo && (
-                  <div>
-                    <dt className="text-sm text-muted">Días promedio en arrendar</dt>
-                    <dd className="mt-1 text-4xl font-light tabular-nums">{indicators.arriendo.avgDays}</dd>
-                  </div>
-                )}
-                {indicators.closedLast12m >= 5 && (
-                  <div>
-                    <dt className="text-sm text-muted">Operaciones cerradas en 12 meses</dt>
-                    <dd className="mt-1 text-4xl font-light tabular-nums">{indicators.closedLast12m}</dd>
-                  </div>
-                )}
-                {all.length > 0 && (
-                  <div>
-                    <dt className="text-sm text-muted">Propiedades disponibles hoy</dt>
-                    <dd className="mt-1 text-4xl font-light tabular-nums">{all.length}</dd>
-                  </div>
-                )}
-                <div>
-                  <dt className="text-sm text-muted">Corredores desde</dt>
-                  <dd className="mt-1 text-4xl font-light tabular-nums">2012</dd>
-                </div>
-                {(indicators.venta || indicators.arriendo) && (
-                  <p className="col-span-2 text-xs text-muted">Días desde que la propiedad sale al mercado hasta la reserva, operaciones de los últimos 12 meses.</p>
-                )}
-              </dl>
-            )}
+            <h2 className="mt-2 max-w-2xl text-3xl font-light md:text-4xl">
+              Somos tecnología de punta para lograr <span className="font-semibold">todos tus objetivos</span>
+            </h2>
+            <p className="mt-4 max-w-xl text-lg text-muted">Nuestra experiencia y conocimiento, aplicados en tecnología a tu servicio.</p>
           </div>
-          <ol className="divide-y divide-line border-y border-line">
-            {SALES_PROCESS.map((step) => (
-              <li key={step.title} className="grid gap-3 py-6 md:grid-cols-[11rem_1fr]">
-                <h3 className="font-semibold">{step.title}</h3>
-                <div>
-                  <p className="leading-relaxed text-ink/85">{step.tasks.join(". ")}.</p>
-                  <p className="mt-2 text-sm text-muted">
-                    <span className="font-medium text-brand">Tecnología.</span> {step.tech}.
-                  </p>
-                </div>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="wrap grid gap-6 py-20 md:grid-cols-2">
-        {ZONES.map((z, i) => {
-          const zp = featured.filter((p) => (i === 0 ? !COAST.includes(p.comuna) : COAST.includes(p.comuna)));
-          const img = zp[i === 0 ? 1 : 0]?.photos[0];
-          return (
-            <Link key={z.name} href={i === 0 ? "/propiedades?zona=santiago" : "/propiedades?zona=costa"} className="group relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-3xl bg-coal p-8 text-white">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img ? photoUrl(img.md) : i === 0 ? "/zona-santiago.webp" : "/zona-costa.webp"} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 to-transparent" />
+          <dl className="flex flex-wrap gap-x-10 gap-y-4 lg:justify-end">
+            {indicators.venta && (
               <div>
-                <h3 className="text-2xl font-semibold">{z.name}</h3>
-                <p className="mt-1 text-white/80">{z.detail}</p>
+                <dt className="text-sm text-muted">Días promedio en vender</dt>
+                <dd className="text-4xl font-light tabular-nums">{indicators.venta.avgDays}</dd>
               </div>
-            </Link>
-          );
-        })}
+            )}
+            {indicators.arriendo && (
+              <div>
+                <dt className="text-sm text-muted">Días promedio en arrendar</dt>
+                <dd className="text-4xl font-light tabular-nums">{indicators.arriendo.avgDays}</dd>
+              </div>
+            )}
+            {indicators.closedLast12m >= 5 && (
+              <div>
+                <dt className="text-sm text-muted">Operaciones en 12 meses</dt>
+                <dd className="text-4xl font-light tabular-nums">{indicators.closedLast12m}</dd>
+              </div>
+            )}
+            {all.length > 0 && (
+              <div>
+                <dt className="text-sm text-muted">Propiedades disponibles</dt>
+                <dd className="text-4xl font-light tabular-nums">{all.length}</dd>
+              </div>
+            )}
+            <div>
+              <dt className="text-sm text-muted">Corredores desde</dt>
+              <dd className="text-4xl font-light tabular-nums">2012</dd>
+            </div>
+          </dl>
+        </div>
+        {(indicators.venta || indicators.arriendo) && (
+          <p className="mt-3 text-xs text-muted lg:text-right">Días desde que la propiedad sale al mercado hasta la reserva, operaciones de los últimos 12 meses.</p>
+        )}
+        <div className="mt-10">
+          <ProcessCarousel steps={SALES_PROCESS} />
+        </div>
       </section>
 
       <section className="bg-coal py-20 text-white">
