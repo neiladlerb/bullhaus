@@ -381,6 +381,16 @@ model Lead {
   broker         User?           @relation("LeadBroker", fields: [brokerId], references: [id])
   lostReason     String?
   notes          String?
+  // Origen en la web (packages/core/src/attribution.ts): qué campaña o canal trajo el lead.
+  utmSource      String?
+  utmMedium      String?
+  utmCampaign    String?
+  utmContent     String?
+  utmTerm        String?
+  gclid          String?
+  fbclid         String?
+  landingPath    String?
+  referrerHost   String?
   isDemo         Boolean         @default(false)
   createdAt      DateTime        @default(now())
   updatedAt      DateTime        @updatedAt

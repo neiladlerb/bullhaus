@@ -1,5 +1,6 @@
 "use client";
-import { useActionState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { readAttribution, trackLead } from "@/components/attribution";
 import { sendContact, type ContactState } from "@/lib/contact";
 
 export function ContactForm({
@@ -18,6 +19,11 @@ export function ContactForm({
   dark?: boolean;
 }) {
   const [state, action, pending] = useActionState<ContactState, FormData>(sendContact, { ok: false, message: "" });
+  const [origin, setOrigin] = useState("");
+  useEffect(() => setOrigin(JSON.stringify(readAttribution() ?? {})), []);
+  useEffect(() => {
+    if (state.ok) trackLead(state.kind ?? kind);
+  }, [state.ok, state.kind, kind]);
   if (state.ok) {
     return <p className={`rounded-xl p-5 text-sm ${dark ? "bg-white/10 text-white" : "bg-sand"}`}>{state.message}</p>;
   }
@@ -25,6 +31,7 @@ export function ContactForm({
   return (
     <form action={action} className="grid gap-3 sm:grid-cols-2">
       {propertyCode && <input type="hidden" name="propertyCode" value={propertyCode} />}
+      <input type="hidden" name="attribution" value={origin} />
       {showKind ? (
         <label className="sm:col-span-2">
           <span className={label}>Quiero</span>

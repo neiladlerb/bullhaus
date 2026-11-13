@@ -28,6 +28,10 @@ export default function Privacidad() {
           El sitio usa cookies propias necesarias para funcionar. Las cookies de medición y publicidad (Meta y Google) solo se activan si las aceptas en el aviso de cookies. Puedes
           cambiar tu elección borrando los datos del sitio en tu navegador.
         </p>
+        <p className="mt-2">
+          Mientras navegas, el sitio guarda en tu navegador, solo hasta que cierras la pestaña, la página por la que entraste y el sitio o anuncio desde el que llegaste. Si nos
+          envías un formulario, ese origen se guarda junto a tu consulta para saber qué canal funciona. No es una cookie y no se comparte con terceros.
+        </p>
         <h2 className="mt-8 text-xl font-semibold">Tus derechos</h2>
         <p className="mt-2">
           Puedes pedir acceso, corrección o eliminación de tus datos escribiendo a{" "}

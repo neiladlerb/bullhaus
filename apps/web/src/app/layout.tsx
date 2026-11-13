@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Raleway } from "next/font/google";
+import { AttributionCapture } from "@/components/attribution";
 import { CookieConsent } from "@/components/consent";
 import { Footer, WhatsAppFloat } from "@/components/site";
 import { UfCalculator } from "@/components/uf-calculator";
@@ -26,7 +27,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Footer />
         <WhatsAppFloat />
         <UfCalculator uf={uf} />
-        <CookieConsent metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} />
+        <AttributionCapture />
+        <CookieConsent metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} gaId={process.env.NEXT_PUBLIC_GA4_ID} />
       </body>
     </html>
   );

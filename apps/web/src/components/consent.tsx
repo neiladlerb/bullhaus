@@ -2,7 +2,7 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
-// Las etiquetas de publicidad (Meta, Google Ads) solo se cargan después de que la persona
+// Las etiquetas de medición y publicidad (GA4, Meta, Google Ads) solo se cargan después de que la persona
 // acepta las cookies (CLAUDE.md). Sin aceptación, no se carga nada de terceros.
 const KEY = "bh_cookies";
 type Choice = "si" | "no" | null;
@@ -16,7 +16,8 @@ function read(): Choice {
   }
 }
 
-export function CookieConsent({ metaPixelId }: { metaPixelId?: string }) {
+export function CookieConsent({ metaPixelId, gaId }: { metaPixelId?: string; gaId?: string }) {
+  const ga = gaId?.replace(/[^A-Z0-9-]/gi, "");
   const [choice, setChoice] = useState<Choice>("no");
   useEffect(() => setChoice(read()), []);
 
@@ -33,6 +34,14 @@ export function CookieConsent({ metaPixelId }: { metaPixelId?: string }) {
         <Script id="meta-pixel" strategy="afterInteractive">
           {`!function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,document,'script','https://connect.facebook.net/en_US/fbevents.js');fbq('init','${metaPixelId.replace(/\D/g, "")}');fbq('track','PageView');`}
         </Script>
+      )}
+      {choice === "si" && ga && (
+        <>
+          <Script src={`https://www.googletagmanager.com/gtag/js?id=${ga}`} strategy="afterInteractive" />
+          <Script id="ga4" strategy="afterInteractive">
+            {`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments)}window.gtag=gtag;gtag("js",new Date());gtag("config","${ga}");`}
+          </Script>
+        </>
       )}
       {choice === null && (
         <div className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-xl rounded-2xl bg-coal p-4 text-sm text-white shadow-2xl sm:inset-x-auto sm:left-5">

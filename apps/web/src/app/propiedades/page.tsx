@@ -1,11 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { TYPE_LABELS } from "@bullhaus/core";
+import { comunaSlug, TYPE_LABELS } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
 import { filterProperties, getProperties, type Filters } from "@/lib/api";
 
 export const revalidate = 300;
-export const metadata: Metadata = { title: "Propiedades en venta y arriendo" };
+// Los filtros generan muchas URLs; todas apuntan a la misma página canónica para no dividir el posicionamiento.
+export const metadata: Metadata = {
+  title: "Propiedades en venta y arriendo",
+  description: "Casas, departamentos y oficinas en venta y arriendo en el sector oriente de Santiago y en la V Región costa.",
+  alternates: { canonical: "/propiedades" },
+};
 
 export default async function Propiedades({ searchParams }: { searchParams: Promise<Filters> }) {
   const f = await searchParams;
@@ -62,6 +67,16 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
           {f.zona && <input type="hidden" name="zona" value={f.zona} />}
           <button className="btn-dark rounded-lg">Filtrar</button>
         </form>
+
+        {comunas.length > 1 && (
+          <nav aria-label="Propiedades por comuna" className="mt-4 flex flex-wrap gap-2 text-sm">
+            {comunas.map((c) => (
+              <Link key={c} href={`/comunas/${comunaSlug(c)}`} className="rounded-full px-3 py-1 ring-1 ring-line hover:bg-sand">
+                {c}
+              </Link>
+            ))}
+          </nav>
+        )}
 
         {list.length ? (
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const p = await getProperty((await params).code);
   if (!p) return { title: "Propiedad no disponible" };
   const title = `${TYPE_LABELS[p.type]} en ${p.operation} en ${p.comuna} · ${priceLabel(p)}`;
-  return { title, description: p.headline ?? title, openGraph: { title, images: p.photos[0] ? [photoUrl(p.photos[0].md)] : [] } };
+  return { title, description: p.headline ?? title, alternates: { canonical: `/propiedades/${p.code}` }, openGraph: { title, images: p.photos[0] ? [photoUrl(p.photos[0].md)] : [] } };
 }
 
 export default async function PropertyPage({ params }: Params) {

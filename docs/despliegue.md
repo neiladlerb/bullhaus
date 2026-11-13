@@ -76,6 +76,7 @@ El sitio público es un segundo proyecto de Vercel (`bullhaus-web`, Root Directo
 | `WEB_API_KEY` | web y back office | La misma clave aleatoria en los dos. Permite que los formularios de la web creen leads (fuente "Sitio web") |
 | `SITE_URL` | web | Dominio público, p. ej. `https://www.bullhaus.cl` |
 | `NEXT_PUBLIC_META_PIXEL_ID` | web (opcional) | Píxel de Meta. Solo se carga si la persona acepta las cookies |
+| `NEXT_PUBLIC_GA4_ID` | web (opcional) | ID de medición de GA4 (`G-XXXXXXX`). Solo se carga si la persona acepta las cookies; cada formulario enviado manda el evento `generate_lead` |
 
 ## 7. Carga de datos
 

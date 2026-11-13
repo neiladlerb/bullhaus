@@ -72,9 +72,9 @@ A mano, sin accesos:
 
 ## 6. Pendientes de la etapa 2
 
-1. [FALTA: comunas que atienden de verdad (el filtro de la web muestra 12 y una región "Internacional")]
+1. Comunas: las del filtro de la web (respuesta del usuario, 13/11/2026). [FALTA: confirmar si "Internacional" sigue vigente]
 2. [FALTA: si pautan hoy en Meta o Google, y con qué presupuesto]
-3. [FALTA: si publican en portales, y si lo hacen a través de Convecta]
+3. Portales: quieren publicar en Portal Inmobiliario y en los principales portales. Se revisa en la etapa 3 junto con lo que hace Convecta y su SEO
 4. [FALTA: competencia directa según Bull Haus (las tres de arriba son candidatas)]
 5. [FALTA: métricas de Instagram y Facebook, con acceso a Insights]
 6. [FALTA: velocidad (PageSpeed) y demanda de búsqueda (Trends o Keyword Planner)]

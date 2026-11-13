@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
+import { AttributionSchema } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { publicTenantId, publicWhere } from "@/lib/public-api";
 
@@ -15,6 +16,7 @@ const schema = z.object({
   message: z.string().trim().max(1500).optional(),
   propertyCode: z.string().trim().max(40).optional(),
   consent: z.literal(true),
+  attribution: AttributionSchema.optional(),
 });
 
 function authorized(req: Request): boolean {
@@ -51,6 +53,7 @@ export async function POST(req: Request) {
       brokerId: property?.brokerId ?? null,
       budget: property?.price ?? null,
       budgetCurrency: property?.currency ?? null,
+      ...(d.attribution ?? {}),
     },
   });
   return Response.json({ ok: true });

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { can, CONTACT_TEMPLATES, dueState, formatDate, formatDateTimeCl, formatPrice, KIND_LABELS, SHARE_CHANNEL_LABELS, SOURCE_LABELS, STAGE_LABELS, TASK_KIND_LABELS, TIMEZONE, type TaskKind } from "@bullhaus/core";
+import { attributionChannel, can, CHANNEL_LABELS_ATTRIBUTION, CONTACT_TEMPLATES, dueState, formatDate, formatDateTimeCl, formatPrice, KIND_LABELS, SHARE_CHANNEL_LABELS, SOURCE_LABELS, STAGE_LABELS, TASK_KIND_LABELS, TIMEZONE, type TaskKind } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { Chip, DemoTag } from "@/components/demo";
 import { DUE_TONE } from "@/components/tones";
@@ -38,6 +38,7 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
   const templates = CONTACT_TEMPLATES.filter((t) => t.kinds.includes(lead.kind));
   const tomorrow = santiagoDay(new Date(Date.now() + 86_400_000));
   const contact = (canal: "whatsapp" | "email", extra: Record<string, string> = {}) => `/leads/${lead.id}/contactar?${new URLSearchParams({ canal, ...extra }).toString()}`;
+  const origin = { utmSource: lead.utmSource ?? undefined, utmMedium: lead.utmMedium ?? undefined, gclid: lead.gclid ?? undefined, fbclid: lead.fbclid ?? undefined, referrerHost: lead.referrerHost ?? undefined };
   const ext = lead.isDemo ? {} : { target: "_blank", rel: "noopener" };
 
   return (
@@ -66,6 +67,16 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
             {lead.brochure && <div className="flex justify-between gap-3"><dt className="text-muted">Llegó por</dt><dd className="text-right"><Link href={`/brochures/${lead.brochure.id}`} className="underline">brochure</Link></dd></div>}
             {lead.campaign && <div className="flex justify-between gap-3"><dt className="text-muted">Campaña</dt><dd className="text-right">{lead.campaign.name}</dd></div>}
           </dl>
+          {lead.source === "web" && (
+            <dl className="space-y-1.5 border-t border-line pt-3">
+              <div className="flex justify-between gap-3"><dt className="text-muted">Canal</dt><dd>{CHANNEL_LABELS_ATTRIBUTION[attributionChannel(origin)]}</dd></div>
+              {lead.utmCampaign && <div className="flex justify-between gap-3"><dt className="text-muted">Campaña (UTM)</dt><dd className="break-all text-right">{lead.utmCampaign}</dd></div>}
+              {(lead.utmSource || lead.utmMedium) && <div className="flex justify-between gap-3"><dt className="text-muted">Fuente / medio</dt><dd className="break-all text-right">{lead.utmSource ?? "—"} / {lead.utmMedium ?? "—"}</dd></div>}
+              {lead.utmContent && <div className="flex justify-between gap-3"><dt className="text-muted">Anuncio</dt><dd className="break-all text-right">{lead.utmContent}</dd></div>}
+              {lead.landingPath && <div className="flex justify-between gap-3"><dt className="text-muted">Entró por</dt><dd className="break-all text-right">{lead.landingPath}</dd></div>}
+              {lead.referrerHost && <div className="flex justify-between gap-3"><dt className="text-muted">Vino desde</dt><dd className="break-all text-right">{lead.referrerHost}</dd></div>}
+            </dl>
+          )}
           {lead.interest && <p className="rounded-md bg-paper p-3 text-sm">{lead.interest}</p>}
 
           {write && (
