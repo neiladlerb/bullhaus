@@ -2,14 +2,14 @@
 
 ## Alcance (aclarado por el usuario el 13/11/2026)
 
-Hay dos cosas distintas y no se mezclan:
+Corrección del 13/11/2026: hay tres cosas distintas y no se mezclan.
 
-1. **Este repo: el producto para corredoras de propiedades en Chile.** Bull Haus es el primer cliente. Es una sola fuente de código: toda mejora llega a todas las corredoras que lo usen. Las mejoras de Bull Haus se quedan y deben compilar siempre.
-2. **La plataforma de la agencia (pendiente, otro proyecto).** Es la herramienta interna del usuario para crear proyectos de cualquier rubro (inmobiliaria, funeraria, estética u otro): genera el prompt en cinco piezas y el cotizador con ROI, y después se convierte en CRM y web para cada cliente. Incluye el CRM propio de la agencia para ver y asesorar a cada cliente B2B, al estilo GoHighLevel. Conectada a Claude para crear negocios nuevos o reutilizar lo hecho. Para el rubro inmobiliario en Chile, reutiliza este repo como plantilla. La base está en `NEILHAUSE/Base de proyectos/recap-base-proyectos.md`.
+1. **Este repo: la web y el back office de Bull Haus.** Hay que terminarlo primero. La web nunca se ve genérica: usa la ficha de marca guardada en el back office y, si falta, la ficha base de Bull Haus (`BULLHAUS_BRAND` en `packages/core`).
+2. **La versión genérica para otras corredoras: otro proyecto, con su propio repositorio, después.** Parte de este repo como plantilla. Este documento queda como su punto de partida (secciones 1 a 3).
+3. **La plataforma de la agencia (pendiente, otro proyecto).** Es la herramienta interna del usuario para crear proyectos de cualquier rubro (inmobiliaria, funeraria, estética u otro): genera el prompt en cinco piezas y el cotizador con ROI, y después se convierte en CRM y web para cada cliente. Incluye el CRM propio de la agencia para ver y asesorar a cada cliente B2B, al estilo GoHighLevel. Conectada a Claude para crear negocios nuevos o reutilizar lo hecho. Para el rubro inmobiliario en Chile, reutiliza la versión genérica. La base está en `NEILHAUSE/Base de proyectos/recap-base-proyectos.md`.
 
 Decisiones del 13/11/2026:
 
-- Todo lo construido para Bull Haus (web pública y back office) pasa a ser una plataforma SaaS para otras corredoras. Bull Haus es el primer cliente, no un caso especial.
 - **Por ahora todo sigue en la UE (París).** Cuando la plataforma opere de verdad en Chile, se revisan las alternativas y los costos de alojar allá. La sección 1 queda como punto de partida para esa revisión: hay que volver a verificarla, porque las regiones cambian (AWS Chile, por ejemplo, aún no abría para todos).
 - La ley que aplica sigue siendo la chilena (`PROJECT_JURISDICTION = "cl"`). Alojar en la UE es compatible con ella.
 
