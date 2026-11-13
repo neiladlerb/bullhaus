@@ -4,7 +4,7 @@ Contexto completo en `docs/propuesta.md` (agente de WhatsApp), `docs/sistema-ia.
 
 ## Qué es
 
-Agente propio sobre WhatsApp Cloud API que atiende a los contactos de Bull Haus (corredora de Las Condes con web en Convecta, @bullhaus_propiedades en Instagram y BullHauspropiedades en Facebook): compradores, arrendatarios y propietarios. Responde con los datos de la ficha de cada propiedad y agenda visitas, tasaciones o llamadas con un corredor. Multi-tenant desde el principio. Monorepo TypeScript con pnpm: `apps/web` (web pública, Next.js), `apps/backoffice` (Next.js), `apps/api` (Fastify), `apps/worker` (BullMQ), `apps/voice` (agente de voz), `packages/*` (agent, whatsapp, calendar, properties, intake, content, social, crm, kyc, contracts, billing, analytics, db).
+Agente propio sobre WhatsApp Cloud API que atiende a los contactos de Bull Haus (corredora de Las Condes con web en Convecta, @bullhaus_propiedades en Instagram y BullHauspropiedades en Facebook): compradores, arrendatarios y propietarios. Responde con los datos de la ficha de cada propiedad y agenda visitas, tasaciones o llamadas con un corredor. Multi-tenant desde el principio. Monorepo TypeScript con pnpm: `apps/web` (web pública, Next.js), `apps/backoffice` (Next.js), `apps/api` (Fastify), `apps/worker` (BullMQ), `apps/voice` (agente de voz), `packages/*` (llm, agent, whatsapp, calendar, properties, intake, content, social, crm, kyc, contracts, billing, analytics, db).
 
 ## Reglas que no se negocian
 
@@ -24,7 +24,8 @@ Agente propio sobre WhatsApp Cloud API que atiende a los contactos de Bull Haus 
 - Contratos (`docs/contratos.md`): solo desde plantillas con `approved_by_lawyer`; nunca se generan con KYC sin aprobar, con documentos obligatorios sin cargar o si el propietario inscrito no coincide con quien firma. Los datos legales salen de los certificados, no de la ficha comercial. Claude puede extraer campos de certificados de la propiedad (con fragmento de origen y confirmación humana campo a campo), pero no redacta cláusulas legales nuevas.
 - Facturación: ningún documento tributario se emite sin aprobación del rol de finanzas, y siempre a través del proveedor de facturación electrónica, nunca directo al SII.
 - La web no carga etiquetas de publicidad (Meta, Google Ads) hasta que la persona acepta las cookies.
-- Datos en región UE. No registrar en logs el cuerpo de los mensajes en producción.
+- Protección de datos según la jurisdicción del proyecto (`PROJECT_JURISDICTION`, hoy `"cl"`, Ley 21.719; detalle en `docs/residencia-datos.md`). Todo proveedor nuevo se agrega a `SUBPROCESSORS` con su DPA. No registrar en logs el cuerpo de los mensajes en producción.
+- El agente nunca importa un SDK de modelo: usa `LlmClient.generate()` de `packages/llm` y `createLlm()` elige el proveedor (`LLM_PROVIDER`). Las reglas de negocio viven en las herramientas y en el worker, no en el adaptador.
 
 ## Convenciones
 

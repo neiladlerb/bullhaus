@@ -124,7 +124,7 @@ Decisiones:
 | API | Fastify | Express |
 | Cola | BullMQ sobre Redis (Upstash UE) | pg-boss sobre Postgres si queremos un servicio menos |
 | Base de datos | PostgreSQL en Supabase (Fráncfort) con Prisma | Supabase São Paulo si la DPO lo prefiere |
-| LLM | Claude API, `claude-sonnet-5-5` para conversar, `claude-haiku-5-5` para clasificar intención y resumir | |
+| LLM | Claude por la API de Anthropic: Sonnet 5.5 para conversar, Haiku 5.5 para clasificar intención y resumir. El agente usa `packages/llm` (`generate()`), así que el proveedor se cambia por variable de entorno | OpenAI, comparado con los mismos evals |
 | WhatsApp | Meta Cloud API directa | 360dialog o Twilio si queremos BSP con soporte |
 | Calendario | Cal.com (API v2), un usuario por corredor y tipos de evento "Visita", "Tasación" y "Llamada" | Google Calendar API con lógica propia de huecos |
 | Propiedades | Google Sheets API, lectura | Edición directa en el panel (fase 2) |
@@ -370,7 +370,7 @@ Base de conocimiento (única fuente de datos generales, requisitos, comisiones y
 | Norma | Qué implica aquí | Cómo se cubre |
 |---|---|---|
 | Ley 19.628, reformada por la Ley 21.719 de protección de datos personales (en vigor desde el 01/12/2026) | Base de licitud, información al titular, proporcionalidad, derechos de acceso, rectificación, supresión, oposición, portabilidad y bloqueo, deber de seguridad y notificación de brechas a la Agencia de Protección de Datos Personales | Base: solicitud del propio contacto para coordinar una visita (medidas precontractuales). Aviso breve con enlace a la política la primera vez que se pide un dato, registro en `consent_privacy_at`, procedimiento para atender derechos desde el panel |
-| Ley 21.719, encargados y transferencias | Bull Haus es responsable; nosotros, encargados. Meta, Anthropic, Supabase, Cal.com y el hosting son subencargados y procesan fuera de Chile | Contrato de encargo con Bull Haus que lo autorice; DPA con cada proveedor; transferencias con cláusulas contractuales. Anthropic no usa los datos de la API para entrenar por defecto. [PENDIENTE: revisar con Ángela (DPO)] |
+| Ley 21.719, encargados y transferencias | Bull Haus es responsable; nosotros, encargados. Meta, el proveedor del modelo (Anthropic u OpenAI), Supabase, Cal.com y el hosting son subencargados y procesan fuera de Chile | Contrato de encargo con Bull Haus que lo autorice; DPA con cada proveedor; transferencias con cláusulas contractuales. Lista y regiones en `docs/residencia-datos.md`. [PENDIENTE: revisar con Ángela (DPO)] |
 | Ley 21.719, conservación | Conversaciones de contactos que no avanzan | 12 meses desde el último mensaje y borrado automático. [PENDIENTE: validar plazo con DPO y Bull Haus] |
 | Ley 19.496 del consumidor, art. 28 B | Toda comunicación promocional debe permitir pedir que se suspenda | No hay envíos sin solicitud previa; baja inmediata con palabra clave |
 | Ley 19.496, arts. 28 y 33 | Publicidad engañosa e información veraz sobre el producto | El agente solo usa la ficha; filtro de salida contra datos no presentes |
@@ -489,9 +489,10 @@ WHATSAPP_TOKEN=
 WHATSAPP_PHONE_NUMBER_ID=
 WHATSAPP_APP_SECRET=
 WHATSAPP_VERIFY_TOKEN=
+LLM_PROVIDER=anthropic
+LLM_MODEL_CHAT=claude-sonnet-5-5
+LLM_MODEL_FAST=claude-haiku-5-5
 ANTHROPIC_API_KEY=
-ANTHROPIC_MODEL_CHAT=claude-sonnet-5-5
-ANTHROPIC_MODEL_FAST=claude-haiku-5-5
 DATABASE_URL=
 REDIS_URL=
 CALCOM_API_KEY=

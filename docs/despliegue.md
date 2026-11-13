@@ -1,6 +1,6 @@
 # Despliegue del back office en Vercel con Supabase
 
-El back office (`apps/backoffice`) corre en Vercel. La base de datos y los archivos van en Supabase, en región UE (París), porque los datos tienen que quedar en la UE. Las funciones de Vercel corren en `cdg1` (París), la misma ciudad que la base de datos (lo fija `apps/backoffice/vercel.json`).
+El back office (`apps/backoffice`) corre en Vercel. La base de datos y los archivos van en Supabase, en región UE (París), porque los datos tienen que quedar en la UE. Las funciones de Vercel corren en `cdg1` (París), la misma ciudad que la base de datos (lo fija `apps/backoffice/vercel.json`). Proveedores, regiones y pendientes de RGPD en `docs/residencia-datos.md`.
 
 ## 1. Supabase
 

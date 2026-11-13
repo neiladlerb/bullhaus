@@ -50,7 +50,7 @@ Usuarios de demo: `cumplimiento.demo@bullhaus.local` (Cumplimiento) y `finanzas.
 
 Antes de todo: plan **Pro** de Vercel (el plan Hobby no permite uso comercial) y borrar la demo.
 
-1. **Agentes IA**: número de WhatsApp Business dedicado, Meta Business verificado, plantillas aprobadas, cuenta de Anthropic, calendarios de los corredores, la base de conocimiento real y los evals en verde. Construir `apps/worker` y el adaptador de WhatsApp.
+1. **Agentes IA**: número de WhatsApp Business dedicado, Meta Business verificado, plantillas aprobadas, el modelo de IA (`LLM_PROVIDER` y su clave), calendarios de los corredores, la base de conocimiento real y los evals en verde. Construir `apps/worker` y el adaptador de WhatsApp.
 2. **KYC**: elegir proveedor (Truora, MetaMap o Sumsub), inscripción en la UAF y oficial de cumplimiento, validación legal de la biometría. Implementar el adaptador real en `verifyIdentity`.
 3. **Contratos**: plantillas revisadas y aprobadas por el abogado (cargarlas sin `isDemo` y con `approvedByLawyer`), datos reales de la empresa (razón social, RUT, representante) en lugar de `DEMO_COMPANY`, carga de certificados reales con extracción y confirmación campo a campo, y proveedor de firma electrónica.
 4. **Facturación**: razón social, giro y régimen tributario, proveedor de facturación electrónica con certificado digital, reparto real de comisiones entre corredores. Implementar el adaptador real en `emitTaxDocument`.

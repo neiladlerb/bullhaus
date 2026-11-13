@@ -36,15 +36,19 @@ export const INTEGRATIONS: readonly IntegrationSpec[] = [
     module: "Agentes IA",
     env: ["WHATSAPP_TOKEN", "WHATSAPP_PHONE_NUMBER_ID", "WHATSAPP_VERIFY_TOKEN"],
     simulates: "Conversaciones del agente con compradores, arrendatarios y propietarios, con agendamiento de visitas y bajas.",
-    needs: ["Número dedicado (no usado en la app de WhatsApp)", "Plantillas aprobadas por Meta para mensajes fuera de 24 h", "Cuenta de Anthropic para el modelo"],
+    needs: ["Número dedicado (no usado en la app de WhatsApp)", "Plantillas aprobadas por Meta para mensajes fuera de 24 h", "Modelo de IA conectado (ver la integración del modelo)"],
   },
   {
     key: "anthropic",
-    name: "Claude (Anthropic)",
+    name: "Modelo de IA (Claude u OpenAI)",
     module: "Agentes IA y textos",
-    env: ["ANTHROPIC_API_KEY"],
+    env: ["LLM_PROVIDER"],
     simulates: "Respuestas del agente escritas de antemano a partir de las fichas.",
-    needs: ["Cuenta de Anthropic con facturación", "Evals aprobados antes de encender cada canal"],
+    needs: [
+      "LLM_PROVIDER=anthropic (Claude, por defecto) u openai, con su clave; se cambia sin tocar el agente (packages/llm)",
+      "Proveedor elegido con los evals: el mismo set de conversaciones contra cada uno",
+      "DPA del proveedor aceptado y listado en la política de privacidad (Ley 21.719)",
+    ],
   },
   {
     key: "calendar",
