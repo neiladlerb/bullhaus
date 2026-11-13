@@ -113,15 +113,21 @@ const NEUTRAL_BRAND: Brand = {
 };
 
 /** Ficha de marca de la corredora, desde el back office. */
+/**
+ * Marca neutra solo si el back office responde que la corredora no tiene ficha ({ brand: null }).
+ * Cualquier otra falla (ruta inexistente, back office caído, ficha inválida) lanza error: el build
+ * falla en vez de publicar una web genérica, y en producción Next sigue sirviendo la última página buena.
+ */
 export async function getBrand(): Promise<Brand> {
-  try {
-    const res = await fetch(`${BACKOFFICE_URL}/api/publico/marca`, { next: { revalidate: 300 } });
-    if (!res.ok) return NEUTRAL_BRAND;
-    const parsed = BrandSchema.safeParse(((await res.json()) as { brand: unknown }).brand);
-    return parsed.success ? parsed.data : NEUTRAL_BRAND;
-  } catch {
-    return NEUTRAL_BRAND;
+  const res = await fetch(`${BACKOFFICE_URL}/api/publico/marca`, { next: { revalidate: 300 } });
+  const body: unknown = res.headers.get("content-type")?.includes("application/json") ? await res.json() : undefined;
+  if (!body || typeof body !== "object" || !("brand" in body)) {
+    throw new Error(`Ficha de marca no disponible (${res.status}): ¿está desplegado el back office con /api/publico/marca?`);
   }
+  if (body.brand === null) return NEUTRAL_BRAND;
+  const parsed = BrandSchema.safeParse(body.brand);
+  if (!parsed.success) throw new Error("La ficha de marca del back office no pasa el esquema");
+  return parsed.data;
 }
 
 /** Formato de código como en el sitio anterior: 109958 → 109.958. */
