@@ -142,13 +142,13 @@ importers:
   packages/llm:
     dependencies:
       '@anthropic-ai/sdk':
-        specifier: ^1.8.0
+        specifier: 1.8.0
         version: 1.8.0(zod@3.25.76)
       '@bullhaus/core':
         specifier: workspace:*
         version: link:../core
       openai:
-        specifier: ^7.56.0
+        specifier: 7.56.0
         version: 7.56.0(zod@3.25.76)
     devDependencies:
       '@types/node':
