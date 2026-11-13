@@ -1,5 +1,12 @@
 # Plataforma SaaS para corredoras
 
+## Alcance (aclarado por el usuario el 13/11/2026)
+
+Hay dos cosas distintas y no se mezclan:
+
+1. **Este repo: el producto para corredoras de propiedades en Chile.** Bull Haus es el primer cliente. Es una sola fuente de código: toda mejora llega a todas las corredoras que lo usen. Las mejoras de Bull Haus se quedan y deben compilar siempre.
+2. **La plataforma de la agencia (pendiente, otro proyecto).** Es la herramienta interna del usuario para crear proyectos de cualquier rubro (inmobiliaria, funeraria, estética u otro): genera el prompt en cinco piezas y el cotizador con ROI, y después se convierte en CRM y web para cada cliente. Incluye el CRM propio de la agencia para ver y asesorar a cada cliente B2B, al estilo GoHighLevel. Conectada a Claude para crear negocios nuevos o reutilizar lo hecho. Para el rubro inmobiliario en Chile, reutiliza este repo como plantilla. La base está en `NEILHAUSE/Base de proyectos/recap-base-proyectos.md`.
+
 Decisiones del 13/11/2026:
 
 - Todo lo construido para Bull Haus (web pública y back office) pasa a ser una plataforma SaaS para otras corredoras. Bull Haus es el primer cliente, no un caso especial.
