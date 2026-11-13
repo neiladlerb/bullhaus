@@ -2,7 +2,7 @@
 import { hashPassword } from "@bullhaus/core/server";
 import { BrandSchema } from "@bullhaus/core";
 import { prisma } from "./index";
-import { BULLHAUS_BRAND } from "./marcas/bullhaus";
+import { BULLHAUS_BRAND } from "@bullhaus/core";
 
 const email = process.env.SEED_ADMIN_EMAIL ?? "admin@bullhaus.local";
 const password = process.env.SEED_ADMIN_PASSWORD;

@@ -1,5 +1,5 @@
 import "server-only";
-import { BrandSchema, inZone, type Brand, type Currency, type Operation, type PropertyType } from "@bullhaus/core";
+import { BrandSchema, BULLHAUS_BRAND, inZone, type Brand, type Currency, type Operation, type PropertyType } from "@bullhaus/core";
 
 // La web no tiene credenciales de base de datos: lee las fichas publicadas desde la API
 // pública del back office, que solo entrega propiedades disponibles y nunca la dirección exacta.
@@ -86,48 +86,23 @@ export function filterProperties(all: PublicProperty[], f: Filters, zones: Brand
   return list;
 }
 
-// Si el back office no responde, la web se muestra con una marca neutra en vez de caerse. Nunca con los
-// datos de otra corredora.
-const NEUTRAL_BRAND: Brand = {
-  name: "Corredora de propiedades",
-  shortName: "la corredora",
-  legalName: "Corredora de propiedades",
-  siteUrl: (process.env.SITE_URL ?? "https://localhost").replace(/\/+$/, ""),
-  description: "Venta y arriendo de propiedades.",
-  logo: { lines: ["PROPIEDADES"] },
-  colors: { brand: "#3f3f3e", brandDark: "#2f2f2e", ink: "#2f2f2e", coal: "#3f3f3e" },
-  contact: { whatsapp: "", email: "", office: "" },
-  social: {},
-  texts: {
-    heroEyebrow: "Venta y arriendo",
-    heroTitle: "Propiedades en venta y arriendo",
-    heroSubtitle: "Estamos actualizando el sitio. Vuelve en unos minutos.",
-    heroImage: "/hero-casa.webp",
-    ownerPitch: "Un corredor visita tu propiedad y te entrega una valorización.",
-    ownerAreas: "Escríbenos para coordinar una valorización.",
-    aboutTitle: "Quiénes somos",
-    aboutParagraphs: ["Estamos actualizando esta sección."],
-  },
-  zones: [],
-  team: [],
-};
-
-/** Ficha de marca de la corredora, desde el back office. */
 /**
- * Marca neutra solo si el back office responde que la corredora no tiene ficha ({ brand: null }).
- * Cualquier otra falla (ruta inexistente, back office caído, ficha inválida) lanza error: el build
- * falla en vez de publicar una web genérica, y en producción Next sigue sirviendo la última página buena.
+ * Ficha de marca de Bull Haus. La versión guardada en el back office (Marca y sitio web) manda; si el
+ * back office no responde o la ficha no pasa el esquema, la web usa la ficha base de Bull Haus.
+ * Nunca se muestra con una marca genérica.
  */
 export async function getBrand(): Promise<Brand> {
-  const res = await fetch(`${BACKOFFICE_URL}/api/publico/marca`, { next: { revalidate: 300 } });
-  const body: unknown = res.headers.get("content-type")?.includes("application/json") ? await res.json() : undefined;
-  if (!body || typeof body !== "object" || !("brand" in body)) {
-    throw new Error(`Ficha de marca no disponible (${res.status}): ¿está desplegado el back office con /api/publico/marca?`);
+  try {
+    const res = await fetch(`${BACKOFFICE_URL}/api/publico/marca`, { next: { revalidate: 300 } });
+    if (res.ok) {
+      const parsed = BrandSchema.safeParse(((await res.json()) as { brand: unknown }).brand);
+      if (parsed.success) return parsed.data;
+    }
+    console.error(`Ficha de marca no disponible en el back office (${res.status}); se usa la ficha base de Bull Haus`);
+  } catch {
+    console.error("Back office sin respuesta; se usa la ficha base de Bull Haus");
   }
-  if (body.brand === null) return NEUTRAL_BRAND;
-  const parsed = BrandSchema.safeParse(body.brand);
-  if (!parsed.success) throw new Error("La ficha de marca del back office no pasa el esquema");
-  return parsed.data;
+  return BULLHAUS_BRAND;
 }
 
 /** Formato de código como en el sitio anterior: 109958 → 109.958. */

@@ -1,6 +1,6 @@
 // Ficha de marca inicial de Bull Haus, con los mismos datos que tenía la web en código
 // (tomados de www.bullhaus.cl). Después se edita en el back office, en Ajustes → Marca.
-import type { Brand } from "@bullhaus/core";
+import type { Brand } from "./brand";
 
 export const BULLHAUS_BRAND: Brand = {
   name: "Bull Haus Propiedades",

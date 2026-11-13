@@ -87,7 +87,7 @@ export default async function MarcaPage({ searchParams }: { searchParams: Promis
       </div>
       {sp.ok && <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-900">Ficha guardada.</p>}
       {sp.error && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">No se guardó. {sp.error}</p>}
-      {!row && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">Esta corredora aún no tiene ficha: la web se muestra con una marca neutra hasta que la completes.</p>}
+      {!row && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">Aún no hay ficha guardada: la web usa la ficha base de Bull Haus hasta que la guardes aquí.</p>}
 
       <form action={saveBrandAction} className="space-y-6">
         {SECTIONS.map((s) => (

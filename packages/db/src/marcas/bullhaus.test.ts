@@ -1,9 +1,9 @@
 import { describe, expect, it } from "vitest";
 import { BrandSchema } from "@bullhaus/core";
-import { BULLHAUS_BRAND } from "./bullhaus";
+import { BULLHAUS_BRAND } from "@bullhaus/core";
 
 describe("ficha de marca de Bull Haus", () => {
-  it("pasa el esquema, así la semilla no deja la web con marca neutra", () => {
+  it("pasa el esquema, así la web y la semilla usan una ficha válida", () => {
     const r = BrandSchema.safeParse(BULLHAUS_BRAND);
     expect(r.success ? "ok" : r.error.issues).toBe("ok");
   });

@@ -18,3 +18,4 @@ export * from "./market-time";
 export * from "./data-residency";
 export * from "./attribution";
 export * from "./brand";
+export * from "./bullhaus-brand";
