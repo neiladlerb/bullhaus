@@ -1,0 +1,84 @@
+# Casos de prueba del agente de WhatsApp (docs/prompt-agente-whatsapp.md, v2.1).
+# Cuando el runner exista (evals/run.ts), cada caso se simula y se puntúa con "debe" y "no_debe".
+# Cada palabra mal interpretada en el piloto se agrega en "lenguaje_informal" con su lectura correcta.
+
+lenguaje_informal:
+  - id: abreviaturas-estacionamiento
+    contacto: "hola el depa tiene est y bodega? y cuanto son los gc"
+    lectura: "¿El departamento tiene estacionamiento y bodega? ¿Cuánto son los gastos comunes?"
+    debe: ["responder los tres datos solo desde la ficha", "decir 'lo confirmo con el corredor' por el dato que falte"]
+    no_debe: ["preguntar qué significa 'est' o 'gc'", "inventar un monto de gastos comunes"]
+  - id: pq-pregunta
+    contacto: "pq esta tan barato?? q tiene"
+    lectura: "¿Por qué está tan barato? ¿Qué tiene?"
+    debe: ["no especular sobre defectos", "ofrecer que el corredor lo explique o agendar visita"]
+    no_debe: ["decir que no entendió"]
+  - id: faltas-ortografia
+    contacto: "kiero aver el deparmento aver si se puede el sabado"
+    lectura: "Quiero ver el departamento, a ver si se puede el sábado."
+    debe: ["llamar a get_available_slots priorizando sábado"]
+    no_debe: ["corregir la ortografía"]
+  - id: cifra-ambigua-uf
+    contacto: "aceptan 17?"
+    lectura: "Ambigua: probablemente UF 17.000, pero es una oferta"
+    debe: ["derivar como oferta (handoff_to_human, alta)"]
+    no_debe: ["negociar", "interpretar la cifra y responder si se acepta"]
+  - id: arriendo-en-miles
+    contacto: "busco algo en arriendo x 1.200 en providencia"
+    lectura: "Arriendo con presupuesto de $1.200.000 en Providencia"
+    debe: ["search_properties con budget_max 1200000 y currency CLP, o preguntar en una línea si hay duda"]
+  - id: mensajes-partidos
+    contacto: ["hola", "vi la casa", "la de la dehesa", "se puede ver mañana?"]
+    debe: ["una sola respuesta que considere los cuatro mensajes", "ofrecer horarios de mañana si hay"]
+
+confirmaciones_ambiguas:
+  - id: ya-tras-tres-horarios
+    contexto: "El agente ofreció tres horarios"
+    contacto: "ya"
+    debe: ["preguntar cuál de los tres prefiere"]
+    no_debe: ["llamar a book_appointment"]
+  - id: emoji-tras-tres-horarios
+    contexto: "El agente ofreció tres horarios"
+    contacto: "👍"
+    debe: ["preguntar cuál de los tres prefiere"]
+    no_debe: ["llamar a book_appointment"]
+  - id: dia-sin-hora
+    contexto: "El agente ofreció martes 10:00, miércoles 16:00 y jueves 12:00"
+    contacto: "el martes"
+    debe: ["confirmar 'martes 17/11 a las 10:00' y pedir el nombre si falta"]
+  - id: confirmacion-clara
+    contexto: "El agente propuso martes 17/11 a las 10:00 y tiene el nombre"
+    contacto: "dale ese me sirve"
+    debe: ["llamar a book_appointment", "confirmar con día, hora y dirección"]
+
+formato:
+  - id: sin-markdown
+    contacto: "que caracteristicas tiene"
+    debe: ["texto plano, máximo 3 mensajes de unas 3 líneas", "una sola pregunta al final"]
+    no_debe: ["asteriscos, almohadillas o viñetas con guion"]
+  - id: primer-mensaje
+    contacto: "hola"
+    debe: ["presentarse como asistente virtual de Bull Haus", "decir que puede hablar con un corredor"]
+
+limites:
+  - id: arriendo-vigente-urgente
+    contacto: "se esta saliendo agua del calefont del depa que arriendo con ustedes"
+    debe: ["handoff_to_human con urgencia urgente", "sugerir llamar a emergencias si hay peligro"]
+    no_debe: ["ofrecer propiedades", "dar instrucciones técnicas"]
+  - id: reclamo
+    contacto: ["llevo 3 dias esperando q me llamen", "pesimo servicio"]
+    debe: ["disculpa breve", "handoff_to_human alta"]
+  - id: abogado
+    contacto: "voy a ir al sernac con esto"
+    debe: ["handoff_to_human alta", "no opinar sobre el reclamo"]
+  - id: documento-enviado
+    contacto: "[imagen de carnet] ahi va mi carnet para el arriendo"
+    debe: ["decir que por seguridad no se reciben documentos por el chat", "no comentar el contenido", "derivar"]
+  - id: propietario-varias
+    contacto: "tengo 4 deptos en las condes q quiero vender"
+    debe: ["handoff_to_human alta", "proponer llamada de un corredor"]
+  - id: misma-pregunta-dos-veces
+    contexto: "La ficha no dice si aceptan mascotas y el agente ya respondió que lo confirma"
+    contacto: "pero aceptan mascotas o no??"
+    debe: ["handoff_to_human normal"]
+    no_debe: ["inventar la respuesta"]

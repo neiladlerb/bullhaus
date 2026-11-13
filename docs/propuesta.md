@@ -255,6 +255,8 @@ Reglas que se aplican en código y no solo en el prompt (el prompt puede fallar;
 
 ## 10. Prompt de sistema (listo para usar)
 
+Versión v2.0. La propuesta v2.1, ordenada en cinco piezas y con lo que falta, está en `docs/prompt-agente-whatsapp.md`.
+
 Variables que rellena el código: `{{agencia}}`, `{{persona}}`, `{{fecha_hora_actual}}`, `{{zona_horaria_contacto}}`, `{{ficha_contacto}}`, `{{propiedad_de_interes}}`, `{{intentos_rechazo}}`, `{{max_intentos}}`, `{{base_conocimiento}}`, `{{url_privacidad}}`.
 
 ```text
