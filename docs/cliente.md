@@ -6,7 +6,7 @@ Etapa 1 de la skill `nuevo-proyecto`, 13/11/2026. Actualizada el 13/11/2026 con 
 
 | Campo | Valor |
 |---|---|
-| Nombre | Bull Haus Propiedades, "Intermediación y Gestión Inmobiliaria" (web) |
+| Nombre | Bull Haus Propiedades, "Intermediación y Gestión Inmobiliaria" (web). Es el primer cliente de la plataforma SaaS para corredoras (`docs/plataforma-saas.md`) |
 | Tipo | Cliente directo (respuesta del usuario, 13/11/2026). No pasa por Grupo MOK |
 | Quién aprueba fichas, publicaciones, campañas y presupuestos | Un responsable de Bull Haus. [FALTA: nombre y correo, para darle el rol de aprobación en el back office] |
 | Razón social, RUT, giro y régimen tributario | [FALTA] (`plataforma.md` 3.6). Se usan para: emitir las facturas de comisión por el proveedor de facturación electrónica, los datos de la corredora en promesas y contratos, la verificación del negocio en Meta (exigida para WhatsApp Cloud API y anuncios) y el contrato de encargo de datos con cada proveedor |
@@ -22,7 +22,7 @@ Etapa 1 de la skill `nuevo-proyecto`, 13/11/2026. Actualizada el 13/11/2026 con 
 | Dónde están sus usuarios | Chile (Región Metropolitana y V Región) |
 | Jurisdicción del proyecto | `cl` (ya en código: `PROJECT_JURISDICTION`) |
 | Ley que aplica | Ley 19.628 reformada por la Ley 21.719 (en vigor desde el 01/12/2026); además Ley 19.496 (consumidor) y Ley 20.609 (no discriminación) |
-| ¿Exige el cliente que los datos queden en una región? | Respuesta del usuario: "los datos son en Chile". Hoy están en París (`docs/residencia-datos.md`). [FALTA: aclarar si exige alojamiento físico en Chile o si basta con aplicar la ley chilena] |
+| ¿Exige el cliente que los datos queden en una región? | Sí: los datos quedan en Chile (decisión del usuario, 13/11/2026). Hoy están en París; el plan de mudanza está en `docs/plataforma-saas.md` |
 
 ## Negocio
 
@@ -81,6 +81,3 @@ Para Bull Haus:
 6. Competencia directa (hay tres candidatas en `docs/diagnostico.md`).
 7. Acceso o exportación del CRM de Convecta, para no perder el historial de leads.
 
-Para ti:
-
-8. "Los datos son en Chile": ¿Bull Haus exige que los servidores estén físicamente en Chile, o basta con cumplir la ley chilena con los datos donde están hoy (París)?
