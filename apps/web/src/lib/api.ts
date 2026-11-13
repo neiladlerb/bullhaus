@@ -1,5 +1,5 @@
 import "server-only";
-import type { Currency, Operation, PropertyType } from "@bullhaus/core";
+import { BrandSchema, inZone, type Brand, type Currency, type Operation, type PropertyType } from "@bullhaus/core";
 
 // La web no tiene credenciales de base de datos: lee las fichas publicadas desde la API
 // pública del back office, que solo entrega propiedades disponibles y nunca la dirección exacta.
@@ -69,15 +69,13 @@ export interface Filters {
   zona?: string;
 }
 
-export const COAST = ["Zapallar", "Papudo", "Cachagua", "Maitencillo", "Viña del Mar", "Puchuncaví", "Concón", "Quintero"];
-
-export function filterProperties(all: PublicProperty[], f: Filters): PublicProperty[] {
+export function filterProperties(all: PublicProperty[], f: Filters, zones: Brand["zones"] = []): PublicProperty[] {
   let list = all;
   if (f.operacion === "venta" || f.operacion === "arriendo") list = list.filter((p) => p.operation === f.operacion);
   if (f.tipo) list = list.filter((p) => p.type === f.tipo);
   if (f.comuna) list = list.filter((p) => p.comuna === f.comuna);
-  if (f.zona === "costa") list = list.filter((p) => COAST.includes(p.comuna));
-  if (f.zona === "santiago") list = list.filter((p) => !COAST.includes(p.comuna));
+  const zona = f.zona;
+  if (zona && zones.some((z) => z.key === zona)) list = list.filter((p) => inZone(zones, zona, p.comuna));
   const d = Number(f.dormitorios);
   if (d > 0) list = list.filter((p) => (p.bedrooms ?? 0) >= d);
   // Orden por precio solo dentro de la misma moneda; no se convierte UF a pesos.
@@ -86,6 +84,44 @@ export function filterProperties(all: PublicProperty[], f: Filters): PublicPrope
     list = [...list].sort((a, b) => (a.currency === b.currency ? (a.price - b.price) * dir : a.currency === "UF" ? -1 : 1));
   }
   return list;
+}
+
+// Si el back office no responde, la web se muestra con una marca neutra en vez de caerse. Nunca con los
+// datos de otra corredora.
+const NEUTRAL_BRAND: Brand = {
+  name: "Corredora de propiedades",
+  shortName: "la corredora",
+  legalName: "Corredora de propiedades",
+  siteUrl: (process.env.SITE_URL ?? "https://localhost").replace(/\/+$/, ""),
+  description: "Venta y arriendo de propiedades.",
+  logo: { lines: ["PROPIEDADES"] },
+  colors: { brand: "#3f3f3e", brandDark: "#2f2f2e", ink: "#2f2f2e", coal: "#3f3f3e" },
+  contact: { whatsapp: "", email: "", office: "" },
+  social: {},
+  texts: {
+    heroEyebrow: "Venta y arriendo",
+    heroTitle: "Propiedades en venta y arriendo",
+    heroSubtitle: "Estamos actualizando el sitio. Vuelve en unos minutos.",
+    heroImage: "/hero-casa.webp",
+    ownerPitch: "Un corredor visita tu propiedad y te entrega una valorización.",
+    ownerAreas: "Escríbenos para coordinar una valorización.",
+    aboutTitle: "Quiénes somos",
+    aboutParagraphs: ["Estamos actualizando esta sección."],
+  },
+  zones: [],
+  team: [],
+};
+
+/** Ficha de marca de la corredora, desde el back office. */
+export async function getBrand(): Promise<Brand> {
+  try {
+    const res = await fetch(`${BACKOFFICE_URL}/api/publico/marca`, { next: { revalidate: 300 } });
+    if (!res.ok) return NEUTRAL_BRAND;
+    const parsed = BrandSchema.safeParse(((await res.json()) as { brand: unknown }).brand);
+    return parsed.success ? parsed.data : NEUTRAL_BRAND;
+  } catch {
+    return NEUTRAL_BRAND;
+  }
 }
 
 /** Formato de código como en el sitio anterior: 109958 → 109.958. */

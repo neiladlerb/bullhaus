@@ -1,25 +1,12 @@
 import Link from "next/link";
-import { SALES_PROCESS, TYPE_LABELS } from "@bullhaus/core";
+import { inZone, SALES_PROCESS, TYPE_LABELS, whatsappUrl } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
 import { ProcessCarousel } from "@/components/process-carousel";
-import { CONTACT, Header, PropertyCard, SocialBand } from "@/components/site";
-import { COAST, getIndicators, getProperties, photoUrl } from "@/lib/api";
+import { Header, PropertyCard, SocialBand } from "@/components/site";
+import { getBrand, getIndicators, getProperties, photoUrl } from "@/lib/api";
 
 export const revalidate = 300;
 
-
-const TEAM = [
-  { name: "Rodrigo Abbott Irarrázaval", role: "Socio · Broker inmobiliario", email: "rodrigo@bullhaus.cl", photo: "/equipo/rodrigo.jpg" },
-  { name: "Alejandro Steinsapir Stitchkin", role: "Socio · Broker inmobiliario", email: "alejandro@bullhaus.cl", photo: "/equipo/alejandro.png" },
-  { name: "Sandra Cáceres", role: "Broker inmobiliario", email: "sandra@bullhaus.cl", photo: "/equipo/sandra.png" },
-  { name: "Manuel José Vial", role: "Broker inmobiliario V Región costa", email: "manuel@bullhaus.cl", photo: null },
-  { name: "Santiago Andrés Krogh", role: "Broker", email: "santiago@bullhaus.cl", photo: "/equipo/santiago.jpg" },
-];
-
-const ZONES = [
-  { name: "Sector oriente de Santiago", detail: "Las Condes, Vitacura, Lo Barnechea, Providencia y Ñuñoa" },
-  { name: "V Región costa", detail: "Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar" },
-];
 
 const initials = (n: string) =>
   n
@@ -29,7 +16,9 @@ const initials = (n: string) =>
     .join("");
 
 export default async function Home() {
-  const [all, indicators] = await Promise.all([getProperties(), getIndicators()]);
+  const [all, indicators, brand] = await Promise.all([getProperties(), getIndicators(), getBrand()]);
+  const t = brand.texts;
+  const [titleBefore, titleAfter] = t.heroHighlight && t.heroTitle.includes(t.heroHighlight) ? t.heroTitle.split(t.heroHighlight, 2) : [t.heroTitle, null];
   const featured = [...all].filter((p) => p.photos.length).sort((a, b) => (a.currency === b.currency ? b.price - a.price : a.currency === "UF" ? -1 : 1));
   const venta = all.filter((p) => p.operation === "venta").length;
   const arriendo = all.filter((p) => p.operation === "arriendo").length;
@@ -42,17 +31,21 @@ export default async function Home() {
       <section className="relative isolate flex min-h-[88vh] items-end overflow-hidden bg-coal text-white">
         {/* Foto fija de la cartera: la portada nunca queda en negro aunque la API no responda. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/hero-casa.webp" alt="" fetchPriority="high" className="absolute inset-0 -z-10 h-full w-full object-cover" />
+        <img src={t.heroImage} alt="" fetchPriority="high" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/20 to-black/35" />
         <Header overlay />
         <div className="wrap pb-14 pt-40">
-          <p className="eyebrow text-white/90">Venta, arriendo y asesoría inmobiliaria</p>
+          <p className="eyebrow text-white/90">{t.heroEyebrow}</p>
           <h1 className="mt-4 max-w-3xl text-4xl font-light leading-tight md:text-6xl">
-            Gestión inmobiliaria <span className="font-semibold">profesional</span>, de principio a fin
+            {titleBefore}
+            {titleAfter !== null && (
+              <>
+                <span className="font-semibold">{t.heroHighlight}</span>
+                {titleAfter}
+              </>
+            )}
           </h1>
-          <p className="mt-5 max-w-xl text-lg text-white/85">
-            Compra, venta y arriendo en el sector oriente de Santiago y la V Región costa, con un corredor que te acompaña en cada paso.
-          </p>
+          <p className="mt-5 max-w-xl text-lg text-white/85">{t.heroSubtitle}</p>
 
           <form action="/propiedades" className="mt-8 grid max-w-4xl gap-2 rounded-2xl bg-white p-2 text-ink shadow-2xl sm:grid-cols-[1fr_1fr_1fr_auto]">
             <select name="operacion" className="field border-0" aria-label="Operación" defaultValue="venta">
@@ -108,13 +101,13 @@ export default async function Home() {
       </section>
 
       <section className="wrap grid gap-6 pb-20 md:grid-cols-2">
-        {ZONES.map((z, i) => {
-          const zp = featured.filter((p) => (i === 0 ? !COAST.includes(p.comuna) : COAST.includes(p.comuna)));
+        {brand.zones.map((z, i) => {
+          const zp = featured.filter((p) => inZone(brand.zones, z.key, p.comuna));
           const img = zp[i === 0 ? 1 : 0]?.photos[0];
           return (
-            <Link key={z.name} href={i === 0 ? "/propiedades?zona=santiago" : "/propiedades?zona=costa"} className="group relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-3xl bg-coal p-8 text-white">
+            <Link key={z.key} href={`/propiedades?zona=${z.key}`} className="group relative isolate flex aspect-[16/10] items-end overflow-hidden rounded-3xl bg-coal p-8 text-white">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={img ? photoUrl(img.md) : i === 0 ? "/zona-santiago.webp" : "/zona-costa.webp"} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105" />
+              <img src={img ? photoUrl(img.md) : (z.image ?? t.heroImage)} alt="" className="absolute inset-0 -z-10 h-full w-full object-cover opacity-80 transition duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 to-transparent" />
               <div>
                 <h3 className="text-2xl font-semibold">{z.name}</h3>
@@ -204,15 +197,13 @@ export default async function Home() {
           <div>
             <p className="eyebrow">Propietarios</p>
             <h2 className="mt-2 text-3xl font-light md:text-4xl">¿Quieres vender o arrendar tu propiedad?</h2>
-            <p className="mt-4 text-white/75">
-              Un corredor de Bull Haus visita tu propiedad, te entrega una valorización y te propone cómo publicarla. Trabajamos en el sector oriente de Santiago y en la V Región costa.
-            </p>
+            <p className="mt-4 text-white/75">{t.ownerPitch}</p>
             <Link href="/vender" className="btn-brand mt-6">
               Pedir valorización
             </Link>
           </div>
           <div className="rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
-            <ContactForm kind="propietario" dark submitLabel="Quiero que me contacten" messagePlaceholder="Tipo de propiedad, comuna y si quieres vender o arrendar" />
+            <ContactForm kind="propietario" brandName={brand.shortName} dark submitLabel="Quiero que me contacten" messagePlaceholder="Tipo de propiedad, comuna y si quieres vender o arrendar" />
           </div>
         </div>
       </section>
@@ -220,26 +211,22 @@ export default async function Home() {
       <section id="nosotros" className="wrap grid gap-10 py-20 lg:grid-cols-2">
         <div>
           <p className="eyebrow">Quiénes somos</p>
-          <h2 className="mt-2 text-3xl font-light md:text-4xl">Experiencia desde 2012</h2>
+          <h2 className="mt-2 text-3xl font-light md:text-4xl">{t.aboutTitle}</h2>
         </div>
         <div className="space-y-4 leading-relaxed text-muted">
-          <p>
-            Bull Haus nace de combinar la experiencia de Steinsapir &amp; Stitchkin Propiedades, en el mercado desde 2012, con una visión de futuro: llevar a cada cliente un servicio
-            personalizado, profesional, humano, transparente, ágil y de excelencia.
-          </p>
-          <p>
-            Nos especializamos en corretaje e intermediación en el sector oriente de Santiago y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar. Lo complementamos con desarrollo y gestión
-            inmobiliaria en toda la Región Metropolitana y la V Región costa.
-          </p>
+          {t.aboutParagraphs.map((p, i) => (
+            <p key={i}>{p}</p>
+          ))}
         </div>
       </section>
 
+      {brand.team.length > 0 && (
       <section id="equipo" className="bg-sand py-20">
         <div className="wrap">
           <p className="eyebrow">Equipo</p>
           <h2 className="mt-2 text-3xl font-light md:text-4xl">Nuestros corredores</h2>
           <div className="mt-10 grid grid-cols-2 gap-5 md:grid-cols-3 lg:grid-cols-5">
-            {TEAM.map((t) => (
+            {brand.team.map((t) => (
               <div key={t.email} className="overflow-hidden rounded-2xl bg-white ring-1 ring-line">
                 <div className="flex aspect-[4/5] items-center justify-center bg-coal">
                   {t.photo ? (
@@ -261,6 +248,7 @@ export default async function Home() {
           </div>
         </div>
       </section>
+      )}
 
       <SocialBand />
 
@@ -269,28 +257,38 @@ export default async function Home() {
           <p className="eyebrow">Contacto</p>
           <h2 className="mt-2 text-3xl font-light md:text-4xl">Conversemos</h2>
           <ul className="mt-6 space-y-3 text-sm">
-            <li>
-              <span className="block text-xs text-muted">Oficina</span>
-              <a href={CONTACT.mapsUrl} target="_blank" rel="noopener" className="hover:underline">
-                {CONTACT.office}
-              </a>
-            </li>
-            <li>
-              <span className="block text-xs text-muted">WhatsApp</span>
-              <a href={CONTACT.whatsappUrl} target="_blank" rel="noopener" className="hover:underline">
-                {CONTACT.whatsapp}
-              </a>
-            </li>
-            <li>
-              <span className="block text-xs text-muted">Email</span>
-              <a href={`mailto:${CONTACT.email}`} className="hover:underline">
-                {CONTACT.email}
-              </a>
-            </li>
+            {brand.contact.office && (
+              <li>
+                <span className="block text-xs text-muted">Oficina</span>
+                {brand.contact.mapsUrl ? (
+                  <a href={brand.contact.mapsUrl} target="_blank" rel="noopener" className="hover:underline">
+                    {brand.contact.office}
+                  </a>
+                ) : (
+                  brand.contact.office
+                )}
+              </li>
+            )}
+            {brand.contact.whatsapp && (
+              <li>
+                <span className="block text-xs text-muted">WhatsApp</span>
+                <a href={whatsappUrl(brand.contact.whatsapp)} target="_blank" rel="noopener" className="hover:underline">
+                  {brand.contact.whatsapp}
+                </a>
+              </li>
+            )}
+            {brand.contact.email && (
+              <li>
+                <span className="block text-xs text-muted">Email</span>
+                <a href={`mailto:${brand.contact.email}`} className="hover:underline">
+                  {brand.contact.email}
+                </a>
+              </li>
+            )}
           </ul>
         </div>
         <div className="rounded-3xl bg-sand p-6 md:p-8">
-          <ContactForm kind="comprador" showKind />
+          <ContactForm kind="comprador" brandName={brand.shortName} showKind />
         </div>
       </section>
     </>

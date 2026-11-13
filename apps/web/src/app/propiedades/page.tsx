@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { comunaSlug, TYPE_LABELS } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
-import { filterProperties, getProperties, type Filters } from "@/lib/api";
+import { filterProperties, getBrand, getProperties, type Filters } from "@/lib/api";
 
 export const revalidate = 300;
 // Los filtros generan muchas URLs; todas apuntan a la misma página canónica para no dividir el posicionamiento.
@@ -14,8 +14,9 @@ export const metadata: Metadata = {
 
 export default async function Propiedades({ searchParams }: { searchParams: Promise<Filters> }) {
   const f = await searchParams;
-  const all = await getProperties();
-  const list = filterProperties(all, f);
+  const [all, brand] = await Promise.all([getProperties(), getBrand()]);
+  const list = filterProperties(all, f, brand.zones);
+  const zone = brand.zones.find((z) => z.key === f.zona);
   const scoped = filterProperties(all, { operacion: f.operacion });
   const comunas = [...new Set(scoped.map((p) => p.comuna))].sort((a, b) => a.localeCompare(b, "es"));
   const types = [...new Set(scoped.map((p) => p.type))];
@@ -28,7 +29,7 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
         <h1 className="text-3xl font-light md:text-4xl">{title}</h1>
         <p className="mt-1 text-muted">
           {list.length} {list.length === 1 ? "propiedad" : "propiedades"}
-          {f.zona === "costa" ? " en la V Región costa" : f.zona === "santiago" ? " en Santiago" : ""}
+          {zone ? ` en ${zone.name}` : ""}
         </p>
 
         <form className="mt-6 grid gap-2 rounded-2xl bg-sand p-3 sm:grid-cols-3 lg:grid-cols-6">

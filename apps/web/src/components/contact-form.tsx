@@ -5,6 +5,7 @@ import { sendContact, type ContactState } from "@/lib/contact";
 
 export function ContactForm({
   kind,
+  brandName,
   propertyCode,
   showKind = false,
   submitLabel = "Enviar",
@@ -12,6 +13,8 @@ export function ContactForm({
   dark = false,
 }: {
   kind: "comprador" | "arrendatario" | "propietario";
+  /** Nombre corto de la corredora, para el consentimiento. */
+  brandName: string;
   propertyCode?: string;
   showKind?: boolean;
   submitLabel?: string;
@@ -67,7 +70,7 @@ export function ContactForm({
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
       <label className={`flex items-start gap-2 text-xs sm:col-span-2 ${dark ? "text-white/70" : "text-muted"}`}>
         <input type="checkbox" name="consent" required className="mt-0.5 accent-[#ea2b94]" />
-        Acepto que Bull Haus me contacte por teléfono, WhatsApp o email para responder esta consulta.
+        Acepto que {brandName} me contacte por teléfono, WhatsApp o email para responder esta consulta.
       </label>
       {state.message && <p className="text-sm text-red-600 sm:col-span-2">{state.message}</p>}
       <div className="sm:col-span-2">

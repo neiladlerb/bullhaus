@@ -1,27 +1,32 @@
 import type { Metadata } from "next";
+import { brandCssVars } from "@bullhaus/core";
 import { Raleway } from "next/font/google";
 import { AttributionCapture } from "@/components/attribution";
 import { CookieConsent } from "@/components/consent";
 import { Footer, WhatsAppFloat } from "@/components/site";
 import { UfCalculator } from "@/components/uf-calculator";
+import { getBrand } from "@/lib/api";
 import { getUf } from "@/lib/uf";
 import "./globals.css";
 
 const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", display: "swap" });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.SITE_URL ?? "https://www.bullhaus.cl"),
-  title: { default: "Bull Haus Propiedades · Venta, arriendo y asesoría inmobiliaria", template: "%s · Bull Haus Propiedades" },
-  description:
-    "Casas, departamentos y oficinas en venta y arriendo en el sector oriente de Santiago y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar.",
-  openGraph: { siteName: "Bull Haus Propiedades", locale: "es_CL", type: "website" },
-  icons: { icon: "/logo-bullhaus.png" },
-};
+// Título, descripción, ícono y colores salen de la ficha de marca de la corredora.
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  return {
+    metadataBase: new URL(process.env.SITE_URL ?? brand.siteUrl),
+    title: { default: `${brand.name} · ${brand.texts.heroEyebrow}`, template: `%s · ${brand.name}` },
+    description: brand.description,
+    openGraph: { siteName: brand.name, locale: "es_CL", type: "website" },
+    ...(brand.logo.iconUrl ? { icons: { icon: brand.logo.iconUrl } } : {}),
+  };
+}
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const uf = await getUf();
+  const [uf, brand] = await Promise.all([getUf(), getBrand()]);
   return (
-    <html lang="es-CL" className={raleway.variable}>
+    <html lang="es-CL" className={raleway.variable} style={brandCssVars(brand) as React.CSSProperties}>
       <body className="min-h-screen font-sans antialiased">
         {children}
         <Footer />

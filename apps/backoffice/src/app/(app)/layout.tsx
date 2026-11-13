@@ -41,6 +41,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ...(can(user.role, "billing.read") ? [{ href: "/facturacion", label: "Facturación" }] : []),
     ...(can(user.role, "analytics.read") ? [{ href: "/gestion", label: "Control de gestión" }] : []),
     ...(can(user.role, "integrations.read") ? [{ href: "/integraciones", label: "Integraciones" }] : []),
+    ...(can(user.role, "brand.manage") ? [{ href: "/marca", label: "Marca y sitio web" }] : []),
     ...(can(user.role, "users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
     ...(can(user.role, "audit.read") ? [{ href: "/auditoria", label: "Auditoría" }] : []),
     ...(can(user.role, "site.import") ? [{ href: "/datos", label: "Carga de datos" }] : []),

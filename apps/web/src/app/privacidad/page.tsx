@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
-import { CONTACT, Header } from "@/components/site";
+import { Header } from "@/components/site";
+import { getBrand } from "@/lib/api";
 
 export const metadata: Metadata = { title: "Privacidad y cookies" };
 
-export default function Privacidad() {
+export default async function Privacidad() {
+  const brand = await getBrand();
   return (
     <>
       <Header />
@@ -35,8 +37,8 @@ export default function Privacidad() {
         <h2 className="mt-8 text-xl font-semibold">Tus derechos</h2>
         <p className="mt-2">
           Puedes pedir acceso, corrección o eliminación de tus datos escribiendo a{" "}
-          <a href={`mailto:${CONTACT.email}`} className="text-brand underline">
-            {CONTACT.email}
+          <a href={`mailto:${brand.contact.email}`} className="text-brand underline">
+            {brand.contact.email}
           </a>
           .
         </p>

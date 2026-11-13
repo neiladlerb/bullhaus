@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* Identidad de Bull Haus (bullhaus.cl): magenta #EA2B94, carbón #3F3F3E, Raleway. */
+/* Valores por defecto. Los colores de cada corredora llegan de su ficha de marca como variables en <html> (layout.tsx). */
 @theme {
   --color-brand: #ea2b94;
   --color-brand-dark: #c8177a;

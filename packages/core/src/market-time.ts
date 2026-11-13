@@ -67,7 +67,7 @@ export const SALES_PROCESS: { title: string; tasks: string[]; tech: string }[] =
   },
   {
     title: "Difusión",
-    tasks: ["Publicación en bullhaus.cl y portales", "Posts en Instagram, Facebook y LinkedIn", "Brochure para enviar por WhatsApp y email", "Campañas dirigidas a la zona y al tipo de propiedad"],
+    tasks: ["Publicación en nuestra web y en portales", "Posts en Instagram, Facebook y LinkedIn", "Brochure para enviar por WhatsApp y email", "Campañas dirigidas a la zona y al tipo de propiedad"],
     tech: "Agente de redes sociales que prepara los posts y mide su alcance",
   },
   {

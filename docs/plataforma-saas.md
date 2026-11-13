@@ -48,7 +48,7 @@ La base ya es multi-tenant: casi todas las tablas tienen `tenantId` y el back of
 | Pieza | Hoy | Para el SaaS |
 |---|---|---|
 | Niveles | Solo `Tenant` (una corredora) | Plataforma → agencia → corredora, como dice la base de proyectos. Una agencia ve y gestiona a sus corredoras |
-| Marca | Logo, colores, teléfono, dirección y redes de Bull Haus fijos en el código (`CONTACT` en `apps/web/src/components/site.tsx`). "Bull Haus" aparece en 113 archivos de la web y el back office | Ficha de marca por corredora en la base: nombre, logo, colores, contacto, redes, comunas y textos legales. La web y el back office la leen |
+| Marca | **Hecho en la web (13/11/2026):** la web pública lee la ficha de marca de la corredora (`TenantBrand`, esquema en `packages/core/src/brand.ts`), que se edita en el back office en «Marca y sitio web». Falta el back office: «Bull Haus» sigue en 35 archivos (logo y título del back office, textos de agentes, brochures, verificación KYC, contratos, demo) | Que el back office también use la ficha. Las plantillas de contrato van aparte: cambiarlas exige que las apruebe el abogado |
 | Web pública | Una corredora por despliegue (`PUBLIC_TENANT_SLUG`) | Una sola web que reconoce a la corredora por su dominio (`bullhaus.cl`, `otra.cl`) o por subdominio de prueba |
 | Alta de clientes | Manual, con semilla | Alta de corredora desde el panel de la plataforma: dominio, marca, usuarios y planilla de propiedades |
 | Integraciones | Claves de WhatsApp, Meta y Google en variables de entorno de un solo cliente | Credenciales por corredora, cifradas en la base; cada corredora conecta sus propias cuentas |
@@ -59,7 +59,7 @@ La base ya es multi-tenant: casi todas las tablas tienen `tenantId` y el back of
 
 ## 3. Orden propuesto
 
-1. **Ficha de marca por corredora:** se sacan del código los datos de Bull Haus y Bull Haus pasa a ser la primera ficha. Termina cuando una segunda corredora de prueba se ve con su propia marca.
+1. **Ficha de marca por corredora.** Web pública: hecha y probada el 13/11/2026; una segunda corredora de prueba se vio con su nombre, logo, colores, contacto y zonas, sin código nuevo. Falta: el back office (logo, títulos y textos de agentes, brochures y KYC); la subida de logos y fotos al almacenamiento (hoy son rutas en `apps/web/public`); y probar el formulario de «Marca y sitio web» con un usuario conectado.
 2. **Web por dominio:** una web para todas las corredoras.
 3. **Niveles agencia y plataforma**, con el alta de corredoras desde el panel.
 4. **Credenciales por corredora** para WhatsApp, Meta y Google.

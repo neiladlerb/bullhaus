@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
+import { whatsappUrl } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
-import { CONTACT, Header } from "@/components/site";
-import { getProperties, photoUrl } from "@/lib/api";
+import { Header } from "@/components/site";
+import { getBrand, getProperties, photoUrl } from "@/lib/api";
 
 export const revalidate = 300;
-export const metadata: Metadata = {
-  title: "Vende o arrienda tu propiedad",
-  description: "Un corredor de Bull Haus visita tu propiedad y te entrega una valorización. Sector oriente de Santiago y V Región costa.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const brand = await getBrand();
+  return { title: "Vende o arrienda tu propiedad", description: `Un corredor de ${brand.shortName} visita tu propiedad y te entrega una valorización. ${brand.texts.ownerAreas}`.slice(0, 300) };
+}
 
 const STEPS = [
   { t: "Conversamos", d: "Nos cuentas qué propiedad tienes y qué quieres hacer con ella." },
@@ -17,7 +18,7 @@ const STEPS = [
 ];
 
 export default async function Vender() {
-  const props = await getProperties();
+  const [props, brand] = await Promise.all([getProperties(), getBrand()]);
   const img = props.find((p) => p.type === "casa" && p.photos.length)?.photos[0];
   return (
     <>
@@ -30,21 +31,21 @@ export default async function Vender() {
         <div className="wrap grid gap-10 pb-16 pt-36 lg:grid-cols-2">
           <div>
             <p className="eyebrow text-white/90">Propietarios</p>
-            <h1 className="mt-3 text-4xl font-light leading-tight md:text-5xl">Vende o arrienda tu propiedad con Bull Haus</h1>
-            <p className="mt-5 max-w-lg text-lg text-white/85">
-              Trabajamos en Las Condes, Vitacura, Lo Barnechea, Providencia, Ñuñoa y en Zapallar, Papudo, Cachagua, Maitencillo y Viña del Mar.
-            </p>
-            <p className="mt-6 text-sm text-white/70">
-              ¿Prefieres hablar? WhatsApp{" "}
-              <a href={CONTACT.whatsappUrl} className="font-semibold text-white underline">
-                {CONTACT.whatsapp}
-              </a>
-            </p>
+            <h1 className="mt-3 text-4xl font-light leading-tight md:text-5xl">Vende o arrienda tu propiedad con {brand.shortName}</h1>
+            <p className="mt-5 max-w-lg text-lg text-white/85">{brand.texts.ownerAreas}</p>
+            {brand.contact.whatsapp && (
+              <p className="mt-6 text-sm text-white/70">
+                ¿Prefieres hablar? WhatsApp{" "}
+                <a href={whatsappUrl(brand.contact.whatsapp)} className="font-semibold text-white underline">
+                  {brand.contact.whatsapp}
+                </a>
+              </p>
+            )}
           </div>
           <div className="rounded-3xl bg-white p-6 text-ink shadow-2xl md:p-8">
             <h2 className="text-xl font-semibold">Pide una valorización</h2>
             <p className="mb-5 mt-1 text-sm text-muted">Te llamamos para coordinar la visita.</p>
-            <ContactForm kind="propietario" submitLabel="Pedir valorización" messagePlaceholder="Tipo de propiedad, comuna, dormitorios y si quieres vender o arrendar" />
+            <ContactForm kind="propietario" brandName={brand.shortName} submitLabel="Pedir valorización" messagePlaceholder="Tipo de propiedad, comuna, dormitorios y si quieres vender o arrendar" />
           </div>
         </div>
       </section>

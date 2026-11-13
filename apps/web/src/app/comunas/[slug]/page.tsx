@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { comunaSlug } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
-import { getProperties, type PublicProperty } from "@/lib/api";
+import { getBrand, getProperties, type PublicProperty } from "@/lib/api";
 
 export const revalidate = 300;
 
@@ -22,10 +22,10 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const slug = (await params).slug;
-  const data = await byComuna(slug);
+  const [data, brand] = await Promise.all([byComuna(slug), getBrand()]);
   if (!data) return { title: "Comuna sin propiedades disponibles", robots: { index: false } };
   const title = `Propiedades en venta y arriendo en ${data.comuna}`;
-  const description = `${data.list.length} ${data.list.length === 1 ? "propiedad disponible" : "propiedades disponibles"} en ${data.comuna} con Bull Haus Propiedades. Agenda una visita o pide la tasación de tu propiedad.`;
+  const description = `${data.list.length} ${data.list.length === 1 ? "propiedad disponible" : "propiedades disponibles"} en ${data.comuna} con ${brand.name}. Agenda una visita o pide la tasación de tu propiedad.`;
   return { title, description, alternates: { canonical: `/comunas/${slug}` }, openGraph: { title, description } };
 }
 

@@ -36,14 +36,15 @@ export type Permission =
   | "billing.read"
   | "billing.approve"
   | "analytics.read"
-  | "integrations.read";
+  | "integrations.read"
+  | "brand.manage";
 
 const MATRIX: Record<Role, readonly Permission[]> = {
   admin: [
     "properties.read", "properties.write", "properties.import", "mandates.write", "users.manage", "audit.read",
     "leads.read", "leads.write", "campaigns.read", "campaigns.write", "campaigns.approve", "site.import", "demo.manage",
     "agents.read", "agents.manage", "deals.read", "deals.write", "kyc.read", "contracts.read", "contracts.write", "billing.read",
-    "analytics.read", "integrations.read",
+    "analytics.read", "integrations.read", "brand.manage",
   ],
   corredor: [
     "properties.read", "properties.write", "properties.import", "mandates.write", "leads.read", "leads.write", "campaigns.read",

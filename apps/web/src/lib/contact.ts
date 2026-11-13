@@ -1,7 +1,7 @@
 "use server";
 import { z } from "zod";
 import { AttributionSchema, type Attribution } from "@bullhaus/core";
-import { BACKOFFICE_URL } from "./api";
+import { BACKOFFICE_URL, getBrand } from "./api";
 
 export interface ContactState {
   ok: boolean;
@@ -52,7 +52,8 @@ export async function sendContact(_prev: ContactState, form: FormData): Promise<
     });
     if (!res.ok) throw new Error(String(res.status));
   } catch {
-    return { ok: false, message: "No pudimos enviar tu mensaje. Escríbenos por WhatsApp al +56 9 9200 0211." };
+    const brand = await getBrand();
+    return { ok: false, message: brand.contact.whatsapp ? `No pudimos enviar tu mensaje. Escríbenos por WhatsApp al ${brand.contact.whatsapp}.` : "No pudimos enviar tu mensaje. Inténtalo de nuevo en unos minutos." };
   }
   return {
     ok: true,

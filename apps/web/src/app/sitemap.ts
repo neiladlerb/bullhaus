@@ -1,13 +1,13 @@
 import type { MetadataRoute } from "next";
 import { comunaSlug } from "@bullhaus/core";
-import { getProperties } from "@/lib/api";
+import { getBrand, getProperties } from "@/lib/api";
 
 export const revalidate = 300;
 
 // Mapa del sitio para Google: páginas fijas, una por comuna con propiedades y una por ficha disponible.
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const base = (process.env.SITE_URL ?? "https://www.bullhaus.cl").replace(/\/+$/, "");
-  const props = await getProperties();
+  const [props, brand] = await Promise.all([getProperties(), getBrand()]);
+  const base = (process.env.SITE_URL ?? brand.siteUrl).replace(/\/+$/, "");
   const comunas = [...new Set(props.map((p) => p.comuna))];
   return [
     { url: `${base}/`, changeFrequency: "weekly", priority: 1 },

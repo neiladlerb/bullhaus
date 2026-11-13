@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatPrice, TYPE_LABELS } from "@bullhaus/core";
+import { formatPrice, TYPE_LABELS, whatsappUrl } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
-import { CONTACT, Header, priceLabel, PropertyCard, specs } from "@/components/site";
-import { displayCode, getProperties, getProperty, photoUrl } from "@/lib/api";
+import { Header, priceLabel, PropertyCard, specs } from "@/components/site";
+import { displayCode, getBrand, getProperties, getProperty, photoUrl } from "@/lib/api";
 
 export const revalidate = 300;
 
@@ -23,7 +23,8 @@ export default async function PropertyPage({ params }: Params) {
   if (!p) notFound();
   const similar = (await getProperties()).filter((o) => o.code !== p.code && o.operation === p.operation && (o.comuna === p.comuna || o.type === p.type)).slice(0, 3);
   const [main, ...rest] = p.photos;
-  const wa = `${CONTACT.whatsappUrl}?text=${encodeURIComponent(`Hola, me interesa la propiedad código ${displayCode(p.code)}.`)}`;
+  const brand = await getBrand();
+  const wa = brand.contact.whatsapp ? whatsappUrl(brand.contact.whatsapp, `Hola, me interesa la propiedad código ${displayCode(p.code)}.`) : null;
   const facts: [string, string][] = [
     ["Operación", p.operation === "venta" ? "Venta" : "Arriendo"],
     ["Tipo", TYPE_LABELS[p.type]],
@@ -137,11 +138,13 @@ export default async function PropertyPage({ params }: Params) {
             <div className="rounded-3xl bg-sand p-6">
               <p className="text-xs text-muted">Corredor a cargo</p>
               <p className="font-semibold">{p.broker.name}</p>
-              <a href={wa} target="_blank" rel="noopener" className="btn mt-4 w-full bg-[#25d366] text-white hover:brightness-95">
-                Consultar por WhatsApp
-              </a>
+              {wa && (
+                <a href={wa} target="_blank" rel="noopener" className="btn mt-4 w-full bg-[#25d366] text-white hover:brightness-95">
+                  Consultar por WhatsApp
+                </a>
+              )}
               <p className="my-5 text-center text-xs text-muted">o déjanos tus datos</p>
-              <ContactForm kind={p.operation === "venta" ? "comprador" : "arrendatario"} propertyCode={p.code} submitLabel="Quiero visitarla" messagePlaceholder="¿Cuándo te acomoda visitarla?" />
+              <ContactForm kind={p.operation === "venta" ? "comprador" : "arrendatario"} brandName={brand.shortName} propertyCode={p.code} submitLabel="Quiero visitarla" messagePlaceholder="¿Cuándo te acomoda visitarla?" />
             </div>
           </aside>
         </div>

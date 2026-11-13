@@ -111,6 +111,17 @@ model Tenant {
   webMetrics     WebMetricDaily[]
   brochures      Brochure[]
   leadTasks      LeadTask[]
+  brand          TenantBrand?
+}
+
+/// Ficha de marca de la corredora: nombre, logo, colores, contacto, redes, zonas, equipo y textos de la web.
+/// `data` sigue BrandSchema de packages/core/src/brand.ts y se valida al leer y al guardar.
+model TenantBrand {
+  tenantId    String   @id
+  tenant      Tenant   @relation(fields: [tenantId], references: [id])
+  data        Json
+  updatedAt   DateTime @updatedAt
+  updatedById String?
 }
 
 model User {

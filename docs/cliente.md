@@ -46,7 +46,7 @@ Etapa 1 de la skill `nuevo-proyecto`, 13/11/2026. Actualizada el 13/11/2026 con 
 | Redes | Instagram @bullhaus_propiedades y Facebook BullHauspropiedades. Seguidores e interacción: se miden en la etapa 2 |
 | LinkedIn | Página de empresa planificada ("Bull Haus te asesora"), hoy en modo demo |
 | Publicidad activa | [FALTA: ¿hacen Meta Ads o Google Ads hoy? ¿Con qué presupuesto mensual?] |
-| Portales | Quieren publicar en los principales portales, empezando por Portal Inmobiliario (respuesta del usuario). Tarea de la etapa 3: revisar la API pública de cada portal y qué hace hoy Convecta |
+| Portales | Quieren publicar en los principales portales, empezando por Portal Inmobiliario (respuesta del usuario). Tarea de la etapa 3: revisar la API pública de cada portal y qué hace hoy Convecta. Las conexiones se dejan listas pero desconectadas hasta que el usuario autorice activarlas (13/11/2026) |
 | CRM | El de Convecta (respuesta del usuario). Mientras convivan, hay que definir cómo pasan los leads entre Convecta y el back office |
 | Leads al mes | Los mide Bull Haus (respuesta del usuario). [FALTA: el número, para la calculadora de ROI] |
 | Conversión | La mide Bull Haus. [FALTA: de cada 10 contactos, cuántos visitan y cuántos cierran] |
