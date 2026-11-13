@@ -1,11 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { inZone, SALES_PROCESS, TYPE_LABELS, whatsappUrl } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
 import { ProcessCarousel } from "@/components/process-carousel";
 import { Header, PropertyCard, SocialBand } from "@/components/site";
 import { getBrand, getIndicators, getProperties, photoUrl } from "@/lib/api";
+import { agencyJsonLd, JsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 
 const initials = (n: string) =>
@@ -33,6 +36,7 @@ export default async function Home() {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={t.heroImage} alt="" fetchPriority="high" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-t from-black/75 via-black/20 to-black/35" />
+        <JsonLd data={agencyJsonLd(brand)} />
         <Header overlay />
         <div className="wrap pb-14 pt-40">
           <p className="eyebrow text-white/90">{t.heroEyebrow}</p>

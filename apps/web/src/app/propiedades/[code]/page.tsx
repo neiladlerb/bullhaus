@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatPrice, TYPE_LABELS, whatsappUrl } from "@bullhaus/core";
+import { comunaSlug, formatPrice, TYPE_LABELS, whatsappUrl } from "@bullhaus/core";
 import { ContactForm } from "@/components/contact-form";
 import { Header, priceLabel, PropertyCard, specs } from "@/components/site";
 import { displayCode, getBrand, getProperties, getProperty, photoUrl } from "@/lib/api";
+import { breadcrumbJsonLd, JsonLd, listingJsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -24,6 +25,8 @@ export default async function PropertyPage({ params }: Params) {
   const similar = (await getProperties()).filter((o) => o.code !== p.code && o.operation === p.operation && (o.comuna === p.comuna || o.type === p.type)).slice(0, 3);
   const [main, ...rest] = p.photos;
   const brand = await getBrand();
+  const base = (process.env.SITE_URL ?? brand.siteUrl).replace(/\/+$/, "");
+  const alt = (ph: { label: string | null }, n: number) => `${TYPE_LABELS[p.type]} en ${p.comuna}: ${ph.label ?? `foto ${n}`}`;
   const wa = brand.contact.whatsapp ? whatsappUrl(brand.contact.whatsapp, `Hola, me interesa la propiedad código ${displayCode(p.code)}.`) : null;
   const facts: [string, string][] = [
     ["Operación", p.operation === "venta" ? "Venta" : "Arriendo"],
@@ -42,6 +45,8 @@ export default async function PropertyPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd data={listingJsonLd(p, brand, `${base}/propiedades/${p.code}`)} />
+      <JsonLd data={breadcrumbJsonLd(base, [{ name: "Inicio", path: "/" }, { name: "Propiedades", path: "/propiedades" }, { name: p.comuna, path: `/comunas/${comunaSlug(p.comuna)}` }, { name: `Código ${displayCode(p.code)}`, path: `/propiedades/${p.code}` }])} />
       <Header />
       <main className="wrap py-8">
         <nav className="text-sm text-muted">
@@ -61,7 +66,7 @@ export default async function PropertyPage({ params }: Params) {
           {rest.slice(0, 4).map((ph, i) => (
             <a key={ph.md} href={photoUrl(ph.lg)} target="_blank" rel="noopener" className="hidden overflow-hidden rounded-2xl md:block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoUrl(ph.md)} alt={`Foto ${i + 2}`} loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition hover:scale-105" />
+              <img src={photoUrl(ph.md)} alt={alt(ph, i + 2)} loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition hover:scale-105" />
             </a>
           ))}
         </div>
@@ -70,7 +75,7 @@ export default async function PropertyPage({ params }: Params) {
             {rest.slice(4).map((ph, i) => (
               <a key={ph.md} href={photoUrl(ph.lg)} target="_blank" rel="noopener" className="shrink-0">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={photoUrl(ph.sm)} alt={`Foto ${i + 6}`} loading="lazy" className="h-24 w-32 rounded-lg object-cover" />
+                <img src={photoUrl(ph.sm)} alt={alt(ph, i + 6)} loading="lazy" className="h-24 w-32 rounded-lg object-cover" />
               </a>
             ))}
           </div>

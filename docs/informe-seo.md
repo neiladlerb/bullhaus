@@ -41,6 +41,9 @@ La web nueva corrige esos puntos. Los resultados se verán recién cuando reempl
 | Texto alternativo | La foto principal de cada ficha y las tarjetas del listado llevan «tipo en comuna». Las imágenes decorativas de fondo van vacías a propósito |
 | Medición | GA4 y píxel de Meta solo si la persona acepta las cookies. Cada formulario enviado registra un contacto. Cada lead guarda su origen (campaña, anuncio, Google, redes) y el back office muestra el canal |
 | Vista al compartir (Open Graph) | Las fichas comparten título y foto principal |
+| Datos estructurados (JSON-LD) | La portada describe a la corredora (`RealEstateAgent`). Cada ficha lleva `RealEstateListing` con precio (UF como `CLF`), comuna, dormitorios, baños y superficie, sin la dirección exacta. Fichas y comunas llevan además la ruta de navegación (`BreadcrumbList`) |
+| Texto alternativo de la galería | Cada foto dice «tipo en comuna: etiqueta de la foto», o el número de foto si no tiene etiqueta |
+| URL canónica de la portada | Sí |
 
 ## 3. Lo que falta, por impacto
 
@@ -48,12 +51,10 @@ La web nueva corrige esos puntos. Los resultados se verán recién cuando reempl
 |---|---|---|---|
 | 1 | **Publicar la web nueva en www.bullhaus.cl.** Hoy convive con Convecta. Hay que decidir si la web nueva toma el dominio y redirige las URLs antiguas de las fichas (redirecciones 301) para no perder lo que ya está indexado | Alto: sin esto, nada de la sección 2 cuenta para Google | Medio |
 | 2 | **Search Console y GA4 a nombre de Bull Haus.** Verificar el dominio, enviar el `sitemap.xml` y cargar `NEXT_PUBLIC_GA4_ID` | Alto: es la línea base para medir | Bajo |
-| 3 | **Datos estructurados** (JSON-LD de inmobiliaria y de cada propiedad: precio, comuna, dormitorios). Hoy no hay | Medio: mejora cómo se ve la ficha en Google | Bajo |
-| 4 | **Texto alternativo de la galería.** Las fotos 2 en adelante dicen «Foto 2», «Foto 3». Usar la etiqueta de cada foto (living, cocina, vista) cuando exista | Bajo-medio | Bajo |
-| 5 | **Google Business Profile** de la oficina de Las Condes, con fotos, horario y enlace a la web | Alto en búsquedas locales («corredora de propiedades Las Condes») | Bajo; lo gestiona Bull Haus |
-| 6 | **Páginas por servicio**: tasación, arriendo y venta, una por servicio | Medio | Bajo |
-| 7 | **Contenido**: guías cortas de búsquedas reales (cuánto cuesta arrendar en Las Condes, qué pide la notaría para vender). Hay que elegir los temas con datos de Search Console o Keyword Planner, no a ciegas | Medio y acumulativo | Medio (los textos los aprueba Bull Haus) |
-| 8 | **Portales** (Portal Inmobiliario y otros): enlaces y visibilidad. Ya planificado; la conexión queda lista pero desconectada hasta tu autorización | Medio | Medio |
+| 3 | **Google Business Profile** de la oficina de Las Condes, con fotos, horario y enlace a la web | Alto en búsquedas locales («corredora de propiedades Las Condes») | Bajo; lo gestiona Bull Haus |
+| 4 | **Páginas por servicio**: tasación, arriendo y venta, una por servicio. Los textos los aprueba Bull Haus antes de publicar | Medio | Bajo |
+| 5 | **Contenido**: guías cortas de búsquedas reales (cuánto cuesta arrendar en Las Condes, qué pide la notaría para vender). Hay que elegir los temas con datos de Search Console o Keyword Planner, no a ciegas | Medio y acumulativo | Medio (los textos los aprueba Bull Haus) |
+| 6 | **Portales** (Portal Inmobiliario y otros): enlaces y visibilidad. Ya planificado; la conexión queda lista pero desconectada hasta tu autorización | Medio | Medio |
 
 ## 4. Lo que no se pudo medir
 

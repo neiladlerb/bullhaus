@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { comunaSlug } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
 import { getBrand, getProperties, type PublicProperty } from "@/lib/api";
+import { breadcrumbJsonLd, JsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
 
@@ -30,7 +31,8 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function ComunaPage({ params }: Params) {
-  const data = await byComuna((await params).slug);
+  const slug = (await params).slug;
+  const [data, brand] = await Promise.all([byComuna(slug), getBrand()]);
   if (!data) notFound();
   const { comuna, list } = data;
   const venta = list.filter((p) => p.operation === "venta").length;
@@ -39,6 +41,7 @@ export default async function ComunaPage({ params }: Params) {
 
   return (
     <>
+      <JsonLd data={breadcrumbJsonLd((process.env.SITE_URL ?? brand.siteUrl).replace(/\/+$/, ""), [{ name: "Inicio", path: "/" }, { name: "Propiedades", path: "/propiedades" }, { name: comuna, path: `/comunas/${slug}` }])} />
       <Header />
       <main className="wrap py-10">
         <h1 className="text-3xl font-light md:text-4xl">Propiedades en venta y arriendo en {comuna}</h1>
