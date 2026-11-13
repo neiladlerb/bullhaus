@@ -1,8 +1,12 @@
-# Plataforma SaaS con datos en Chile
+# Plataforma SaaS para corredoras
 
-Decisión del 13/11/2026: todo lo construido para Bull Haus (web pública y back office) pasa a ser una plataforma SaaS para otras corredoras, y los datos quedan en Chile. Bull Haus es el primer cliente, no un caso especial.
+Decisiones del 13/11/2026:
 
-## 1. Datos en Chile: dónde alojar
+- Todo lo construido para Bull Haus (web pública y back office) pasa a ser una plataforma SaaS para otras corredoras. Bull Haus es el primer cliente, no un caso especial.
+- **Por ahora todo sigue en la UE (París).** Cuando la plataforma opere de verdad en Chile, se revisan las alternativas y los costos de alojar allá. La sección 1 queda como punto de partida para esa revisión: hay que volver a verificarla, porque las regiones cambian (AWS Chile, por ejemplo, aún no abría para todos).
+- La ley que aplica sigue siendo la chilena (`PROJECT_JURISDICTION = "cl"`). Alojar en la UE es compatible con ella.
+
+## 1. Cuando toque: alojar en Chile (revisión del 13/11/2026)
 
 Hoy todo está en París (Vercel `cdg1` y Supabase `eu-west-3`). Ninguno de los dos tiene región en Chile:
 
@@ -55,11 +59,11 @@ La base ya es multi-tenant: casi todas las tablas tienen `tenantId` y el back of
 
 ## 3. Orden propuesto
 
-1. **Mudanza a Santiago:** Cloud SQL, Cloud Storage y Cloud Run en `southamerica-west1`, con la base de Bull Haus copiada desde París. `HOSTING_REGIONS` y su test cambian a la región nueva. Termina con tests en verde y la web y el back office funcionando desde Santiago.
-2. **Ficha de marca por corredora:** se sacan del código los datos de Bull Haus y Bull Haus pasa a ser la primera ficha. Termina cuando una segunda corredora de prueba se ve con su propia marca.
-3. **Web por dominio:** una web para todas las corredoras.
-4. **Niveles agencia y plataforma**, con el alta de corredoras desde el panel.
-5. **Credenciales por corredora** para WhatsApp, Meta y Google.
-6. **Planes y cobro de la plataforma.**
+1. **Ficha de marca por corredora:** se sacan del código los datos de Bull Haus y Bull Haus pasa a ser la primera ficha. Termina cuando una segunda corredora de prueba se ve con su propia marca.
+2. **Web por dominio:** una web para todas las corredoras.
+3. **Niveles agencia y plataforma**, con el alta de corredoras desde el panel.
+4. **Credenciales por corredora** para WhatsApp, Meta y Google.
+5. **Planes y cobro de la plataforma.**
+6. **Mudanza a Chile, cuando opere allá:** revisar de nuevo las regiones y calcular costos con la skill `costes-proyectos`, y recién entonces mover la base, los archivos y la app. `HOSTING_REGIONS` y su test cambian a la región nueva.
 
 Mientras tanto Bull Haus sigue funcionando: cada paso deja a Bull Haus igual que antes.

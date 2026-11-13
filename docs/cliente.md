@@ -22,7 +22,7 @@ Etapa 1 de la skill `nuevo-proyecto`, 13/11/2026. Actualizada el 13/11/2026 con 
 | Dónde están sus usuarios | Chile (Región Metropolitana y V Región) |
 | Jurisdicción del proyecto | `cl` (ya en código: `PROJECT_JURISDICTION`) |
 | Ley que aplica | Ley 19.628 reformada por la Ley 21.719 (en vigor desde el 01/12/2026); además Ley 19.496 (consumidor) y Ley 20.609 (no discriminación) |
-| ¿Exige el cliente que los datos queden en una región? | Sí: los datos quedan en Chile (decisión del usuario, 13/11/2026). Hoy están en París; el plan de mudanza está en `docs/plataforma-saas.md` |
+| ¿Exige el cliente que los datos queden en una región? | Por ahora todo en la UE (París). Cuando la plataforma opere en Chile se evalúa alojar allá, con alternativas y costos (decisión del usuario, 13/11/2026; `docs/plataforma-saas.md`) |
 
 ## Negocio
 

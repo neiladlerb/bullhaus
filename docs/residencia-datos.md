@@ -12,7 +12,7 @@ La jurisdicción está en código: `PROJECT_JURISDICTION = "cl"` en `packages/co
 | Web pública (Vercel) | `cdg1`, París | `apps/web/vercel.json` |
 | Base de datos y archivos | Supabase `eu-west-3`, París | proyecto de Supabase |
 
-**Decisión del 13/11/2026: los datos pasan a Chile.** El plan y las opciones (Google Cloud `southamerica-west1` recomendado) están en `docs/plataforma-saas.md`. Hasta la mudanza, todo sigue en París.
+**Decisión del 13/11/2026:** todo sigue en la UE (París) mientras se construye la plataforma. Cuando opere de verdad en Chile, se revisan las alternativas y costos de alojar allá; el punto de partida está en `docs/plataforma-saas.md`, sección 1.
 
 Se quedó en París porque ya estaba ahí y el resto de Grupo MOK está en la UE; para Chile no es obligatorio. Si la latencia desde Santiago molesta, la opción es São Paulo (Vercel `gru1` y Supabase `sa-east-1`), moviendo las dos piezas juntas. Un test comprueba que cada `vercel.json` declare `HOSTING_REGIONS`: sin el campo `regions`, Vercel usa `iad1` (Washington).
 
