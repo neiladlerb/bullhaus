@@ -33,7 +33,7 @@ Etapa 1 de la skill `nuevo-proyecto`, 13/11/2026. Actualizada el 13/11/2026 con 
 | Administración de arriendos | No la ofrecen (respuesta del usuario) |
 | Zonas | Las que muestra el filtro de www.bullhaus.cl (respuesta del usuario): Aventura, Colina, La Reina, Las Condes, Lo Barnechea, Macul, Ñuñoa, Providencia, Puchuncaví, Santiago, Valparaíso y Vitacura, más la línea "V Región Costa". La web nueva crea una página por cada comuna que tenga propiedades disponibles |
 | Cartera visible | Departamentos desde UF 4.150 hasta casas de UF 34.000, con código numérico (web) |
-| Ingreso por venta | Comisión de corretaje a cada parte según el mandato, con IVA (`plataforma.md`). Cobran comisión en venta y en arriendo (respuesta del usuario). [FALTA: el porcentaje de cada una; sin eso no hay ROI] |
+| Ingreso por venta | Comisión de corretaje a cada parte según el mandato, con IVA (`plataforma.md`). No hay un porcentaje fijo: se pacta en cada acuerdo con el vendedor o arrendador y con el comprador o arrendatario (respuesta del usuario). Ya está así en el modelo: `Mandate.commissionPct` por mandato y `Deal.commissionOwner` / `Deal.commissionClient` por operación (% del precio en venta, meses de renta en arriendo). La calculadora de ROI usa como supuesto el promedio de las operaciones cargadas, o un valor que se ingresa por escenario |
 | Contactos más valiosos | Propietarios, porque traen cartera nueva (`propuesta.md`) |
 | Objetivo medible | Visitas, tasaciones y llamadas agendadas con hueco real y confirmación del contacto (`propuesta.md`). Bull Haus planifica las metas y las asigna a cada corredor (respuesta del usuario): el back office debe permitir cargar la meta mensual por corredor |
 | Plazo para medirlo | Piloto de 2 semanas con 3 o 4 propiedades (`propuesta.md`). [FALTA: meta a 3 y 12 meses] |
@@ -69,19 +69,18 @@ Etapa 1 de la skill `nuevo-proyecto`, 13/11/2026. Actualizada el 13/11/2026 con 
 
 ## Pendientes de la etapa 1
 
-Respondido el 13/11/2026: cliente directo, no administran arriendos, comunas de la web, metas por corredor que fija Bull Haus, CRM de Convecta, convivir con Convecta y publicar en portales.
+Respondido el 13/11/2026: cliente directo, no administran arriendos, comunas de la web, metas por corredor que fija Bull Haus, CRM de Convecta, convivir con Convecta, publicar en portales y comisión pactada en cada acuerdo.
 
 Para Bull Haus:
 
 1. Razón social, RUT, giro y régimen tributario (para facturas, contratos y la verificación de Meta).
 2. Nombre y correo del responsable que aprueba fichas, publicaciones y campañas.
-3. Porcentaje de comisión en venta y en arriendo.
-4. Leads al mes y conversión (cuántos visitan y cuántos cierran).
-5. Presupuesto actual de publicidad, si pautan.
-6. Horario de atención.
-7. Competencia directa (hay tres candidatas en `docs/diagnostico.md`).
-8. Acceso o exportación del CRM de Convecta, para no perder el historial de leads.
+3. Leads al mes y conversión (cuántos visitan y cuántos cierran).
+4. Presupuesto actual de publicidad, si pautan.
+5. Horario de atención.
+6. Competencia directa (hay tres candidatas en `docs/diagnostico.md`).
+7. Acceso o exportación del CRM de Convecta, para no perder el historial de leads.
 
 Para ti:
 
-9. "Los datos son en Chile": ¿Bull Haus exige que los servidores estén físicamente en Chile, o basta con cumplir la ley chilena con los datos donde están hoy (París)?
+8. "Los datos son en Chile": ¿Bull Haus exige que los servidores estén físicamente en Chile, o basta con cumplir la ley chilena con los datos donde están hoy (París)?
