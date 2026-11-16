@@ -6,7 +6,7 @@ const initial: FormState = { ok: false, message: "" };
 
 function Status({ state }: { state: FormState }) {
   if (!state.message) return null;
-  return <p className={`text-sm ${state.ok ? "text-emerald-700" : "text-red-700"}`} role="status">{state.message}</p>;
+  return <p className={`text-sm ${state.ok ? "text-success" : "text-danger"}`} role="status">{state.message}</p>;
 }
 
 // Vercel corta las peticiones sobre 4,5 MB. Antes de subir, el navegador reduce cada foto

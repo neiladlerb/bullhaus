@@ -38,7 +38,7 @@ export default async function UsersPage() {
                 <td className="px-4 py-3">
                   <span className="font-medium">{u.name}</span>
                   <span className="block text-xs text-muted">{u.email}{u.phone ? ` · ${u.phone}` : ""}</span>
-                  {u.mustChangePassword && u.active && <span className="mt-1 inline-block text-xs text-amber-800">Con contraseña temporal</span>}
+                  {u.mustChangePassword && u.active && <span className="mt-1 inline-block text-xs text-warning">Con contraseña temporal</span>}
                   {u.id !== admin.id && u.active && <ResetPassword userId={u.id} name={u.name} />}
                 </td>
                 <td className="px-4 py-3 tabular-nums">{u._count.properties}</td>

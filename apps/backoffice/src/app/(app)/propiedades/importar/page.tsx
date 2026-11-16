@@ -32,9 +32,9 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
         <section className="card mt-6 p-6" aria-live="polite">
           <h2 className="font-medium">Resultado: {current.fileName}</h2>
           <div className="mt-3 flex flex-wrap gap-3 text-sm">
-            <span className="chip bg-emerald-100 text-emerald-800">{current.created} creadas</span>
-            <span className="chip bg-sky-100 text-sky-900">{current.updated} actualizadas</span>
-            <span className={`chip ${current.rejected ? "bg-red-100 text-red-800" : "bg-stone-100 text-stone-700"}`}>{current.rejected} con errores</span>
+            <span className="chip bg-success-soft text-success">{current.created} creadas</span>
+            <span className="chip bg-info-soft text-info">{current.updated} actualizadas</span>
+            <span className={`chip ${current.rejected ? "bg-danger-soft text-danger" : "bg-paper text-muted"}`}>{current.rejected} con errores</span>
           </div>
           {errors.length > 0 && (
             <table className="mt-5 w-full text-sm">

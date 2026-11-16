@@ -1,0 +1,81 @@
+/*
+ * Tokens del sistema de diseño de Bull Haus (skill diseno-bullhaus, tokens.md). Un solo juego para la web
+ * y el back office: cada app lo importa en su globals.css después de "tailwindcss" y solo agrega lo propio.
+ *
+ * Los cuatro colores de marca (brand, brand-dark, ink, coal) son valores por defecto: la web los reemplaza
+ * con los de la ficha de marca guardada en el back office (brandCssVars en <html>).
+ */
+@theme {
+  /* Marca */
+  --color-brand: #ea2b94; /* solo relleno con texto grande, foco y un detalle por pantalla: blanco encima da 3,98 */
+  --color-brand-dark: #c8177a; /* botones principales, enlaces y acentos de texto: 5,44 con blanco */
+  --color-brand-deep: color-mix(in srgb, var(--color-brand-dark), black 12%); /* hover del botón principal */
+  --color-ink: #3f3f3e;
+  --color-coal: #3f3f3e;
+
+  /* Neutros */
+  --color-heading: #3a464e;
+  --color-text: #464646;
+  --color-muted: #5c636b; /* 5,34 sobre paper; reemplaza a #6b7178 y #6b6f74 (4,33) */
+  --color-paper: #ebf1f5; /* reemplaza al sand crema */
+  --color-surface: #ffffff;
+  --color-line: #dde4ea; /* solo decorativo: 1,28 con blanco */
+  --color-line-strong: #8a95a1; /* borde de campos y controles: 3,05 con blanco */
+  --color-on-dark-muted: #b8b8b8; /* texto secundario sobre ink o coal: 5,31 */
+
+  /* Estados: texto oscuro sobre fondo claro del mismo tono, todos AA */
+  --color-success: #1f7a4d;
+  --color-success-soft: #e7f4ec;
+  --color-warning: #9a5b00;
+  --color-warning-soft: #fdf3e1;
+  --color-danger: #b42318;
+  --color-danger-soft: #fdecea;
+  --color-info: #2f5f8a;
+  --color-info-soft: #e8f0f8;
+
+  /* WhatsApp: el verde de la marca solo en el círculo con ícono; botones con texto usan el oscuro (7,67) */
+  --color-whatsapp: #25d366;
+  --color-whatsapp-dark: #075e54;
+
+  /* Tipografía: text-xs pasa de 12 a 13 px, el mínimo del sistema */
+  --font-sans: var(--font-raleway), "Raleway", Arial, sans-serif;
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: 1.25rem;
+
+  /* Radios y sombra */
+  --radius-control: 6px;
+  --radius-card: 10px;
+  --shadow-float: 0 8px 24px rgb(0 0 0 / 0.12);
+}
+
+@layer base {
+  body {
+    background: var(--color-surface);
+    color: var(--color-text);
+    /* Raleway trae números de estilo antiguo: precios y tablas se desalinean sin esto */
+    font-variant-numeric: lining-nums tabular-nums;
+  }
+
+  /* Foco visible en todo control, no solo en los campos */
+  :where(a, button, summary, select, input, textarea, [tabindex]):focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  /* Sobre fondos oscuros el magenta no se ve (2,65 con ink): anillo blanco */
+  :where(.bg-ink, .bg-coal, .bg-black) :where(a, button, summary, select, input, textarea, [tabindex]):focus-visible {
+    outline-color: #fff;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto !important;
+    }
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}

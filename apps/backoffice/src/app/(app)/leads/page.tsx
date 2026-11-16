@@ -133,7 +133,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     <Link href={`/campanas/${c.id}`} className="hover:underline">
                       {c.name}
                     </Link>
-                    {c.status === "activa" && <span className="chip ml-2 bg-green-100 text-green-800">Activa</span>}
+                    {c.status === "activa" && <span className="chip ml-2 bg-success-soft text-success">Activa</span>}
                   </td>
                   <td className="tabular-nums">{c.reach.toLocaleString("es-CL")}</td>
                   <td className="tabular-nums">{c.clicks.toLocaleString("es-CL")}</td>
@@ -212,7 +212,7 @@ export default async function LeadsPage({ searchParams }: { searchParams: Promis
                     {l.comuna && ` · ${l.comuna}`}
                   </td>
                   <td>
-                    <span className={`chip ${l.stage === "ganado" ? "bg-green-100 text-green-800" : l.stage === "perdido" ? "bg-red-50 text-red-700" : "bg-paper"}`}>
+                    <span className={`chip ${l.stage === "ganado" ? "bg-success-soft text-success" : l.stage === "perdido" ? "bg-danger-soft text-danger" : "bg-paper"}`}>
                       {STAGE_LABELS[pipelineOf(l.kind)][l.stage]}
                     </span>
                   </td>

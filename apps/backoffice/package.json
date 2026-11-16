@@ -15,6 +15,7 @@
   "dependencies": {
     "@bullhaus/core": "workspace:*",
     "@bullhaus/db": "workspace:*",
+    "@bullhaus/ui": "workspace:*",
     "exceljs": "4.4.0",
     "next": "15.5.29",
     "papaparse": "5.7.0",

@@ -76,8 +76,8 @@ export default async function BrochurePage({ params, searchParams }: { params: P
         </span>
       </div>
       {b.isDemo && <SimulatedNote what="Los envíos de este brochure se simulan: no se abre WhatsApp ni el correo con los contactos ficticios, pero el registro de envíos, aperturas y leads es el mismo que en producción." integration="WhatsApp, email y redes" />}
-      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">{ERRORS[sp.error]}</p>}
-      {b.property && b.property.status !== "disponible" && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">La propiedad ya no está disponible: el brochure dejó de mostrarse a los contactos.</p>}
+      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">{ERRORS[sp.error]}</p>}
+      {b.property && b.property.status !== "disponible" && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">La propiedad ya no está disponible: el brochure dejó de mostrarse a los contactos.</p>}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Envíos" value={String(b.shares.length)} />

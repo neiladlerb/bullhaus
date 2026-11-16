@@ -66,7 +66,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
             return (
               <li key={s} className="flex items-center gap-2">
                 {i > 0 && <span className="text-line">→</span>}
-                <span className={`chip ${s === d.stage ? "bg-ink text-white" : done ? "bg-green-100 text-green-800" : "bg-paper text-muted"}`}>{dealStageLabel(s, d.operation)}</span>
+                <span className={`chip ${s === d.stage ? "bg-ink text-white" : done ? "bg-success-soft text-success" : "bg-paper text-muted"}`}>{dealStageLabel(s, d.operation)}</span>
               </li>
             );
           })}
@@ -78,7 +78,7 @@ export default async function DealPage({ params }: { params: Promise<{ id: strin
         {next && writable && d.stage !== "caida" && (
           <div className="mt-4 flex flex-wrap items-start gap-3">
             <StateButton action={advanceDealAction.bind(null, d.id)} label={`Pasar a ${dealStageLabel(next, d.operation)}`} />
-            {blocker && <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900">Bloqueado: {blocker}</p>}
+            {blocker && <p className="rounded-md bg-warning-soft px-3 py-2 text-xs text-warning">Bloqueado: {blocker}</p>}
           </div>
         )}
       </section>

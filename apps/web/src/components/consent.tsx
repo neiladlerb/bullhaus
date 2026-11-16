@@ -1,6 +1,6 @@
 "use client";
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 // Las etiquetas de medición y publicidad (GA4, Meta, Google Ads) solo se cargan después de que la persona
 // acepta las cookies (CLAUDE.md). Sin aceptación, no se carga nada de terceros.
@@ -19,7 +19,26 @@ function read(): Choice {
 export function CookieConsent({ metaPixelId, gaId }: { metaPixelId?: string; gaId?: string }) {
   const ga = gaId?.replace(/[^A-Z0-9-]/gi, "");
   const [choice, setChoice] = useState<Choice>("no");
+  const banner = useRef<HTMLDivElement>(null);
   useEffect(() => setChoice(read()), []);
+
+  // Mientras el aviso está abierto, el botón flotante de WhatsApp sube su alto para no quedar tapado.
+  useEffect(() => {
+    const root = document.documentElement;
+    const el = banner.current;
+    if (choice !== null || !el) {
+      root.style.removeProperty("--cookie-offset");
+      return;
+    }
+    const sync = () => root.style.setProperty("--cookie-offset", `${el.offsetHeight + 12}px`);
+    sync();
+    const ro = new ResizeObserver(sync);
+    ro.observe(el);
+    return () => {
+      ro.disconnect();
+      root.style.removeProperty("--cookie-offset");
+    };
+  }, [choice]);
 
   const decide = (c: "si" | "no") => {
     try {
@@ -44,18 +63,19 @@ export function CookieConsent({ metaPixelId, gaId }: { metaPixelId?: string; gaI
         </>
       )}
       {choice === null && (
-        <div className="fixed inset-x-3 bottom-3 z-40 mx-auto max-w-xl rounded-2xl bg-coal p-4 text-sm text-white shadow-2xl sm:inset-x-auto sm:left-5">
+        <div ref={banner} role="region" aria-label="Aviso de cookies" className="fixed inset-x-3 bottom-3 z-[60] mx-auto max-w-xl rounded-[10px] bg-coal p-4 text-sm text-white shadow-[0_8px_24px_rgb(0_0_0/0.12)] sm:inset-x-auto sm:left-5">
           <p>
             Usamos cookies propias para que el sitio funcione y, si lo aceptas, cookies de medición y publicidad de Meta y Google.{" "}
             <a href="/privacidad" className="underline">
               Más información
             </a>
           </p>
-          <div className="mt-3 flex gap-2">
-            <button onClick={() => decide("si")} className="btn-brand py-2">
+          {/* Las dos opciones con el mismo peso visual: el consentimiento debe ser libre (Ley 21.719). */}
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button type="button" onClick={() => decide("si")} className="btn border border-white/60 hover:bg-white/10">
               Aceptar
             </button>
-            <button onClick={() => decide("no")} className="btn border border-white/30 py-2 hover:bg-white/10">
+            <button type="button" onClick={() => decide("no")} className="btn border border-white/60 hover:bg-white/10">
               Solo necesarias
             </button>
           </div>

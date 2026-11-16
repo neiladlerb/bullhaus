@@ -1,22 +1,12 @@
 @import "tailwindcss";
+@import "@bullhaus/ui/tokens.css";
+@source "../../../../packages/ui/src";
 
-/* Identidad de Bull Haus, tomada de bullhaus.cl el 11/11/2026:
-   magenta #EA2B94, gris carbón #3F3F3E (barra de navegación), texto #464646,
-   títulos #3A464E, fondo #EBF1F5, tipografía Raleway. */
-@theme {
-  --color-brand: #ea2b94;
-  --color-brand-dark: #c8177a;
-  --color-ink: #3f3f3e;
-  --color-heading: #3a464e;
-  --color-muted: #6b7178;
-  --color-line: #dde4ea;
-  --color-paper: #ebf1f5;
-  --font-sans: var(--font-raleway), "Raleway", Arial, sans-serif;
-}
+/* Tokens compartidos en packages/ui/tokens.css (skill diseno-bullhaus). Aquí solo lo propio del back office.
+   Identidad tomada de bullhaus.cl el 11/11/2026: magenta #EA2B94, carbón #3F3F3E, títulos #3A464E, fondo #EBF1F5, Raleway. */
 
 body {
   background: var(--color-paper);
-  color: #464646;
 }
 
 h1,
@@ -24,23 +14,28 @@ h2 {
   color: var(--color-heading);
 }
 
+/* Campos: borde line-strong (3,05 con blanco), 44 px en celular */
 @utility input {
-  @apply w-full rounded-md border border-line bg-white px-3 py-2 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand disabled:bg-paper disabled:text-muted;
+  @apply min-h-11 w-full rounded-md border border-line-strong bg-white px-3 py-2 text-sm outline-none focus:border-brand-dark focus:ring-2 focus:ring-brand disabled:bg-paper disabled:text-muted md:min-h-10;
 }
 @utility label {
   @apply mb-1 block text-xs font-semibold text-muted;
 }
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-50;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-md px-4 py-2 text-sm font-semibold transition disabled:opacity-50 md:min-h-10;
 }
 @utility btn-primary {
   @apply btn bg-ink text-white hover:bg-black;
 }
+/* Acción principal de la pantalla: brand-dark (5,44 con blanco), nunca brand con texto blanco */
 @utility btn-brand {
-  @apply btn bg-brand text-white hover:bg-brand-dark;
+  @apply btn bg-brand-dark text-white hover:bg-brand-deep;
 }
 @utility btn-ghost {
-  @apply btn border border-line bg-white text-ink hover:bg-paper;
+  @apply btn border border-line-strong bg-white text-ink hover:bg-paper;
+}
+@utility btn-danger {
+  @apply btn border border-danger bg-white text-danger hover:bg-danger-soft;
 }
 @utility card {
   @apply rounded-lg border border-line bg-white;

@@ -47,7 +47,7 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
       </div>
 
       {c.status === "en_revision" && (
-        <div className="card flex flex-wrap items-center gap-3 border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">
+        <div className="card flex flex-wrap items-center gap-3 border-warning/40 bg-warning-soft p-4 text-sm text-warning">
           <p className="mr-auto">
             Revisa los textos y el presupuesto de {c.budgetClp ? formatPrice(c.budgetClp, "CLP") : "—"}. Al aprobar, las piezas quedan listas para publicar; nada sale solo.
           </p>
@@ -115,9 +115,9 @@ export default async function CampaignPage({ params }: { params: Promise<{ id: s
                   <div className="space-y-2 p-3 text-sm">
                     <p className="font-semibold">{p.hook}</p>
                     <p className="whitespace-pre-line text-[13px] leading-relaxed">{p.caption}</p>
-                    <p className="text-[13px] text-sky-800">{p.hashtags.join(" ")}</p>
+                    <p className="text-[13px] text-info">{p.hashtags.join(" ")}</p>
                     <p className="flex flex-wrap items-center gap-2 text-xs text-muted">
-                      <span className={`chip ${p.status === "aprobado" ? "bg-green-100 text-green-800" : "bg-paper"}`}>{p.status === "aprobado" ? "Aprobado" : p.status === "publicado" ? "Publicado" : "Borrador"}</span>
+                      <span className={`chip ${p.status === "aprobado" ? "bg-success-soft text-success" : "bg-paper"}`}>{p.status === "aprobado" ? "Aprobado" : p.status === "publicado" ? "Publicado" : "Borrador"}</span>
                       {p.scheduledAt && <span>Programado {formatDate(p.scheduledAt)}</span>}
                       {p.property && (
                         <Link href={`/propiedades/${p.property.id}`} className="hover:underline">

@@ -122,7 +122,7 @@ export default async function Home() {
         })}
       </section>
 
-      <section id="servicios" className="bg-sand py-20">
+      <section id="servicios" className="bg-paper py-20">
         <div className="wrap">
           <p className="eyebrow">Servicios</p>
           <div className="mt-6 grid gap-x-16 gap-y-12 border-t border-coal/15 pt-10 lg:grid-cols-2">
@@ -225,7 +225,7 @@ export default async function Home() {
       </section>
 
       {brand.team.length > 0 && (
-      <section id="equipo" className="bg-sand py-20">
+      <section id="equipo" className="bg-paper py-20">
         <div className="wrap">
           <p className="eyebrow">Equipo</p>
           <h2 className="mt-2 text-3xl font-light md:text-4xl">Nuestros corredores</h2>
@@ -291,7 +291,7 @@ export default async function Home() {
             )}
           </ul>
         </div>
-        <div className="rounded-3xl bg-sand p-6 md:p-8">
+        <div className="rounded-3xl bg-paper p-6 md:p-8">
           <ContactForm kind="comprador" brandName={brand.shortName} showKind />
         </div>
       </section>

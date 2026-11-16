@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { can, ROLE_LABELS } from "@bullhaus/core";
 import { Logo } from "@/components/logo";
-import { UfCalculator } from "@/components/uf-calculator";
+import { UfCalculator } from "@bullhaus/ui/uf-calculator";
 import { requireUser } from "@/lib/auth";
 import { hasDemoData } from "@/lib/demo";
 import { getUf } from "@/lib/uf";
@@ -51,15 +51,22 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
       <aside className="flex shrink-0 flex-col bg-ink text-white md:w-60">
-        <div className="flex items-center justify-between px-5 py-5 md:block">
+        <div className="flex items-center justify-between gap-3 px-5 py-5 md:flex-col md:items-start">
           <Logo light />
+          {/* La calculadora vive en el menú: como pestaña fija tapaba contenido en el celular (revisión UX, B5). */}
+          <UfCalculator
+            uf={uf}
+            shortcut
+            label={uf ? `UF ${Math.round(uf.value).toLocaleString("es-CL")}` : "Calculadora UF"}
+            className="min-h-11 rounded-md border border-white/30 px-3 text-xs font-semibold text-white hover:bg-white/10 md:min-h-9"
+          />
         </div>
         <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:overflow-visible">
           {nav.map((item) =>
             item.soon ? (
               <span key={item.label} className="flex shrink-0 items-center justify-between rounded-md px-3 py-2 text-sm text-white/35" title="Próximo paso del plan">
                 {item.label}
-                <span className="ml-2 hidden text-[10px] uppercase tracking-wider md:inline">Pronto</span>
+                <span className="ml-2 hidden text-xs md:inline">Pronto</span>
               </span>
             ) : (
               <Link key={item.href} href={item.href} className="shrink-0 rounded-md px-3 py-2 text-sm text-white/85 hover:bg-white/10 hover:text-white">
@@ -78,7 +85,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
       <main className="min-w-0 flex-1 px-4 py-6 md:px-10 md:py-8">
         {demo && (
-          <p className="mb-5 flex flex-wrap items-center gap-2 rounded-md bg-violet-600 px-4 py-2 text-sm text-white print:hidden">
+          <p className="mb-5 flex flex-wrap items-center gap-2 rounded-md border border-info/30 bg-info-soft px-4 py-2 text-sm text-info print:hidden">
             <strong>Modo demostración.</strong> Hay datos ficticios cargados y las integraciones externas están simuladas.
             {can(user.role, "demo.manage") && (
               <Link href="/datos" className="underline">
@@ -89,7 +96,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         )}
         {children}
       </main>
-      <UfCalculator uf={uf} />
     </div>
   );
 }

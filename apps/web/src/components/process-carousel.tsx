@@ -109,10 +109,10 @@ export function ProcessCarousel({ steps }: { steps: ProcessStep[] }) {
           Paso <span className="font-semibold text-ink">{active + 1}</span> de {steps.length} · {steps[active]?.title}
         </p>
         <div className="flex gap-2">
-          <button type="button" onClick={() => go(active - 1)} disabled={active === 0} aria-label="Paso anterior" className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-sand disabled:opacity-30">
+          <button type="button" onClick={() => go(active - 1)} disabled={active === 0} aria-label="Paso anterior" className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-paper disabled:opacity-30">
             <svg viewBox="0 0 24 24" className="h-5 w-5"><path {...s} d="M15 5l-7 7 7 7" /></svg>
           </button>
-          <button type="button" onClick={() => go(active + 1)} disabled={active === steps.length - 1} aria-label="Paso siguiente" className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-sand disabled:opacity-30">
+          <button type="button" onClick={() => go(active + 1)} disabled={active === steps.length - 1} aria-label="Paso siguiente" className="grid h-11 w-11 place-items-center rounded-full ring-1 ring-line transition hover:bg-paper disabled:opacity-30">
             <svg viewBox="0 0 24 24" className="h-5 w-5"><path {...s} d="M9 5l7 7-7 7" /></svg>
           </button>
         </div>
@@ -121,7 +121,7 @@ export function ProcessCarousel({ steps }: { steps: ProcessStep[] }) {
       <ol ref={track} className="mt-5 flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {steps.map((step, i) => (
           <li key={step.title} className="flex w-[85%] shrink-0 snap-start flex-col overflow-hidden rounded-2xl bg-white ring-1 ring-line sm:w-[46%] lg:w-[31.5%]">
-            <div className="relative h-40 bg-sand px-10 py-6 text-brand">
+            <div className="relative h-40 bg-paper px-10 py-6 text-brand">
               <Drawing title={step.title} />
               <span className="absolute left-5 top-4 text-xs font-semibold uppercase tracking-[0.2em] text-coal/60">Paso {i + 1}</span>
             </div>

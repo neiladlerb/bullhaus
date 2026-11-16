@@ -32,11 +32,11 @@ export function ResetPassword({ userId, name }: { userId: string; name: string }
         </button>
       </form>
       {state.message && (
-        <div className={`mt-2 max-w-sm rounded-md border p-3 text-xs ${state.ok ? "border-line bg-white" : "border-red-200 text-red-700"}`} role="status">
+        <div className={`mt-2 max-w-sm rounded-md border p-3 text-xs ${state.ok ? "border-line bg-white" : "border-danger/30 text-danger"}`} role="status">
           <p>{state.message}</p>
           {state.temporary && (
             <div className="mt-2 flex items-center gap-2">
-              <code className="rounded bg-stone-100 px-2 py-1 font-mono text-sm tracking-wide">{state.temporary}</code>
+              <code className="rounded bg-paper px-2 py-1 font-mono text-sm tracking-wide">{state.temporary}</code>
               <button type="button" className="btn-ghost py-1 text-xs" onClick={() => copy(state.temporary!)}>
                 {copied ? "Copiada" : "Copiar"}
               </button>

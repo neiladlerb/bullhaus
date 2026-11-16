@@ -4,9 +4,9 @@ import { prisma } from "@bullhaus/db";
 import { requireUser } from "@/lib/auth";
 
 const FLAG_CHIP: Record<PriceFlag, string> = {
-  sobre: "bg-amber-100 text-amber-900",
-  bajo: "bg-sky-100 text-sky-900",
-  pack: "bg-violet-100 text-violet-900",
+  sobre: "bg-warning-soft text-warning",
+  bajo: "bg-info-soft text-info",
+  pack: "bg-info-soft text-info",
   sin_m2: "bg-paper text-muted",
 };
 
@@ -45,7 +45,7 @@ export default async function PreciosPage({ searchParams }: { searchParams: Prom
       </div>
 
       <div className="flex flex-wrap items-center gap-3 text-sm">
-        <span className="chip bg-amber-100 text-amber-900">{flagged} para revisar</span>
+        <span className="chip bg-warning-soft text-warning">{flagged} para revisar</span>
         <Link href={sp.todas ? "/propiedades/precios" : "/propiedades/precios?todas=1"} className="btn-ghost">
           {sp.todas ? "Ver solo las marcadas" : "Ver todas"}
         </Link>

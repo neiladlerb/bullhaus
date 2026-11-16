@@ -10,7 +10,7 @@ export function StateButton({ action, label, variant = "btn-primary" }: { action
       <button className={variant} disabled={pending}>
         {pending ? "Procesando…" : label}
       </button>
-      {state && <span className={`max-w-sm text-xs ${state.ok ? "text-green-700" : "text-red-700"}`}>{state.message}</span>}
+      {state && <span className={`max-w-sm text-xs ${state.ok ? "text-success" : "text-danger"}`}>{state.message}</span>}
     </form>
   );
 }

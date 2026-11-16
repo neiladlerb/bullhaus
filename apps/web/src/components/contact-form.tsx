@@ -28,7 +28,7 @@ export function ContactForm({
     if (state.ok) trackLead(state.kind ?? kind);
   }, [state.ok, state.kind, kind]);
   if (state.ok) {
-    return <p className={`rounded-xl p-5 text-sm ${dark ? "bg-white/10 text-white" : "bg-sand"}`}>{state.message}</p>;
+    return <p className={`rounded-xl p-5 text-sm ${dark ? "bg-white/10 text-white" : "bg-paper"}`}>{state.message}</p>;
   }
   const label = `mb-1 block text-xs font-semibold ${dark ? "text-white/70" : "text-muted"}`;
   return (
@@ -69,10 +69,10 @@ export function ContactForm({
       </label>
       <input name="website" tabIndex={-1} autoComplete="off" className="hidden" aria-hidden="true" />
       <label className={`flex items-start gap-2 text-xs sm:col-span-2 ${dark ? "text-white/70" : "text-muted"}`}>
-        <input type="checkbox" name="consent" required className="mt-0.5 accent-[#ea2b94]" />
+        <input type="checkbox" name="consent" required className="mt-0.5 accent-brand-dark" />
         Acepto que {brandName} me contacte por teléfono, WhatsApp o email para responder esta consulta.
       </label>
-      {state.message && <p className="text-sm text-red-600 sm:col-span-2">{state.message}</p>}
+      {state.message && <p className="text-sm text-danger sm:col-span-2">{state.message}</p>}
       <div className="sm:col-span-2">
         <button className="btn-brand w-full sm:w-auto" disabled={pending}>
           {pending ? "Enviando…" : submitLabel}

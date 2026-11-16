@@ -58,7 +58,7 @@ export default async function ContratoPage({ params }: { params: Promise<{ id: s
       <article className="card relative overflow-hidden bg-white p-8 sm:p-12 print:border-0 print:p-0">
         {c.isDemo && (
           <div aria-hidden className="pointer-events-none absolute inset-0 flex items-center justify-center">
-            <span className="-rotate-30 select-none whitespace-nowrap text-6xl font-black uppercase tracking-widest text-violet-500/10">Demostración · sin validez</span>
+            <span className="-rotate-30 select-none whitespace-nowrap text-6xl font-black uppercase tracking-widest text-info/10">Demostración · sin validez</span>
           </div>
         )}
         <div className="relative">

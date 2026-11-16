@@ -3,7 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { comunaSlug } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
-import { getBrand, getProperties, type PublicProperty } from "@/lib/api";
+import { getBrand, getProperties, getPropertiesStrict, type PublicProperty } from "@/lib/api";
 import { breadcrumbJsonLd, JsonLd } from "@/lib/seo";
 
 export const revalidate = 300;
@@ -13,7 +13,8 @@ type Params = { params: Promise<{ slug: string }> };
 // Una página por comuna con propiedades disponibles (diagnóstico, oportunidad 2). Solo cifras que
 // salen de las fichas: cuántas hay en venta y en arriendo. Nada de precios promedio ni promesas.
 async function byComuna(slug: string): Promise<{ comuna: string; list: PublicProperty[] } | null> {
-  const list = (await getProperties()).filter((p) => comunaSlug(p.comuna) === slug);
+  // Estricto: si el back office falla se muestra error.tsx, no un 404 (solo es 404 si la comuna de verdad no tiene propiedades).
+  const list = (await getPropertiesStrict()).filter((p) => comunaSlug(p.comuna) === slug);
   return list.length ? { comuna: list[0]!.comuna, list } : null;
 }
 
@@ -53,7 +54,7 @@ export default async function ComunaPage({ params }: Params) {
             <PropertyCard key={p.code} p={p} />
           ))}
         </div>
-        <section className="mt-12 rounded-2xl bg-sand p-8">
+        <section className="mt-12 rounded-2xl bg-paper p-8">
           <h2 className="text-2xl font-light">¿Tienes una propiedad en {comuna}?</h2>
           <p className="mt-2 text-muted">Te ayudamos a venderla o arrendarla. Un corredor te contacta para coordinar la tasación.</p>
           <Link href="/vender" className="btn-brand mt-5">

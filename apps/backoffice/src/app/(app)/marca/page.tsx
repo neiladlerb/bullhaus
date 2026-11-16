@@ -85,9 +85,9 @@ export default async function MarcaPage({ searchParams }: { searchParams: Promis
           {row && ` Última modificación: ${row.updatedAt.toLocaleString("es-CL", { timeZone: "America/Santiago", dateStyle: "short", timeStyle: "short", hour12: false })}.`}
         </p>
       </div>
-      {sp.ok && <p className="rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-900">Ficha guardada.</p>}
-      {sp.error && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">No se guardó. {sp.error}</p>}
-      {!row && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">Aún no hay ficha guardada: la web usa la ficha base de Bull Haus hasta que la guardes aquí.</p>}
+      {sp.ok && <p className="rounded-md bg-success-soft px-4 py-3 text-sm text-success">Ficha guardada.</p>}
+      {sp.error && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">No se guardó. {sp.error}</p>}
+      {!row && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">Aún no hay ficha guardada: la web usa la ficha base de Bull Haus hasta que la guardes aquí.</p>}
 
       <form action={saveBrandAction} className="space-y-6">
         {SECTIONS.map((s) => (

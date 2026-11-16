@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { can, canEditProperty, CONTRACT_KIND_LABELS, CONTRACT_STATUS_LABELS, daysUntil, dealStageLabel, formatDate, formatPrice, seesOnlyOwnProperties } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
+import { ConfirmSubmit } from "@bullhaus/ui/confirm-submit";
 import { DemoTag } from "@/components/demo";
 import { requireUser } from "@/lib/auth";
 
@@ -47,7 +48,7 @@ export default async function PropertyPage({ params, searchParams }: { params: P
         <StatusChip status={property.status} />
         <span className="text-sm text-muted">{property.comuna}{property.sector ? `, ${property.sector}` : ""} · {formatPrice(Number(property.price), property.currency)}</span>
       </div>
-      {sp.creada && <p className="mt-4 rounded-md bg-emerald-50 px-4 py-3 text-sm text-emerald-800">Propiedad creada. Ahora agrega fotos y el mandato.</p>}
+      {sp.creada && <p className="mt-4 rounded-md bg-success-soft px-4 py-3 text-sm text-success">Propiedad creada. Ahora agrega fotos y el mandato.</p>}
       {!editable && <p className="mt-4 text-sm text-muted">Solo lectura: no tienes permiso para editar esta propiedad.</p>}
 
       <section className="card mt-6 p-6">
@@ -63,34 +64,54 @@ export default async function PropertyPage({ params, searchParams }: { params: P
                 <li key={m.id} className="overflow-hidden rounded-md border border-line">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={`/media/${sizes.md ?? sizes.sm}`} alt={`Foto ${i + 1} de ${property.code}`} className="aspect-[4/3] w-full object-cover" />
-                  <div className="flex items-center justify-between gap-1 px-2 py-1.5 text-xs">
-                    {m.isCover ? <span className="chip bg-brand text-white">Portada</span> : editable ? (
+                  {/* Portada arriba; orden a la izquierda y borrar a la derecha, separados, con objetivos de 44 px
+                      en celular y confirmación antes de borrar (revisión UX 14/11/2026, B4). */}
+                  <div className="px-2 pt-2 text-xs">
+                    {m.isCover ? (
+                      <span className="chip bg-brand-dark text-white">Portada</span>
+                    ) : editable ? (
                       <form action={setCoverAction}>
                         <input type="hidden" name="propertyId" value={property.id} />
                         <input type="hidden" name="mediaId" value={m.id} />
-                        <button className="text-muted hover:text-ink">Hacer portada</button>
+                        <button className="min-h-11 font-semibold text-ink underline-offset-2 hover:underline md:min-h-8">Hacer portada</button>
                       </form>
-                    ) : <span />}
-                    {editable && (
-                      <div className="flex gap-2">
+                    ) : null}
+                  </div>
+                  {editable && (
+                    <div className="flex items-center justify-between gap-2 px-1 pb-1">
+                      <div className="flex">
                         {(["up", "down"] as const).map((dir) => (
                           <form key={dir} action={movePhotoAction}>
                             <input type="hidden" name="propertyId" value={property.id} />
                             <input type="hidden" name="mediaId" value={m.id} />
                             <input type="hidden" name="dir" value={dir} />
-                            <button aria-label={dir === "up" ? "Mover antes" : "Mover después"} className="text-muted hover:text-ink" disabled={(dir === "up" && i === 0) || (dir === "down" && i === media.length - 1)}>
-                              {dir === "up" ? "←" : "→"}
+                            <button
+                              aria-label={dir === "up" ? `Mover la foto ${i + 1} antes` : `Mover la foto ${i + 1} después`}
+                              className="flex h-11 w-11 items-center justify-center rounded-md text-muted hover:bg-paper hover:text-ink disabled:opacity-30 md:h-9 md:w-9"
+                              disabled={(dir === "up" && i === 0) || (dir === "down" && i === media.length - 1)}
+                            >
+                              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                                <path d={dir === "up" ? "M15 18l-6-6 6-6" : "M9 18l6-6-6-6"} />
+                              </svg>
                             </button>
                           </form>
                         ))}
-                        <form action={deletePhotoAction}>
-                          <input type="hidden" name="propertyId" value={property.id} />
-                          <input type="hidden" name="mediaId" value={m.id} />
-                          <button className="text-red-700 hover:underline">Borrar</button>
-                        </form>
                       </div>
-                    )}
-                  </div>
+                      <form action={deletePhotoAction}>
+                        <input type="hidden" name="propertyId" value={property.id} />
+                        <input type="hidden" name="mediaId" value={m.id} />
+                        <ConfirmSubmit
+                          title={`¿Borrar la foto ${i + 1}?`}
+                          consequence={m.isCover ? "Es la portada: la siguiente foto pasa a ser la portada. La foto borrada no se puede recuperar." : "La foto se borra de la ficha y de la web y no se puede recuperar."}
+                          confirmLabel="Borrar foto"
+                          aria-label={`Borrar la foto ${i + 1}`}
+                          className="min-h-11 rounded-md px-2 text-xs font-semibold text-danger hover:bg-danger-soft md:min-h-9"
+                        >
+                          Borrar
+                        </ConfirmSubmit>
+                      </form>
+                    </div>
+                  )}
                 </li>
               );
             })}
@@ -122,7 +143,7 @@ export default async function PropertyPage({ params, searchParams }: { params: P
                       {m.fileKey ? " · PDF cargado" : ""}
                     </span>
                   </span>
-                  <span className={`chip ${d < 0 ? "bg-red-100 text-red-800" : d <= 15 ? "bg-amber-100 text-amber-900" : "bg-emerald-100 text-emerald-800"}`}>
+                  <span className={`chip ${d < 0 ? "bg-danger-soft text-danger" : d <= 15 ? "bg-warning-soft text-warning" : "bg-success-soft text-success"}`}>
                     {d < 0 ? "Vencido" : d <= 15 ? `Vence en ${d} d` : "Vigente"}
                   </span>
                 </li>

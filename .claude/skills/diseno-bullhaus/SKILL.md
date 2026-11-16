@@ -1,6 +1,6 @@
 ---
 name: diseno-bullhaus
-description: Sistema de diseño de la web pública (apps/web) y del back office (apps/backoffice) de Bull Haus y de cada corredora de la plataforma. Úsala antes de crear, rediseñar o revisar cualquier pantalla, componente, formulario, tabla, tarjeta de propiedad, menú, estado vacío o texto de interfaz, y al tocar colores, tipografía o espaciado. Complementa a frontend-design con las decisiones ya tomadas para este proyecto.
+description: Sistema de diseño de la web pública (apps/web) y del back office (apps/backoffice) de Bull Haus. Úsala antes de crear, rediseñar o revisar cualquier pantalla, componente, formulario, tabla, tarjeta de propiedad, menú, estado vacío o texto de interfaz, y al tocar colores, tipografía o espaciado. Complementa a frontend-design con las decisiones ya tomadas para este proyecto.
 ---
 
 # Sistema de diseño Bull Haus
@@ -11,7 +11,7 @@ Las decisiones de diseño de este proyecto ya están tomadas y escritas aquí. T
 
 - **Web pública**: compradores, arrendatarios y sobre todo **propietarios** del sector oriente de Santiago y la V Región Costa. Propiedades de UF 4.000 a UF 34.000. Buscan confianza y datos claros, no efectos. La propiedad (fotos, precio, comuna) es la protagonista; la marca acompaña.
 - **Back office**: cinco corredores que lo usan **en el celular, en terreno**, más administración, finanzas y cumplimiento en escritorio. Necesitan saber qué hacer hoy, encontrar rápido una propiedad o un contacto y cargar datos sin errores.
-- **Multi-corredora**: los colores `brand`, `brandDark`, `ink` y `coal` llegan de la ficha de marca de cada corredora (`packages/core/src/brand.ts`). Nunca escribas un hex de marca en un componente: usa siempre los tokens.
+- **Marca**: este repo es solo Bull Haus (la versión para otras corredoras irá en otro repositorio, ver `docs/plataforma-saas.md`). Aun así, los colores `brand`, `brandDark`, `ink` y `coal` llegan de la ficha de marca que se edita en el back office (Marca y sitio web), con `BULLHAUS_BRAND` de `packages/core` como respaldo. Nunca escribas un hex de marca en un componente: usa siempre los tokens, así un cambio en la ficha llega a todas las pantallas.
 
 ## Archivos de referencia (léelos según la tarea)
 
@@ -22,7 +22,8 @@ Las decisiones de diseño de este proyecto ya están tomadas y escritas aquí. T
 | `web.md` | Cualquier pantalla de `apps/web`: hero, menú, flotantes, listado, ficha, comunas, formularios. |
 | `backoffice.md` | Cualquier pantalla de `apps/backoffice`: menú, inicio, listas, detalle, formularios, celular. |
 | `textos.md` | Todo texto visible: botones, títulos, errores, vacíos, confirmaciones. |
-| `scripts/contraste.mjs` | Para verificar el contraste de un par de colores o de la ficha de marca de una corredora. |
+| `scripts/contraste.mjs` | Para verificar el contraste de un par de colores o de un cambio en la ficha de marca. |
+| `scripts/auditar.mjs` | Al terminar cualquier cambio de interfaz: cuenta en el código los rasgos de la lista "Nunca" y los colores o tamaños prohibidos, y los compara con la línea base. |
 
 ## Proceso en cada tarea de interfaz
 
@@ -31,6 +32,18 @@ Las decisiones de diseño de este proyecto ya están tomadas y escritas aquí. T
 3. **Revisa el plan contra la lista de "Nunca"** de abajo. Si algo calza, cámbialo y di por qué.
 4. **Construye** con los tokens y las clases del sistema (`btn-*`, `field`, `chip-*`, etc.). Nada de colores de Tailwind sueltos (`violet-600`, `red-500`) para significar estados: usa los tokens semánticos.
 5. **Verifica** con el navegador integrado a 375 px y a 1280 px: captura, foco con teclado (Tab), y contraste de cualquier color nuevo con `scripts/contraste.mjs`.
+6. **Audita** desde la raíz: `node .claude/skills/diseno-bullhaus/scripts/auditar.mjs --base docs/ux/auditoria-base.json`. Ninguna regla puede subir (lo exige también `pnpm test`). Si bajaste cifras, guarda la nueva base con `--escribir-base docs/ux/auditoria-base.json` en el mismo commit. Nunca subas la base para tapar un retroceso; si una excepción es legítima (el verde de WhatsApp en su ícono), marca la línea con `diseno-ok: <motivo>`.
+
+## Cómo se combina con otras skills
+
+- `revision-ux` mide en el navegador (contraste real, táctil, flotantes) y usa esta skill como criterio. El auditor de aquí mira el código: lo que `revision-ux` no ve sin abrir cada pantalla. Una revisión completa usa las dos; las cifras quedan en `docs/ux/`.
+- `frontend-design` sirve para explorar una dirección visual nueva; si contradice algo de aquí, gana esta skill salvo que el usuario decida cambiarla.
+- `dataviz` para cualquier gráfico del back office.
+- `estilo-humano` para revisar textos largos de la web (Nosotros, Vender).
+
+## Cómo cambia esta skill
+
+Cada decisión nueva de diseño (un token, un componente, una excepción) se escribe aquí con su fecha y quién la tomó, en el archivo que corresponda, en el mismo commit que el código que la usa. Lo que se resolvió a mano en una pantalla y no está aquí, se vuelve a inventar en la siguiente.
 
 ## Principios
 

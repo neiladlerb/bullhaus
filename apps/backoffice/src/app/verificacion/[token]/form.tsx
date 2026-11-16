@@ -6,7 +6,7 @@ export function PortalForm({ token, demo, buyer, nationality }: { token: string;
   const [state, run, pending] = useActionState<PortalState, FormData>(submitKycAction.bind(null, token), null);
   const [pep, setPep] = useState("no");
   const [scanned, setScanned] = useState(false);
-  if (state?.ok) return <p className="rounded-lg bg-green-50 p-5 text-green-900">{state.message}</p>;
+  if (state?.ok) return <p className="rounded-lg bg-success-soft p-5 text-success">{state.message}</p>;
   return (
     <form action={run} className="space-y-6">
       <fieldset className="space-y-2">
@@ -27,7 +27,7 @@ export function PortalForm({ token, demo, buyer, nationality }: { token: string;
             {scanned ? "✓ Verificación simulada lista" : "Simular verificación (demo, sin subir nada)"}
           </button>
         ) : (
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-sm text-amber-900">La verificación con el proveedor todavía no está disponible.</p>
+          <p className="rounded-md bg-warning-soft px-3 py-2 text-sm text-warning">La verificación con el proveedor todavía no está disponible.</p>
         )}
       </fieldset>
 
@@ -63,7 +63,7 @@ export function PortalForm({ token, demo, buyer, nationality }: { token: string;
         )}
       </fieldset>
 
-      {state && !state.ok && <p className="text-sm text-red-700">{state.message}</p>}
+      {state && !state.ok && <p className="text-sm text-danger">{state.message}</p>}
       <button className="btn-brand w-full" disabled={pending || (demo && !scanned) || !demo}>
         {pending ? "Enviando…" : "Enviar verificación"}
       </button>

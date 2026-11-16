@@ -71,9 +71,9 @@ export default async function BrochurePage({ params, searchParams }: Params) {
   return (
     <main className="min-h-screen bg-white">
       {preview && !live && (
-        <p className="bg-amber-100 px-4 py-2 text-center text-sm text-amber-900">Vista previa para el equipo: este brochure aún no está aprobado y no se puede compartir.</p>
+        <p className="bg-warning-soft px-4 py-2 text-center text-sm text-warning">Vista previa para el equipo: este brochure aún no está aprobado y no se puede compartir.</p>
       )}
-      {b.isDemo && <p className="bg-violet-600 px-4 py-1.5 text-center text-xs text-white">Brochure de demostración</p>}
+      {b.isDemo && <p className="bg-info-soft px-4 py-1.5 text-center text-xs text-info">Brochure de demostración</p>}
 
       <header className="relative isolate overflow-hidden bg-ink text-white">
         {heroImg && (

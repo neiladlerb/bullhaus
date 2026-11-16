@@ -2,10 +2,11 @@
 
 Cada componente se escribe una vez y se reutiliza. Hoy las dos apps repiten unas 1.600 cadenas de clases a mano; al tocar una pantalla, reemplaza el marcado suelto por el componente de aquí (o créalo si falta).
 
-**Dónde viven: `packages/ui`** (aprobado por el usuario el 14/11/2026). Paquete del monorepo, importado por `apps/web` y `apps/backoffice`, con:
+**Dónde viven: `packages/ui`** (aprobado por el usuario el 14/11/2026, creado el 16/11/2026). Paquete del monorepo, importado por `apps/web` y `apps/backoffice` (los dos lo tienen en `transpilePackages` y su `globals.css` lo declara con `@source` para que Tailwind lea sus clases), con:
 
 - `tokens.css`: los tokens de `tokens.md`, en `@theme` de Tailwind 4. Cada app lo importa en su `globals.css` y solo agrega lo propio.
-- `src/`: componentes React (Button, Field, Chip, Table, Pagination, EmptyState, Banner, ConfirmDialog, PropertyCard, Price, Nav). Sin lógica de negocio ni acceso a datos: reciben props.
+- `src/`: componentes React. Hoy: `confirm-submit.tsx` (botón con diálogo de confirmación para server actions) y `uf-calculator.tsx` (calculadora UF en diálogo, se abre desde un botón en línea). Por venir: Button, Field, Chip, Table, Pagination, EmptyState, Banner, PropertyCard, Price, Nav. Sin acceso a datos: reciben props (la calculadora usa las funciones puras de conversión de `@bullhaus/core`).
+- Se importan por ruta: `import { ConfirmSubmit } from "@bullhaus/ui/confirm-submit"`. Cada componente nuevo se agrega a `exports` en `packages/ui/package.json`.
 - Tests con Vitest para lo que tenga lógica (formato de precio, paginación, estados de chip).
 - Se crea con la tarea 1 de `docs/ux/revision-2026-11-14.md` (tokens) y crece con las siguientes. Un componente pasa al paquete cuando lo usa más de una pantalla.
 
@@ -80,7 +81,24 @@ Texto, nunca solo ícono. Las confirmaciones usan el mismo verbo del botón ("Pu
 
 ## Diálogo de confirmación
 
-Solo para acciones irreversibles o con efectos fuera del sistema (emitir factura, publicar, eliminar, enviar a un portal). Título con la acción y el objeto ("¿Emitir la factura F-0123 por $1.450.000?"), una línea de consecuencia, botón destructivo o principal con el verbo, y "Cancelar".
+Solo para acciones irreversibles o con efectos fuera del sistema (emitir factura, publicar, eliminar, enviar a un portal). Título con la acción y el objeto ("¿Emitir la factura F-0123 por $1.450.000?"), una línea de consecuencia, botón destructivo o principal con el verbo, y "Cancelar" (con el foco inicial, para que Enter no destruya).
+
+Se hace con `ConfirmSubmit` de `packages/ui`, dentro del `<form action={...}>` de la acción:
+
+```tsx
+<form action={deletePhotoAction}>
+  <input type="hidden" name="mediaId" value={m.id} />
+  <ConfirmSubmit title="¿Borrar la foto 3?" consequence="La foto se borra de la ficha y de la web y no se puede recuperar." confirmLabel="Borrar foto" className="btn-danger">
+    Borrar
+  </ConfirmSubmit>
+</form>
+```
+
+Con `formAction` sirve también para un segundo botón dentro de un formulario de edición. `destructive={false}` para acciones principales irreversibles (publicar, emitir). Nunca `window.confirm`.
+
+## Pantallas de carga, error y no encontrado
+
+Cada app tiene `not-found.tsx`, `error.tsx` y `loading.tsx` propios, en español y con los tokens; el back office además dentro de `(app)` para conservar el menú. Un error de la API **nunca** se convierte en 404: un 404 se guarda en caché y Google lo indexa como página inexistente. En la web, `getPropertiesStrict()` y `getProperty()` lanzan `BackofficeUnavailableError` y la página muestra `error.tsx` ("Intentar de nuevo"); `getProperties()` (que devuelve `[]`) queda solo para bloques secundarios.
 
 ## Tarjeta de propiedad (web y back office)
 

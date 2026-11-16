@@ -52,7 +52,7 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
           {KIND_LABELS[lead.kind]} · {SOURCE_LABELS[lead.source]} · desde el {formatDate(lead.createdAt)}
         </span>
       </div>
-      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">{ERRORS[sp.error]}</p>}
+      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">{ERRORS[sp.error]}</p>}
 
       <div className="grid gap-4 lg:grid-cols-[1fr_1.5fr]">
         <section className="card space-y-3 p-5 text-sm">
@@ -106,7 +106,7 @@ export default async function LeadPage({ params, searchParams }: { params: Promi
             {pending.map((t) => {
               const due = dueState(t.dueAt);
               return (
-                <li key={t.id} className={`rounded-lg border p-3 ${due === "vencido" ? "border-red-200 bg-red-50/40" : "border-line"}`}>
+                <li key={t.id} className={`rounded-lg border p-3 ${due === "vencido" ? "border-danger/30 bg-danger-soft/40" : "border-line"}`}>
                   <div className="flex flex-wrap items-center gap-2 text-sm">
                     <Chip tone={DUE_TONE[due]}>{DUE_LABEL[due]}</Chip>
                     <span className="font-medium">{t.title}</span>

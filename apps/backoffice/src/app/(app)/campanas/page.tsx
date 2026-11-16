@@ -21,7 +21,7 @@ export default async function CampanasPage() {
       </div>
 
       {pending.length > 0 && (
-        <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <p className="rounded-md border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning">
           {pending.length} campaña{pending.length === 1 ? "" : "s"} esperando aprobación.
         </p>
       )}

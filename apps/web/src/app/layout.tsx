@@ -4,9 +4,7 @@ import { Raleway } from "next/font/google";
 import { AttributionCapture } from "@/components/attribution";
 import { CookieConsent } from "@/components/consent";
 import { Footer, WhatsAppFloat } from "@/components/site";
-import { UfCalculator } from "@/components/uf-calculator";
 import { getBrand } from "@/lib/api";
-import { getUf } from "@/lib/uf";
 import "./globals.css";
 
 const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", display: "swap" });
@@ -24,14 +22,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const [uf, brand] = await Promise.all([getUf(), getBrand()]);
+  const brand = await getBrand();
   return (
     <html lang="es-CL" className={raleway.variable} style={brandCssVars(brand) as React.CSSProperties}>
       <body className="min-h-screen font-sans antialiased">
         {children}
         <Footer />
         <WhatsAppFloat />
-        <UfCalculator uf={uf} />
         <AttributionCapture />
         <CookieConsent metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} gaId={process.env.NEXT_PUBLIC_GA4_ID} />
       </body>

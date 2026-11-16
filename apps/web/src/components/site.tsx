@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { UfCalculator } from "@bullhaus/ui/uf-calculator";
 import { formatPrice, TYPE_LABELS, whatsappUrl, type Brand } from "@bullhaus/core";
 import { BACKOFFICE_URL, displayCode, getBrand, photoUrl, type PublicProperty } from "@/lib/api";
+import { getUf } from "@/lib/uf";
 
 /** Acceso de corredores y equipo al back office. */
 export const BACKOFFICE_LOGIN = `${BACKOFFICE_URL}/login`;
@@ -74,11 +76,11 @@ export async function Header({ overlay = false }: { overlay?: boolean }) {
           <summary className="cursor-pointer list-none rounded-full border border-current px-3 py-1.5 text-sm">Menú</summary>
           <nav className="absolute right-0 mt-2 w-64 rounded-xl bg-white p-2 text-ink shadow-xl">
             {nav.map((n) => (
-              <Link key={n.href} href={n.href} className="block rounded-lg px-3 py-2 text-sm hover:bg-sand">
+              <Link key={n.href} href={n.href} className="block rounded-lg px-3 py-2 text-sm hover:bg-paper">
                 {n.label}
               </Link>
             ))}
-            <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 block rounded-lg border-t border-line px-3 py-2 text-sm text-muted hover:bg-sand">
+            <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 block rounded-lg border-t border-line px-3 py-2 text-sm text-muted hover:bg-paper">
               Ingreso corredores
             </a>
           </nav>
@@ -89,7 +91,7 @@ export async function Header({ overlay = false }: { overlay?: boolean }) {
 }
 
 export async function Footer() {
-  const brand = await getBrand();
+  const [brand, uf] = await Promise.all([getBrand(), getUf()]);
   return (
     <footer className="bg-coal text-white/80">
       <div className="wrap grid gap-10 py-14 md:grid-cols-4">
@@ -147,10 +149,13 @@ export async function Footer() {
                 Ingreso corredores (back office)
               </a>
             </li>
+            <li>
+              <UfCalculator uf={uf} shortcut label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className="text-left hover:text-white hover:underline" />
+            </li>
           </ul>
         </div>
       </div>
-      <p className="wrap border-t border-white/10 py-5 text-xs text-white/50">© {new Date().getFullYear()} {brand.legalName}</p>
+      <p className="wrap border-t border-white/10 py-5 text-xs text-on-dark-muted">© {new Date().getFullYear()} {brand.legalName}</p>
     </footer>
   );
 }
@@ -202,7 +207,7 @@ export async function SocialBand() {
         </div>
         <div className="flex flex-wrap gap-3">
           {links.map((s) => (
-            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex items-center gap-3 rounded-2xl bg-sand px-5 py-4 ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-lg">
+            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex items-center gap-3 rounded-2xl bg-paper px-5 py-4 ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-lg">
               <span className={`flex h-10 w-10 items-center justify-center rounded-full text-white ${s.color}`}>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                   <path d={s.path} />
@@ -229,7 +234,9 @@ export async function WhatsAppFloat() {
       target="_blank"
       rel="noopener"
       aria-label="Escríbenos por WhatsApp"
-      className="fixed bottom-5 right-5 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-[#25d366] text-white shadow-lg transition hover:scale-105"
+      // Único flotante de la web. Sube mientras el aviso de cookies está abierto (--cookie-offset lo fija consent.tsx).
+      style={{ bottom: "calc(1.25rem + var(--cookie-offset, 0px))" }}
+      className="fixed right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-white shadow-[0_8px_24px_rgb(0_0_0/0.12)] hover:brightness-95" // diseno-ok: ícono de la marca WhatsApp sin texto
     >
       <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor" aria-hidden="true">
         <path d="M17.5 14.4c-.3-.1-1.7-.8-2-.9-.3-.1-.5-.1-.7.1-.2.3-.8.9-.9 1.1-.2.2-.3.2-.6.1-.3-.1-1.2-.5-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5l-.9-2.2c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.5.1-.8.4-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.1 4.9 4.3.7.3 1.2.5 1.7.6.7.2 1.3.2 1.8.1.6-.1 1.7-.7 1.9-1.4.2-.7.2-1.2.2-1.4-.1-.1-.3-.2-.6-.3zM12 21.8c-1.8 0-3.5-.5-5-1.4l-.4-.2-3.7 1 1-3.6-.2-.4C2.7 15.6 2.2 13.8 2.2 12 2.2 6.6 6.6 2.2 12 2.2c2.6 0 5.1 1 6.9 2.9 1.8 1.8 2.9 4.3 2.9 6.9 0 5.4-4.4 9.8-9.8 9.8zm8.4-18.2C18.1 1.3 15.1 0 12 0 5.4 0 .1 5.3.1 11.9c0 2.1.6 4.2 1.6 6L0 24l6.3-1.6c1.8 1 3.8 1.5 5.7 1.5 6.6 0 11.9-5.3 11.9-11.9 0-3.2-1.2-6.2-3.5-8.4z" />
@@ -239,7 +246,7 @@ export async function WhatsAppFloat() {
 }
 
 export function priceLabel(p: Pick<PublicProperty, "price" | "currency" | "operation">) {
-  return formatPrice(p.price, p.currency) + (p.operation === "arriendo" ? " / mes" : "");
+  return formatPrice(p.price, p.currency) + (p.operation === "arriendo" ? " al mes" : "");
 }
 
 export function specs(p: PublicProperty): string[] {
@@ -251,25 +258,43 @@ export function specs(p: PublicProperty): string[] {
   return s;
 }
 
+/**
+ * Título para la tarjeta. Los títulos importados de Convecta vienen como lista con separadores
+ * ("1D I 1B I Vespucio I Metro…"): esos no se muestran tal cual y se arma "Departamento en Macul".
+ */
+export function cardTitle(p: Pick<PublicProperty, "headline" | "type" | "comuna">): string {
+  const h = p.headline?.trim();
+  const separators = h ? (h.match(/\s[I|]\s/g) ?? []).length : 0;
+  return h && separators < 2 ? h : `${TYPE_LABELS[p.type]} en ${p.comuna}`;
+}
+
+// Orden de lectura de componentes.md (Tarjeta de propiedad): foto, precio, comuna, título, datos, código.
 export function PropertyCard({ p }: { p: PublicProperty }) {
   const cover = p.photos[0];
   return (
-    <Link href={`/propiedades/${p.code}`} className="group block overflow-hidden rounded-2xl bg-white ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-xl">
-      <div className="relative aspect-[4/3] overflow-hidden bg-sand">
-        {cover && (
+    <Link href={`/propiedades/${p.code}`} className="block overflow-hidden rounded-[10px] border border-line bg-white transition-colors hover:border-line-strong">
+      <div className="relative flex aspect-[4/3] items-center justify-center overflow-hidden bg-paper">
+        {cover ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={photoUrl(cover.md)} alt={`${TYPE_LABELS[p.type]} en ${p.comuna}`} loading="lazy" className="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
+          <img src={photoUrl(cover.md)} alt={`${TYPE_LABELS[p.type]} en ${p.comuna}`} loading="lazy" className="h-full w-full object-cover" />
+        ) : (
+          <span className="text-sm font-semibold text-muted">{TYPE_LABELS[p.type]}</span>
         )}
-        <span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-xs font-semibold capitalize text-ink">{p.operation}</span>
-        {p.photoCount > 1 && <span className="absolute bottom-3 right-3 rounded-full bg-black/55 px-2 py-0.5 text-[11px] text-white">{p.photoCount} fotos</span>}
+        <span className="absolute left-3 top-3 rounded-full bg-white px-3 py-1 text-xs font-semibold text-ink">{p.operation === "venta" ? "Venta" : "Arriendo"}</span>
+        {p.photoCount > 1 && <span className="absolute bottom-3 right-3 rounded-full bg-black/70 px-2 py-0.5 text-xs text-white">{p.photoCount} fotos</span>}
       </div>
       <div className="p-4">
-        <p className="text-xs text-muted">
-          {TYPE_LABELS[p.type]} · {p.comuna} · Cód. {displayCode(p.code)}
-        </p>
-        <p className="mt-1 line-clamp-1 font-semibold">{p.headline ?? `${TYPE_LABELS[p.type]} en ${p.comuna}`}</p>
-        <p className="mt-2 text-lg font-bold text-coal">{priceLabel(p)}</p>
-        <p className="mt-1 text-sm text-muted">{specs(p).join(" · ")}</p>
+        <p className="text-[22px] font-bold leading-7 text-coal">{priceLabel(p)}</p>
+        <p className="mt-1 text-base font-semibold text-heading">{p.comuna}</p>
+        <p className="mt-0.5 line-clamp-1 text-sm text-text">{cardTitle(p)}</p>
+        {specs(p).length > 0 && (
+          <ul className="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-sm text-muted">
+            {specs(p).map((s) => (
+              <li key={s}>{s}</li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-xs text-muted">Código {displayCode(p.code)}</p>
       </div>
     </Link>
   );

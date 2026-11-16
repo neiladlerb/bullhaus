@@ -24,7 +24,7 @@ export function PropertyForm({ id, values, brokers, lockBroker, readOnly }: Prop
     <div className={opts.span}>
       <label className="label" htmlFor={name}>{label}</label>
       <input id={name} name={name} type={opts.type ?? "text"} defaultValue={shown[name] ?? ""} placeholder={opts.placeholder} className="input" disabled={readOnly} aria-invalid={!!err(name)} />
-      {err(name) && <p className="mt-1 text-xs text-red-700">{err(name)}</p>}
+      {err(name) && <p className="mt-1 text-xs text-danger">{err(name)}</p>}
     </div>
   );
 
@@ -37,7 +37,7 @@ export function PropertyForm({ id, values, brokers, lockBroker, readOnly }: Prop
           <option key={o} value={o}>{labels?.[o] ?? o}</option>
         ))}
       </select>
-      {err(name) && <p className="mt-1 text-xs text-red-700">{err(name)}</p>}
+      {err(name) && <p className="mt-1 text-xs text-danger">{err(name)}</p>}
     </div>
   );
 
@@ -86,7 +86,7 @@ export function PropertyForm({ id, values, brokers, lockBroker, readOnly }: Prop
               ))}
             </select>
           )}
-          {err("brokerEmail") && <p className="mt-1 text-xs text-red-700">{err("brokerEmail")}</p>}
+          {err("brokerEmail") && <p className="mt-1 text-xs text-danger">{err("brokerEmail")}</p>}
         </div>
         {select("publishWeb", "Publicar en la web", ["no", "si"], { si: "Sí", no: "No" })}
         {field("addressPrivate", "Dirección exacta (uso interno, nunca se publica)", { span: "sm:col-span-2" })}
@@ -105,7 +105,7 @@ export function PropertyForm({ id, values, brokers, lockBroker, readOnly }: Prop
             {pending ? "Guardando…" : id ? "Guardar cambios" : "Crear propiedad"}
           </button>
           {state.message && (
-            <p className={`text-sm ${state.ok ? "text-emerald-700" : "text-red-700"}`} role="status">{state.message}</p>
+            <p className={`text-sm ${state.ok ? "text-success" : "text-danger"}`} role="status">{state.message}</p>
           )}
         </div>
       )}

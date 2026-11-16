@@ -12,7 +12,7 @@ export default async function AccountPage() {
       </p>
 
       {user.mustChangePassword && (
-        <div className="mt-6 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900" role="alert">
+        <div className="mt-6 rounded-md border border-warning/40 bg-warning-soft p-4 text-sm text-warning" role="alert">
           Estás usando una contraseña temporal. Elige una propia para seguir usando el back office.
         </div>
       )}

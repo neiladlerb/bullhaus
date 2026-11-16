@@ -38,7 +38,7 @@ export default async function BrochuresPage({ searchParams }: { searchParams: Pr
           Brochures de captación de propietarios y de venta o arriendo de cada propiedad, para enviar por WhatsApp, email y redes. Se arman con la ficha aprobada (nunca con la dirección exacta) y solo se comparten cuando administración los aprueba. Cada envío mide aperturas y los contactos que dejan sus datos entran al pipeline con un compromiso de llamada.
         </p>
       </div>
-      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">{ERRORS[sp.error]}</p>}
+      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">{ERRORS[sp.error]}</p>}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Brochures aprobados" value={String(brochures.filter((b) => b.status === "aprobado").length)} sub={`${brochures.filter((b) => b.status === "en_revision").length} en revisión`} />

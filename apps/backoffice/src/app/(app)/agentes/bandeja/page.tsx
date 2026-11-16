@@ -103,9 +103,9 @@ export default async function BandejaPage({ searchParams }: { searchParams: Prom
               {conv.messages.map((m) => (
                 <div key={m.id} className={`flex ${m.role === "contacto" ? "justify-start" : m.role === "sistema" ? "justify-center" : "justify-end"}`}>
                   {m.role === "sistema" ? (
-                    <p className="max-w-md rounded-md bg-amber-50 px-3 py-1.5 text-center text-xs text-amber-900">{m.body}</p>
+                    <p className="max-w-md rounded-md bg-warning-soft px-3 py-1.5 text-center text-xs text-warning">{m.body}</p>
                   ) : (
-                    <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${m.role === "contacto" ? "rounded-bl-sm bg-white" : m.role === "agente" ? "rounded-br-sm bg-ink text-white" : "rounded-br-sm bg-brand text-white"}`}>
+                    <div className={`max-w-[75%] rounded-2xl px-3.5 py-2 text-sm shadow-sm ${m.role === "contacto" ? "rounded-bl-sm bg-white" : m.role === "agente" ? "rounded-br-sm bg-ink text-white" : "rounded-br-sm bg-brand-dark text-white"}`}>
                       <p className="whitespace-pre-line">{m.body}</p>
                       <p className={`mt-1 text-[10px] ${m.role === "contacto" ? "text-muted" : "text-white/70"}`}>
                         {m.role === "agente" ? "Asistente virtual" : m.role === "corredor" ? "Corredor" : ""} {time(m.createdAt)}

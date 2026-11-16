@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { comunaSlug, formatPrice, TYPE_LABELS, whatsappUrl } from "@bullhaus/core";
+import { UfCalculator } from "@bullhaus/ui/uf-calculator";
 import { ContactForm } from "@/components/contact-form";
 import { Header, priceLabel, PropertyCard, specs } from "@/components/site";
 import { displayCode, getBrand, getProperties, getProperty, photoUrl } from "@/lib/api";
 import { breadcrumbJsonLd, JsonLd, listingJsonLd } from "@/lib/seo";
+import { getUf } from "@/lib/uf";
 
 export const revalidate = 300;
 
@@ -24,7 +26,7 @@ export default async function PropertyPage({ params }: Params) {
   if (!p) notFound();
   const similar = (await getProperties()).filter((o) => o.code !== p.code && o.operation === p.operation && (o.comuna === p.comuna || o.type === p.type)).slice(0, 3);
   const [main, ...rest] = p.photos;
-  const brand = await getBrand();
+  const [brand, uf] = await Promise.all([getBrand(), getUf()]);
   const base = (process.env.SITE_URL ?? brand.siteUrl).replace(/\/+$/, "");
   const alt = (ph: { label: string | null }, n: number) => `${TYPE_LABELS[p.type]} en ${p.comuna}: ${ph.label ?? `foto ${n}`}`;
   const wa = brand.contact.whatsapp ? whatsappUrl(brand.contact.whatsapp, `Hola, me interesa la propiedad código ${displayCode(p.code)}.`) : null;
@@ -66,7 +68,7 @@ export default async function PropertyPage({ params }: Params) {
           {rest.slice(0, 4).map((ph, i) => (
             <a key={ph.md} href={photoUrl(ph.lg)} target="_blank" rel="noopener" className="hidden overflow-hidden rounded-2xl md:block">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photoUrl(ph.md)} alt={alt(ph, i + 2)} loading="lazy" className="aspect-[4/3] h-full w-full object-cover transition hover:scale-105" />
+              <img src={photoUrl(ph.md)} alt={alt(ph, i + 2)} loading="lazy" className="aspect-[4/3] h-full w-full object-cover" />
             </a>
           ))}
         </div>
@@ -83,17 +85,21 @@ export default async function PropertyPage({ params }: Params) {
 
         <div className="mt-8 grid gap-10 lg:grid-cols-[1fr_380px]">
           <article>
-            <p className="eyebrow">
-              {TYPE_LABELS[p.type]} en {p.operation}
+            <h1 className="text-3xl font-light text-heading md:text-4xl">{p.headline ?? `${TYPE_LABELS[p.type]} en ${p.comuna}`}</h1>
+            <p className="mt-2 text-base font-semibold text-heading">
+              {TYPE_LABELS[p.type]} en {p.operation === "venta" ? "venta" : "arriendo"} en {p.comuna}
             </p>
-            <h1 className="mt-2 text-3xl font-light md:text-4xl">{p.headline ?? `${TYPE_LABELS[p.type]} en ${p.comuna}`}</h1>
-            <p className="mt-1 text-muted">
-              {p.comuna} · Código {displayCode(p.code)}
-            </p>
-            <p className="mt-4 text-3xl font-bold text-coal">{priceLabel(p)}</p>
+            <div className="mt-4 flex flex-wrap items-baseline gap-x-4 gap-y-1">
+              <p className="text-3xl font-bold text-coal">{priceLabel(p)}</p>
+              {p.currency === "UF" && (
+                <UfCalculator uf={uf} initialUf={p.price} label="Calcular en pesos" className="min-h-11 text-sm font-semibold text-brand-dark underline-offset-4 hover:underline" />
+              )}
+            </div>
+            {p.commonExpensesClp ? <p className="mt-1 text-sm text-muted">Gastos comunes {formatPrice(p.commonExpensesClp, "CLP")}</p> : null}
+            <p className="mt-1 text-xs text-muted">Código {displayCode(p.code)}</p>
             <p className="mt-2 flex flex-wrap gap-2 text-sm">
               {specs(p).map((s) => (
-                <span key={s} className="rounded-full bg-sand px-3 py-1">
+                <span key={s} className="rounded-full bg-paper px-3 py-1">
                   {s}
                 </span>
               ))}
@@ -140,11 +146,11 @@ export default async function PropertyPage({ params }: Params) {
           </article>
 
           <aside className="lg:sticky lg:top-6 lg:self-start">
-            <div className="rounded-3xl bg-sand p-6">
+            <div className="rounded-3xl bg-paper p-6">
               <p className="text-xs text-muted">Corredor a cargo</p>
               <p className="font-semibold">{p.broker.name}</p>
               {wa && (
-                <a href={wa} target="_blank" rel="noopener" className="btn mt-4 w-full bg-[#25d366] text-white hover:brightness-95">
+                <a href={wa} target="_blank" rel="noopener" className="btn mt-4 w-full bg-whatsapp-dark text-white hover:brightness-110">
                   Consultar por WhatsApp
                 </a>
               )}

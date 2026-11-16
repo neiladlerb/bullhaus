@@ -84,11 +84,11 @@ export default async function KycCasePage({ params }: { params: Promise<{ id: st
             <textarea name="note" rows={3} className="input" placeholder={k.riskLevel === "alto" ? "Riesgo alto: describe la debida diligencia reforzada (obligatorio para aprobar)" : "Nota (opcional)"} />
             <div className="flex gap-2">
               <button formAction={reviewKycAction.bind(null, k.id, "aprobado")} className="btn-primary">Aprobar</button>
-              <button formAction={reviewKycAction.bind(null, k.id, "rechazado")} className="btn-ghost text-red-700">Rechazar</button>
+              <button formAction={reviewKycAction.bind(null, k.id, "rechazado")} className="btn-ghost text-danger">Rechazar</button>
             </div>
           </form>
         ) : (
-          <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <p className="rounded-md border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning">
             Este caso espera la revisión de Cumplimiento. Solo una persona con ese rol puede aprobarlo o rechazarlo{k.isDemo ? " (en la demo: Paula Ríos)" : ""}.
           </p>
         ))}
