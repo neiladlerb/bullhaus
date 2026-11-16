@@ -49,9 +49,9 @@ export default async function SocialAgentPage({ searchParams }: { searchParams: 
       {demo && <SimulatedNote what="Las publicaciones, respuestas y derivaciones de este agente son ficticias." integration="Meta (Instagram y Facebook), LinkedIn y Claude" />}
       <AgentTabs active="redes" />
 
-      {sp.error === "no-conectado" && <p className="rounded-md bg-amber-100 px-4 py-2 text-sm text-amber-900">Meta todavía no está conectado: la publicación real queda bloqueada hasta conectar la cuenta en Integraciones.</p>}
-      {sp.borradores !== undefined && <p className="rounded-md bg-green-50 px-4 py-2 text-sm text-green-900">{sp.borradores === "0" ? "No hay propiedades nuevas para publicar: todas tienen una publicación reciente o en revisión." : `El agente preparó ${sp.borradores} borradores. Quedan en revisión.`}</p>}
-      {sp.ok === "ajustes" && <p className="rounded-md bg-green-50 px-4 py-2 text-sm text-green-900">Ajustes guardados.</p>}
+      {sp.error === "no-conectado" && <p className="rounded-md bg-warning-soft px-4 py-2 text-sm text-warning">Meta todavía no está conectado: la publicación real queda bloqueada hasta conectar la cuenta en Integraciones.</p>}
+      {sp.borradores !== undefined && <p className="rounded-md bg-success-soft px-4 py-2 text-sm text-success">{sp.borradores === "0" ? "No hay propiedades nuevas para publicar: todas tienen una publicación reciente o en revisión." : `El agente preparó ${sp.borradores} borradores. Quedan en revisión.`}</p>}
+      {sp.ok === "ajustes" && <p className="rounded-md bg-success-soft px-4 py-2 text-sm text-success">Ajustes guardados.</p>}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Kpi label="Borradores preparados" value={n(count("borrador"))} sub="últimos 30 días" />

@@ -150,9 +150,9 @@ export default async function PipelinePage({ searchParams }: { searchParams: Pro
                             <span className="truncate text-muted">{formatDateTimeCl(l.tasks[0].dueAt)}</span>
                           </p>
                         ) : (
-                          <p className="mt-1 text-[11px] text-amber-700">Sin próximo compromiso</p>
+                          <p className="mt-1 text-[11px] text-warning">Sin próximo compromiso</p>
                         )}
-                        <p className={`mt-1 text-[11px] ${idle > 7 ? "text-amber-700" : "text-muted"}`}>
+                        <p className={`mt-1 text-[11px] ${idle > 7 ? "text-warning" : "text-muted"}`}>
                           {l.broker?.name ?? "Sin asignar"} · {idle === 0 ? "hoy" : `hace ${idle} d`}
                         </p>
                         {editable && (

@@ -19,11 +19,11 @@ Objetivo de cada pantalla: que la persona encuentre una propiedad que le sirve o
 
 ## Elementos flotantes
 
-Hoy hay tres al mismo tiempo en el celular (calculadora UF vertical, WhatsApp y aviso de cookies), y tapan contenido.
+Hecho el 16/11/2026: queda solo el botón de WhatsApp.
 
 - En celular, **un solo flotante**: el botón de WhatsApp, abajo a la derecha, 56 px.
 - La calculadora UF se mueve a la ficha de la propiedad (junto al precio: "Calcular en pesos") y al pie. Deja de ser una pestaña vertical fija.
-- El aviso de cookies aparece abajo, de ancho completo en celular, y mientras está visible el botón de WhatsApp sube para no quedar tapado. Botones "Aceptar" y "Solo necesarias" con el mismo peso visual (los dos secundarios, o los dos llenos).
+- El aviso de cookies aparece abajo, de ancho completo en celular, y mientras está visible el botón de WhatsApp sube para no quedar tapado (`consent.tsx` fija `--cookie-offset` en `<html>` y el botón usa `bottom: calc(1.25rem + var(--cookie-offset, 0px))`). Botones "Aceptar" y "Solo necesarias" con el mismo peso visual: los dos con borde blanco, mismo tamaño, en dos columnas iguales.
 
 ## Listado de propiedades
 

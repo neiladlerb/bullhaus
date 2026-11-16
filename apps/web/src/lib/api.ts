@@ -40,24 +40,51 @@ export interface PublicProperty {
 
 export const photoUrl = (key: string) => `${BACKOFFICE_URL}/media/${key}`;
 
+/** El back office no respondió: no es lo mismo que "no hay propiedades". */
+export class BackofficeUnavailableError extends Error {
+  constructor(status?: number) {
+    super(`API pública del back office sin respuesta${status ? ` (${status})` : ""}`);
+    this.name = "BackofficeUnavailableError";
+  }
+}
+
+/**
+ * Propiedades disponibles. Si el back office falla, lanza BackofficeUnavailableError: la página muestra
+ * error.tsx ("Intentar de nuevo") y no un 404 que Next guarda en caché y que Google indexa como página
+ * inexistente (revisión UX 14/11/2026, B1: las comunas daban 404 cuando la API fallaba).
+ */
+export async function getPropertiesStrict(): Promise<PublicProperty[]> {
+  let res: Response;
+  try {
+    res = await fetch(`${BACKOFFICE_URL}/api/publico/propiedades`, { next: { revalidate: 300 } });
+  } catch {
+    throw new BackofficeUnavailableError();
+  }
+  if (!res.ok) throw new BackofficeUnavailableError(res.status);
+  return ((await res.json()) as { properties: PublicProperty[] }).properties;
+}
+
+/** Igual que getPropertiesStrict, pero devuelve [] si el back office falla (bloques secundarios, sitemap). */
 export async function getProperties(): Promise<PublicProperty[]> {
   try {
-    const res = await fetch(`${BACKOFFICE_URL}/api/publico/propiedades`, { next: { revalidate: 300 } });
-    if (!res.ok) return [];
-    return ((await res.json()) as { properties: PublicProperty[] }).properties;
+    return await getPropertiesStrict();
   } catch {
+    console.error("Back office sin respuesta al pedir propiedades; se muestra la lista vacía");
     return [];
   }
 }
 
+/** Una propiedad disponible, o null si no existe o ya no está disponible (404). Si el back office falla, lanza. */
 export async function getProperty(code: string): Promise<PublicProperty | null> {
+  let res: Response;
   try {
-    const res = await fetch(`${BACKOFFICE_URL}/api/publico/propiedades/${encodeURIComponent(code)}`, { next: { revalidate: 300 } });
-    if (!res.ok) return null;
-    return ((await res.json()) as { property: PublicProperty }).property;
+    res = await fetch(`${BACKOFFICE_URL}/api/publico/propiedades/${encodeURIComponent(code)}`, { next: { revalidate: 300 } });
   } catch {
-    return null;
+    throw new BackofficeUnavailableError();
   }
+  if (res.status === 404) return null;
+  if (!res.ok) throw new BackofficeUnavailableError(res.status);
+  return ((await res.json()) as { property: PublicProperty }).property;
 }
 
 export interface Filters {

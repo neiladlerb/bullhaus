@@ -57,7 +57,7 @@ export default async function FacturacionPage({ searchParams }: { searchParams: 
         <a href="/facturacion/exportar" className="btn-ghost">Exportar a contabilidad (CSV)</a>
       </div>
       {all.length > 0 && list.some((i) => i.provider === "simulado") && <SimulatedNote what="Las facturas y folios son ficticios; nada se envió al SII." integration="el proveedor de facturación electrónica" />}
-      {!finance && toApprove > 0 && <p className="rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">{toApprove} borrador(es) esperan la aprobación de Finanzas. Solo ese rol puede aprobar y emitir.</p>}
+      {!finance && toApprove > 0 && <p className="rounded-md border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning">{toApprove} borrador(es) esperan la aprobación de Finanzas. Solo ese rol puede aprobar y emitir.</p>}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <Kpi label="Facturado este mes (neto)" value={clp(billedMonth)} />

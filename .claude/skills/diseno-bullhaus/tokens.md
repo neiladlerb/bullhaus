@@ -1,6 +1,6 @@
 # Tokens
 
-Un solo juego de tokens para web y back office. Hoy cada app define el suyo en `src/app/globals.css` y ya no coinciden (`ink` es #2F2F2E en la web y #3F3F3E en el back office; los bordes también difieren). Se mueven a `packages/ui/tokens.css` (decisión del 14/11/2026), que ambas apps importan.
+Un solo juego de tokens para web y back office, en **`packages/ui/tokens.css`** (hecho el 16/11/2026). Cada app lo importa en su `globals.css` después de `tailwindcss` y solo agrega sus utilidades propias (`btn`, `field`, `input`, `wrap`). Un token nuevo se agrega ahí, nunca en una app.
 
 ## Color
 
@@ -10,8 +10,11 @@ Un solo juego de tokens para web y back office. Hoy cada app define el suyo en `
 |---|---|---|---|
 | `--color-brand` | #EA2B94 | Relleno de la acción principal con texto grande (≥ 18,66 px en negrita), anillo de foco, indicador de selección, un detalle gráfico por pantalla | Texto pequeño, enlaces, texto sobre `coal` |
 | `--color-brand-dark` | #C8177A | Fondo de botones de acción principal, enlaces y texto de acento | — |
-| `--color-ink` | #3F3F3E | Texto principal y fondos oscuros (menú del back office, pie de la web) | — |
-| `--color-coal` | #3F3F3E | Botón secundario oscuro | — |
+| `--color-ink` | #3F3F3E | Texto fuerte (precios, datos) y fondos oscuros (menú del back office) | — |
+| `--color-coal` | #3F3F3E | Botón secundario oscuro y pie de la web | — |
+| `--color-brand-deep` | brand-dark + 12 % negro | Hover del botón principal (se calcula, no se escribe) | — |
+
+El texto de párrafos es `--color-text` #464646 (en `body`), no `ink`.
 
 Origen: bullhaus.cl, revisado el 11/11/2026 (magenta #EA2B94, carbón #3F3F3E, títulos #3A464E, fondo #EBF1F5, Raleway).
 
@@ -26,10 +29,13 @@ Origen: bullhaus.cl, revisado el 11/11/2026 (magenta #EA2B94, carbón #3F3F3E, t
 | `--color-surface` | #FFFFFF | Tarjetas, tablas, campos |
 | `--color-line` | #DDE4EA | Separadores y bordes decorativos (no transmiten información) |
 | `--color-line-strong` | #8A95A1 | Borde de campos, casillas y controles: necesita contraste 3:1 con el blanco |
+| `--color-on-dark-muted` | #B8B8B8 | Texto secundario sobre `ink` o `coal` (5,31). Reemplaza a `white/50` y #9F9F9F |
+| `--color-whatsapp` | #25D366 | Solo el círculo flotante con el ícono, sin texto (logo de WhatsApp) |
+| `--color-whatsapp-dark` | #075E54 | Botones de WhatsApp con texto (7,67 con blanco) |
 
 ### Semánticos (estados)
 
-Siempre en pares: texto oscuro sobre fondo claro del mismo tono. Todos pasan AA.
+Siempre en pares: texto oscuro sobre fondo claro del mismo tono. Todos pasan AA. En Tailwind: `text-danger` + `bg-danger-soft`, `border-danger/30`, y lo mismo con `success`, `warning` e `info`.
 
 | Token | Texto | Fondo | Significa |
 |---|---|---|---|
@@ -38,7 +44,7 @@ Siempre en pares: texto oscuro sobre fondo claro del mismo tono. Todos pasan AA.
 | `danger` | #B42318 | #FDECEA | Vencido, rechazado, error, acción destructiva |
 | `info` | #2F5F8A | #E8F0F8 | Aviso neutro, modo demostración, en proceso |
 
-No uses colores de Tailwind sueltos (`violet-600`, `emerald-500`, `red-50`) para estados: el aviso violeta del modo demostración pasa a `info`.
+No uses colores de Tailwind sueltos (`violet-600`, `emerald-500`, `red-50`) para estados: el auditor los cuenta (`color-tailwind-suelto`) y desde el 16/11/2026 están en cero.
 
 ### Contraste medido (WCAG 2, objetivo AA)
 
@@ -74,7 +80,7 @@ Para otra corredora: `node .claude/skills/diseno-bullhaus/scripts/contraste.mjs 
 | Pequeño | 13/20 | 500 | Ayudas, metadatos, celdas secundarias |
 | Precio | 22/28 en tarjeta, 32/38 en ficha | 700 | Ver `componentes.md`, Precio |
 
-Mínimo 13 px para cualquier texto. Hoy hay textos de 10 y 11 px ("Pronto", "8 fotos"): suben a 13.
+Mínimo 13 px para cualquier texto. **`text-xs` mide 13 px** en este proyecto (redefinido en `tokens.css`), así que es el tamaño "Pequeño". Nunca `text-[10px]`, `text-[11px]` ni `text-[12px]`: el auditor los cuenta.
 
 ## Espaciado
 
@@ -110,4 +116,9 @@ Solo dos niveles: ninguna (por defecto: los paneles se separan con `line` o con 
 
 - Duración 150 ms para estados (hover, foco), 250 ms para abrir y cerrar.
 - Solo movimiento que responde a una acción de la persona. Ninguna animación de entrada por sección.
-- Todo dentro de `@media (prefers-reduced-motion: no-preference)`.
+- `tokens.css` anula animaciones, transiciones y el scroll suave con `prefers-reduced-motion: reduce`. Animaciones nuevas, con `motion-safe:`.
+- No animes propiedades de posición (`bottom`, `top`): en una pestaña en segundo plano la transición queda a medias y el elemento no se mueve.
+
+## Foco
+
+`tokens.css` pone un anillo de 2 px `brand` con 2 px de separación en todo `a`, `button`, `summary`, campo y `[tabindex]` con `:focus-visible`. Dentro de un fondo `bg-ink`, `bg-coal` o `bg-black` el anillo es blanco (el magenta da 2,65 sobre `ink`). No quites el contorno con `outline-none` salvo en campos que ya llevan `focus:ring-2`.

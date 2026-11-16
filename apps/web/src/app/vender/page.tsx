@@ -54,7 +54,7 @@ export default async function Vender() {
         <h2 className="mt-2 text-3xl font-light">De la primera conversación a la firma</h2>
         <ol className="mt-10 grid gap-6 md:grid-cols-4">
           {STEPS.map((s, i) => (
-            <li key={s.t} className="rounded-2xl bg-sand p-6">
+            <li key={s.t} className="rounded-2xl bg-paper p-6">
               <span className="text-3xl font-light text-brand">{i + 1}</span>
               <p className="mt-3 font-semibold">{s.t}</p>
               <p className="mt-1 text-sm text-muted">{s.d}</p>

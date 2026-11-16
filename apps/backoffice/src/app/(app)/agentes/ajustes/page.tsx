@@ -1,5 +1,6 @@
 import { can, CHANNEL_LABELS, formatDate, type Channel } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
+import { ConfirmSubmit } from "@bullhaus/ui/confirm-submit";
 import { DemoTag } from "@/components/demo";
 import { requireUser } from "@/lib/auth";
 import { deleteKnowledgeAction, saveKnowledgeAction, saveSettingAction } from "../actions";
@@ -86,7 +87,15 @@ export default async function AjustesPage() {
                 {editable && (
                   <div className="flex gap-2 md:flex-col">
                     <button className="btn-ghost">Guardar</button>
-                    <button formAction={deleteKnowledgeAction.bind(null, k.id)} className="btn text-red-700 hover:bg-red-50">Borrar</button>
+                    <ConfirmSubmit
+                      formAction={deleteKnowledgeAction.bind(null, k.id)}
+                      title={`¿Borrar "${k.title}" de la base de conocimiento?`}
+                      consequence="El agente deja de usar este texto para responder. No se puede recuperar."
+                      confirmLabel="Borrar texto"
+                      className="btn-danger"
+                    >
+                      Borrar
+                    </ConfirmSubmit>
                   </div>
                 )}
               </form>

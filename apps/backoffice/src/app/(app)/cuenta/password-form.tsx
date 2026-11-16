@@ -29,7 +29,7 @@ export function PasswordForm({ pending: mustChange }: { pending: boolean }) {
         <input id="confirm" name="confirm" type="password" autoComplete="new-password" minLength={MIN_PASSWORD_LENGTH} required className="input" />
       </div>
       {state.message && (
-        <p className={`text-sm ${state.ok ? "text-emerald-700" : "text-red-700"}`} role="status">{state.message}</p>
+        <p className={`text-sm ${state.ok ? "text-success" : "text-danger"}`} role="status">{state.message}</p>
       )}
       <div>
         <button className="btn-primary" disabled={pending}>{pending ? "Guardando…" : "Cambiar contraseña"}</button>

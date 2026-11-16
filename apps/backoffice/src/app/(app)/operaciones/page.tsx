@@ -76,7 +76,7 @@ export default async function OperacionesPage({ searchParams }: { searchParams: 
                     const st = p.client.kycCases[0]?.status;
                     return (
                       <span key={p.id} className="block text-xs">
-                        <span className={st === "aprobado" ? "text-green-700" : st === "rechazado" ? "text-red-700" : "text-amber-700"}>●</span> {p.client.name}
+                        <span className={st === "aprobado" ? "text-success" : st === "rechazado" ? "text-danger" : "text-warning"}>●</span> {p.client.name}
                       </span>
                     );
                   })}

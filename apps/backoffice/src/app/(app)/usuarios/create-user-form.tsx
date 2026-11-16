@@ -24,7 +24,7 @@ export function CreateUserForm() {
       <div><label className="label" htmlFor="password">Contraseña inicial</label><input id="password" name="password" type="password" minLength={12} autoComplete="new-password" className="input" required /></div>
       <div className="flex items-center gap-4 sm:col-span-2 lg:col-span-5">
         <button className="btn-primary" disabled={pending}>{pending ? "Creando…" : "Crear usuario"}</button>
-        {state.message && <p className={`text-sm ${state.ok ? "text-emerald-700" : "text-red-700"}`} role="status">{state.message}</p>}
+        {state.message && <p className={`text-sm ${state.ok ? "text-success" : "text-danger"}`} role="status">{state.message}</p>}
       </div>
     </form>
   );

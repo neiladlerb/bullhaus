@@ -14,7 +14,7 @@ export function LoginForm() {
         <label className="label" htmlFor="password">Contraseña</label>
         <input id="password" name="password" type="password" autoComplete="current-password" required className="input" />
       </div>
-      {state.error && <p className="text-sm text-red-700" role="alert">{state.error}</p>}
+      {state.error && <p className="text-sm text-danger" role="alert">{state.error}</p>}
       <button type="submit" disabled={pending} className="btn-primary w-full">
         {pending ? "Ingresando…" : "Ingresar"}
       </button>

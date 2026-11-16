@@ -45,7 +45,7 @@ export function ImportPanel({ codes }: { codes: readonly string[] }) {
           </p>
           <ul className="mt-2 max-h-64 overflow-auto rounded-md border border-line bg-paper/50 p-2 font-mono text-xs">
             {results.map((r) => (
-              <li key={r.code} className={r.ok ? "" : "text-red-700"}>
+              <li key={r.code} className={r.ok ? "" : "text-danger"}>
                 {r.code} · {r.message}
                 {r.photos ? ` · ${r.photos} fotos` : ""}
               </li>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { comunaSlug, TYPE_LABELS } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
-import { filterProperties, getBrand, getProperties, type Filters } from "@/lib/api";
+import { filterProperties, getBrand, getPropertiesStrict, type Filters } from "@/lib/api";
 
 export const revalidate = 300;
 // Los filtros generan muchas URLs; todas apuntan a la misma página canónica para no dividir el posicionamiento.
@@ -14,7 +14,8 @@ export const metadata: Metadata = {
 
 export default async function Propiedades({ searchParams }: { searchParams: Promise<Filters> }) {
   const f = await searchParams;
-  const [all, brand] = await Promise.all([getProperties(), getBrand()]);
+  // Estricto: si el back office falla se ve error.tsx, no "0 propiedades".
+  const [all, brand] = await Promise.all([getPropertiesStrict(), getBrand()]);
   const list = filterProperties(all, f, brand.zones);
   const zone = brand.zones.find((z) => z.key === f.zona);
   const scoped = filterProperties(all, { operacion: f.operacion });
@@ -32,7 +33,7 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
           {zone ? ` en ${zone.name}` : ""}
         </p>
 
-        <form className="mt-6 grid gap-2 rounded-2xl bg-sand p-3 sm:grid-cols-3 lg:grid-cols-6">
+        <form className="mt-6 grid gap-2 rounded-2xl bg-paper p-3 sm:grid-cols-3 lg:grid-cols-6">
           <select name="operacion" defaultValue={f.operacion ?? ""} className="field" aria-label="Operación">
             <option value="">Venta y arriendo</option>
             <option value="venta">Venta</option>
@@ -72,7 +73,7 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
         {comunas.length > 1 && (
           <nav aria-label="Propiedades por comuna" className="mt-4 flex flex-wrap gap-2 text-sm">
             {comunas.map((c) => (
-              <Link key={c} href={`/comunas/${comunaSlug(c)}`} className="rounded-full px-3 py-1 ring-1 ring-line hover:bg-sand">
+              <Link key={c} href={`/comunas/${comunaSlug(c)}`} className="rounded-full px-3 py-1 ring-1 ring-line hover:bg-paper">
                 {c}
               </Link>
             ))}
@@ -86,7 +87,7 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
             ))}
           </div>
         ) : (
-          <div className="mt-12 rounded-2xl bg-sand p-10 text-center">
+          <div className="mt-12 rounded-2xl bg-paper p-10 text-center">
             <p className="text-lg">No encontramos propiedades con esos filtros.</p>
             <p className="mt-1 text-muted">Cuéntanos qué buscas y te avisamos cuando tengamos algo para ti.</p>
             <Link href="/#contacto" className="btn-brand mt-5">

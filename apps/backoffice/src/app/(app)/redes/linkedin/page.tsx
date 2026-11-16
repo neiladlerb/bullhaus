@@ -66,7 +66,7 @@ export default async function LinkedInPage({ searchParams }: { searchParams: Pro
         </p>
       </div>
       {account.connectedVia === "demo" && <SimulatedNote what="La página de LinkedIn está conectada en modo demostración: seguidores e impresiones son simulados; los textos son los de la biblioteca." integration="LinkedIn" />}
-      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-amber-50 px-4 py-3 text-sm text-amber-900">{ERRORS[sp.error]}</p>}
+      {sp.error && ERRORS[sp.error] && <p className="rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">{ERRORS[sp.error]}</p>}
 
       <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Kpi label="Seguidores" value={followers.toLocaleString("es-CL")} sub={`+${gained30.toLocaleString("es-CL")} en 30 días`} />

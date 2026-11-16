@@ -1,36 +1,24 @@
 @import "tailwindcss";
+@import "@bullhaus/ui/tokens.css";
+@source "../../../../packages/ui/src";
 
-/* Valores por defecto. Los colores de cada corredora llegan de su ficha de marca como variables en <html> (layout.tsx). */
-@theme {
-  --color-brand: #ea2b94;
-  --color-brand-dark: #c8177a;
-  --color-ink: #2f2f2e;
-  --color-coal: #3f3f3e;
-  --color-muted: #6b6f74;
-  --color-line: #e6e2dc;
-  --color-sand: #f6f3ef;
-  --font-sans: var(--font-raleway), "Raleway", Arial, sans-serif;
-}
+/* Tokens compartidos en packages/ui/tokens.css (skill diseno-bullhaus). Aquí solo lo propio de la web.
+   Los colores de marca llegan de la ficha de marca como variables en <html> (layout.tsx). */
 
 html {
   scroll-behavior: smooth;
-}
-body {
-  background: #fff;
-  color: var(--color-ink);
 }
 
 @utility wrap {
   @apply mx-auto w-full max-w-6xl px-4 md:px-6;
 }
-@utility eyebrow {
-  @apply text-xs font-semibold uppercase tracking-[0.25em] text-brand;
-}
+/* Botones de la web: píldora como bullhaus.cl, 44 px en celular y 40 px desde md */
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50;
+  @apply inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition disabled:opacity-50 md:min-h-10;
 }
+/* Acción principal: brand-dark (5,44 con blanco). El magenta brand con texto blanco no pasa (3,98). */
 @utility btn-brand {
-  @apply btn bg-brand text-white hover:bg-brand-dark;
+  @apply btn bg-brand-dark text-white hover:bg-brand-deep;
 }
 @utility btn-dark {
   @apply btn bg-coal text-white hover:bg-black;
@@ -39,5 +27,5 @@ body {
   @apply btn border border-current hover:bg-black/5;
 }
 @utility field {
-  @apply w-full rounded-lg border border-line bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand focus:ring-1 focus:ring-brand;
+  @apply min-h-11 w-full rounded-[6px] border border-line-strong bg-white px-3.5 py-2.5 text-sm outline-none focus:border-brand-dark focus:ring-2 focus:ring-brand md:min-h-10;
 }

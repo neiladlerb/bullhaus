@@ -26,6 +26,9 @@ importers:
       '@bullhaus/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@bullhaus/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       exceljs:
         specifier: 4.4.0
         version: 4.4.0
@@ -78,6 +81,9 @@ importers:
       '@bullhaus/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@bullhaus/ui':
+        specifier: workspace:*
+        version: link:../../packages/ui
       next:
         specifier: 15.5.29
         version: 15.5.29(@opentelemetry/api@1.10.0)(@types/node@22.20.5)(react-dom@19.1.10(react@19.1.10))(react@19.1.10)
@@ -154,6 +160,19 @@ importers:
       '@types/node':
         specifier: 22.20.5
         version: 22.20.5
+
+  packages/ui:
+    dependencies:
+      '@bullhaus/core':
+        specifier: workspace:*
+        version: link:../core
+    devDependencies:
+      '@types/react':
+        specifier: 19.1.17
+        version: 19.1.17
+      react:
+        specifier: 19.1.10
+        version: 19.1.10
 
 packages:
 

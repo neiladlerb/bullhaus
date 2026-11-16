@@ -5,8 +5,8 @@ function inline(text: string, key: string) {
   const parts = text.split(/(\*\*[^*]+\*\*|\[VALIDAR ABOGADO\]|\[FALTA: [^\]]+\]|<br>)/g);
   return parts.map((p, i) => {
     if (p.startsWith("**") && p.endsWith("**")) return <strong key={`${key}-${i}`}>{p.slice(2, -2)}</strong>;
-    if (p === "[VALIDAR ABOGADO]") return <mark key={`${key}-${i}`} className="rounded bg-amber-100 px-1 text-xs text-amber-900 print:bg-transparent">[validar con abogado]</mark>;
-    if (p.startsWith("[FALTA")) return <mark key={`${key}-${i}`} className="bg-red-100 text-red-800">{p}</mark>;
+    if (p === "[VALIDAR ABOGADO]") return <mark key={`${key}-${i}`} className="rounded bg-warning-soft px-1 text-xs text-warning print:bg-transparent">[validar con abogado]</mark>;
+    if (p.startsWith("[FALTA")) return <mark key={`${key}-${i}`} className="bg-danger-soft text-danger">{p}</mark>;
     if (p === "<br>") return <br key={`${key}-${i}`} />;
     return <Fragment key={`${key}-${i}`}>{p}</Fragment>;
   });

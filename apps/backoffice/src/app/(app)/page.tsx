@@ -45,12 +45,12 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   return (
     <div className="max-w-5xl">
       {sp["sin-permiso"] && (
-        <p className="mb-6 rounded-md border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">No tienes permiso para esa sección.</p>
+        <p className="mb-6 rounded-md border border-warning/40 bg-warning-soft px-4 py-3 text-sm text-warning">No tienes permiso para esa sección.</p>
       )}
       <h1 className="text-2xl font-semibold">Hola, {user.name.split(" ")[0]}</h1>
       <p className="mt-1 text-sm text-muted">{own ? "Tus propiedades" : "Cartera de Bull Haus"} al {formatDate(new Date())}.</p>
       {dueToday > 0 && (
-        <Link href="/pipeline" className={`mt-5 flex items-center justify-between gap-3 rounded-md px-4 py-3 text-sm ${overdue ? "bg-red-50 text-red-900" : "bg-amber-50 text-amber-900"}`}>
+        <Link href="/pipeline" className={`mt-5 flex items-center justify-between gap-3 rounded-md px-4 py-3 text-sm ${overdue ? "bg-danger-soft text-danger" : "bg-warning-soft text-warning"}`}>
           <span>
             <strong>{dueToday} {dueToday === 1 ? "compromiso" : "compromisos"} de contacto para hoy</strong>
             {overdue ? `, ${overdue} vencidos` : ""}.
@@ -103,7 +103,7 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
                     <Link href={`/propiedades/${m.property.id}`} className="hover:underline">
                       {m.property.code} · {m.property.comuna} · {m.owner.name}
                     </Link>
-                    <span className={`chip ${d < 0 ? "bg-red-100 text-red-800" : "bg-amber-100 text-amber-900"}`}>
+                    <span className={`chip ${d < 0 ? "bg-danger-soft text-danger" : "bg-warning-soft text-warning"}`}>
                       {d < 0 ? `Venció hace ${-d} d` : d === 0 ? "Vence hoy" : `Vence en ${d} d`}
                     </span>
                   </li>

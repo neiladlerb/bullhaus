@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const monorepoRoot = fileURLToPath(new URL("../..", import.meta.url));
 
 const config: NextConfig = {
-  transpilePackages: ["@bullhaus/core", "@bullhaus/db"],
+  transpilePackages: ["@bullhaus/core", "@bullhaus/db", "@bullhaus/ui"],
   serverExternalPackages: ["sharp", "exceljs", "@prisma/client"],
   outputFileTracingRoot: monorepoRoot,
   // Con pnpm el cliente generado de Prisma queda en una ruta que el trazado no siempre sigue.
