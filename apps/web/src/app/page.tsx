@@ -192,7 +192,7 @@ export default async function Home() {
           <p className="mt-3 text-xs text-muted lg:text-right">Días desde que la propiedad sale al mercado hasta la reserva, operaciones de los últimos 12 meses.</p>
         )}
         <div className="mt-10">
-          <ProcessCarousel steps={SALES_PROCESS} />
+          <ProcessCarousel steps={SALES_PROCESS} photos={featured.slice(0, 6).map((p) => photoUrl(p.photos[0]!.md))} />
         </div>
       </section>
 

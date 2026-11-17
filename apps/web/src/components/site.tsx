@@ -35,56 +35,61 @@ export function Logo({ brand, light = false, size = 1 }: { brand: Brand; light?:
   );
 }
 
+// Cinco accesos como máximo (skill diseno-bullhaus, web.md). Servicios y Equipo siguen en el inicio y en el
+// menú del celular; redes e "Ingreso corredores" van al pie y al menú, no a la barra.
 const NAV = [
-  { href: "/propiedades?operacion=venta", label: "Venta" },
-  { href: "/propiedades?operacion=arriendo", label: "Arriendo" },
-  { href: "/vender", label: "Vende o arrienda tu propiedad" },
-  { href: "/#servicios", label: "Servicios" },
+  { href: "/propiedades?operacion=venta", label: "Comprar" },
+  { href: "/propiedades?operacion=arriendo", label: "Arrendar" },
+  { href: "/vender", label: "Vender" },
   { href: "/#como-vendemos", label: "Cómo vendemos" },
-  { href: "/#equipo", label: "Equipo" },
   { href: "/#contacto", label: "Contacto" },
+];
+const MORE = [
+  { href: "/#servicios", label: "Servicios" },
+  { href: "/#equipo", label: "Equipo" },
 ];
 
 export async function Header({ overlay = false }: { overlay?: boolean }) {
   const brand = await getBrand();
-  const nav = NAV.filter((n) => n.href !== "/#equipo" || brand.team.length > 0);
+  const more = MORE.filter((n) => n.href !== "/#equipo" || brand.team.length > 0);
+  // Botones de la barra: todos del mismo ancho y alto, en una sola línea. Sobre la foto del inicio van en
+  // carbón semitransparente para que se lean sobre cualquier imagen; en el resto de páginas, con borde.
+  const item = overlay
+    ? "border border-white/25 bg-black/55 text-white backdrop-blur-sm hover:bg-black/75"
+    : "border border-line-strong bg-white text-ink hover:bg-paper";
   return (
     <header className={overlay ? "absolute inset-x-0 top-0 z-20 text-white" : "border-b border-line bg-white text-ink"}>
       <div className="wrap flex items-center justify-between gap-4 py-4">
-        <Link href="/" aria-label="Inicio">
+        <Link href="/" aria-label="Inicio" className="shrink-0">
           <Logo brand={brand} light={overlay} size={0.85} />
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
-          {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="opacity-90 hover:opacity-100 hover:underline hover:underline-offset-8">
+        <nav aria-label="Principal" className="hidden grid-flow-col gap-2 [grid-auto-columns:minmax(0,1fr)] lg:grid">
+          {NAV.map((n) => (
+            <Link key={n.href} href={n.href} className={`flex h-11 items-center justify-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors ${item}`}>
               {n.label}
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-4 sm:flex">
-          <SocialIcons brand={brand} className="hidden xl:inline-flex" />
-          <a href={BACKOFFICE_LOGIN} className="text-sm font-medium opacity-80 hover:opacity-100 hover:underline hover:underline-offset-8" rel="nofollow">
-            Ingreso corredores
-          </a>
+        <div className="flex shrink-0 items-center gap-2">
           {brand.contact.whatsapp && (
-            <a href={whatsappUrl(brand.contact.whatsapp)} className="btn-brand inline-flex" target="_blank" rel="noopener">
+            <a href={whatsappUrl(brand.contact.whatsapp)} className="btn hidden h-11 bg-whatsapp-dark px-5 text-white hover:brightness-110 sm:inline-flex" target="_blank" rel="noopener">
               WhatsApp
             </a>
           )}
+          <details className="relative lg:hidden">
+            <summary className={`flex h-11 cursor-pointer list-none items-center rounded-full px-5 text-sm font-semibold ${item}`}>Menú</summary>
+            <nav aria-label="Menú" className="absolute right-0 z-50 mt-2 w-64 rounded-[10px] bg-white p-2 text-ink shadow-[0_8px_24px_rgb(0_0_0/0.12)]">
+              {[...NAV, ...more].map((n) => (
+                <Link key={n.href} href={n.href} className="flex min-h-11 items-center rounded-md px-3 text-sm font-semibold hover:bg-paper">
+                  {n.label}
+                </Link>
+              ))}
+              <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 flex min-h-11 items-center rounded-md border-t border-line px-3 text-sm text-muted hover:bg-paper">
+                Ingreso corredores
+              </a>
+            </nav>
+          </details>
         </div>
-        <details className="relative lg:hidden">
-          <summary className="cursor-pointer list-none rounded-full border border-current px-3 py-1.5 text-sm">Menú</summary>
-          <nav className="absolute right-0 mt-2 w-64 rounded-xl bg-white p-2 text-ink shadow-xl">
-            {nav.map((n) => (
-              <Link key={n.href} href={n.href} className="block rounded-lg px-3 py-2 text-sm hover:bg-paper">
-                {n.label}
-              </Link>
-            ))}
-            <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 block rounded-lg border-t border-line px-3 py-2 text-sm text-muted hover:bg-paper">
-              Ingreso corredores
-            </a>
-          </nav>
-        </details>
       </div>
     </header>
   );

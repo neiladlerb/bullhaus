@@ -1,56 +1,77 @@
 import Link from "next/link";
 import { can, ROLE_LABELS } from "@bullhaus/core";
 import { Logo } from "@/components/logo";
+import { BackofficeNav, type NavGroup } from "@/components/nav";
 import { UfCalculator } from "@bullhaus/ui/uf-calculator";
 import { requireUser } from "@/lib/auth";
 import { hasDemoData } from "@/lib/demo";
 import { getUf } from "@/lib/uf";
 import { logoutAction } from "../login/actions";
 
-interface NavItem {
-  href: string;
-  label: string;
-  soon?: boolean;
-}
-
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const [user, uf] = await Promise.all([requireUser(undefined, { allowPendingPasswordChange: true }), getUf()]);
   const demo = await hasDemoData(user.tenantId);
 
-  const nav: NavItem[] = [
-    { href: "/", label: "Inicio" },
-    { href: "/propiedades", label: "Propiedades" },
-    ...(can(user.role, "properties.import") ? [{ href: "/propiedades/importar", label: "Importar planilla" }] : []),
-    ...(can(user.role, "leads.read")
-      ? [
-          { href: "/leads", label: "Leads y RRSS" },
-          { href: "/pipeline", label: "Pipeline" },
-          { href: "/brochures", label: "Brochures" },
-        ]
-      : []),
-    ...(can(user.role, "deals.read") ? [{ href: "/operaciones", label: "Operaciones" }] : []),
-    ...(can(user.role, "campaigns.read")
-      ? [
-          { href: "/campanas", label: "Campañas Instagram" },
-          { href: "/redes", label: "Redes sociales" },
-        ]
-      : []),
-    ...(can(user.role, "agents.read") ? [{ href: "/agentes", label: "Agentes IA" }] : []),
-    ...(can(user.role, "kyc.read") ? [{ href: "/kyc", label: "KYC" }] : []),
-    ...(can(user.role, "contracts.read") ? [{ href: "/contratos", label: "Contratos" }] : []),
-    ...(can(user.role, "billing.read") ? [{ href: "/facturacion", label: "Facturación" }] : []),
-    ...(can(user.role, "analytics.read") ? [{ href: "/gestion", label: "Control de gestión" }] : []),
-    ...(can(user.role, "integrations.read") ? [{ href: "/integraciones", label: "Integraciones" }] : []),
-    ...(can(user.role, "brand.manage") ? [{ href: "/marca", label: "Marca y sitio web" }] : []),
-    ...(can(user.role, "users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
-    ...(can(user.role, "audit.read") ? [{ href: "/auditoria", label: "Auditoría" }] : []),
-    ...(can(user.role, "site.import") ? [{ href: "/datos", label: "Carga de datos" }] : []),
-    { href: "/cuenta", label: "Mi cuenta" },
-  ];
+  // Grupos por área de trabajo (skill diseno-bullhaus, backoffice.md). Un grupo aparece solo si el rol
+  // tiene al menos un enlace dentro.
+  const groups: NavGroup[] = [
+    { title: null, links: [{ href: "/", label: "Inicio" }] },
+    {
+      title: "Cartera",
+      links: [
+        { href: "/propiedades", label: "Propiedades" },
+        ...(can(user.role, "properties.import") ? [{ href: "/propiedades/importar", label: "Importar planilla" }] : []),
+        { href: "/propiedades/precios", label: "Revisión de precios" },
+      ],
+    },
+    {
+      title: "Clientes",
+      links: can(user.role, "leads.read")
+        ? [
+            { href: "/leads", label: "Leads y redes" },
+            { href: "/pipeline", label: "Pipeline" },
+            { href: "/brochures", label: "Brochures" },
+          ]
+        : [],
+    },
+    {
+      title: "Operaciones",
+      links: [
+        ...(can(user.role, "deals.read") ? [{ href: "/operaciones", label: "Operaciones" }] : []),
+        ...(can(user.role, "kyc.read") ? [{ href: "/kyc", label: "KYC" }] : []),
+        ...(can(user.role, "contracts.read") ? [{ href: "/contratos", label: "Contratos" }] : []),
+        ...(can(user.role, "billing.read") ? [{ href: "/facturacion", label: "Facturación" }] : []),
+      ],
+    },
+    {
+      title: "Marketing",
+      links: [
+        ...(can(user.role, "campaigns.read")
+          ? [
+              { href: "/campanas", label: "Campañas Instagram" },
+              { href: "/redes", label: "Redes sociales" },
+            ]
+          : []),
+        ...(can(user.role, "agents.read") ? [{ href: "/agentes", label: "Agentes IA" }] : []),
+      ],
+    },
+    { title: "Análisis", links: can(user.role, "analytics.read") ? [{ href: "/gestion", label: "Control de gestión" }] : [] },
+    {
+      title: "Administración",
+      links: [
+        ...(can(user.role, "users.manage") ? [{ href: "/usuarios", label: "Usuarios" }] : []),
+        ...(can(user.role, "brand.manage") ? [{ href: "/marca", label: "Marca y sitio web" }] : []),
+        ...(can(user.role, "integrations.read") ? [{ href: "/integraciones", label: "Integraciones" }] : []),
+        ...(can(user.role, "site.import") ? [{ href: "/datos", label: "Carga de datos" }] : []),
+        ...(can(user.role, "audit.read") ? [{ href: "/auditoria", label: "Auditoría" }] : []),
+      ],
+    },
+    { title: "Tu cuenta", links: [{ href: "/cuenta", label: "Mi cuenta" }] },
+  ].filter((g) => g.links.length > 0);
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
-      <aside className="flex shrink-0 flex-col bg-ink text-white md:w-60">
+      <aside className="flex shrink-0 flex-col bg-ink text-white md:sticky md:top-0 md:h-screen md:w-64">
         <div className="flex items-center justify-between gap-3 px-5 py-5 md:flex-col md:items-start">
           <Logo light />
           {/* La calculadora vive en el menú: como pestaña fija tapaba contenido en el celular (revisión UX, B5). */}
@@ -61,25 +82,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             className="min-h-11 rounded-md border border-white/30 px-3 text-xs font-semibold text-white hover:bg-white/10 md:min-h-9"
           />
         </div>
-        <nav className="flex gap-1 overflow-x-auto px-3 pb-3 md:flex-1 md:flex-col md:overflow-visible">
-          {nav.map((item) =>
-            item.soon ? (
-              <span key={item.label} className="flex shrink-0 items-center justify-between rounded-md px-3 py-2 text-sm text-white/35" title="Próximo paso del plan">
-                {item.label}
-                <span className="ml-2 hidden text-xs md:inline">Pronto</span>
-              </span>
-            ) : (
-              <Link key={item.href} href={item.href} className="shrink-0 rounded-md px-3 py-2 text-sm text-white/85 hover:bg-white/10 hover:text-white">
-                {item.label}
-              </Link>
-            ),
-          )}
-        </nav>
+        <BackofficeNav groups={groups} />
         <div className="hidden border-t border-white/10 px-5 py-4 text-sm md:block">
           <p className="font-medium">{user.name}</p>
-          <p className="text-xs text-white/60">{ROLE_LABELS[user.role]}</p>
+          <p className="text-xs text-white/70">{ROLE_LABELS[user.role]}</p>
           <form action={logoutAction} className="mt-3">
-            <button className="text-xs text-white/70 underline-offset-2 hover:underline">Cerrar sesión</button>
+            <button className="min-h-11 text-sm text-white/85 underline-offset-2 hover:underline md:min-h-8">Cerrar sesión</button>
           </form>
         </div>
       </aside>
