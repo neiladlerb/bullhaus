@@ -16,9 +16,9 @@ export default function manifest(): MetadataRoute.Manifest {
     theme_color: BULLHAUS_BRAND.colors.coal,
     lang: "es-CL",
     icons: [
-      { src: "/icono/192", sizes: "192x192", type: "image/png", purpose: "any" },
-      { src: "/icono/512", sizes: "512x512", type: "image/png", purpose: "any" },
-      { src: "/icono/512?maskable=1", sizes: "512x512", type: "image/png", purpose: "maskable" },
+      { src: "/iconos/icono-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
+      { src: "/iconos/icono-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
+      { src: "/iconos/icono-maskable-512.png", sizes: "512x512", type: "image/png", purpose: "maskable" },
     ],
     shortcuts: [
       { name: "Agenda", url: "/agenda" },

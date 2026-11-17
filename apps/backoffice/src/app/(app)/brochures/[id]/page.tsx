@@ -90,7 +90,10 @@ export default async function BrochurePage({ params, searchParams }: { params: P
         <section className="card space-y-4 p-5">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-medium">1. Contenido y aprobación</h2>
-            <a href={publicUrl} target="_blank" rel="noopener" className="btn-ghost text-sm">Ver brochure ↗</a>
+            <div className="flex flex-wrap gap-2">
+              {write && b.status !== "archivado" && <Link href={`/brochures/${b.id}/disenar`} className="btn-brand text-sm">Diseñar y vista previa</Link>}
+              <a href={publicUrl} target="_blank" rel="noopener" className="btn-ghost text-sm">Ver brochure ↗</a>
+            </div>
           </div>
           <p className="text-xs text-muted">
             {b.kind === "captacion"

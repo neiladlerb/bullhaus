@@ -989,6 +989,8 @@ model Brochure {
   title        String
   /// Bajada opcional escrita por una persona; se revisa en la aprobación.
   intro        String?
+  /// Plantilla, fotos y secciones elegidas (BrochureDesign en packages/core). Null: diseño por defecto.
+  design       Json?
   token        String          @unique
   status       BrochureStatus  @default(borrador)
   createdById  String?

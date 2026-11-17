@@ -26,7 +26,7 @@ export const brochurePropertySelect = {
   id: true, code: true, operation: true, type: true, comuna: true, sector: true, headline: true, description: true, price: true, currency: true,
   commonExpensesClp: true, m2Useful: true, m2Land: true, bedrooms: true, bathrooms: true, parking: true, storage: true, features: true, status: true,
   broker: { select: { name: true, email: true, phone: true } },
-  media: { orderBy: { order: "asc" as const }, take: 8, select: { sizes: true, isCover: true } },
+  media: { orderBy: [{ isCover: "desc" }, { order: "asc" }] as Prisma.PropertyMediaOrderByWithRelationInput[], take: 40, select: { id: true, sizes: true, isCover: true } },
 } as const;
 
 export type BrochureProperty = Prisma.PropertyGetPayload<{ select: typeof brochurePropertySelect }>;

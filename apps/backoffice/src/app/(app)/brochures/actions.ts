@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { can, seesOnlyOwnProperties, TYPE_LABELS } from "@bullhaus/core";
+import { can, designChanged, parseBrochureDesign, seesOnlyOwnProperties, TYPE_LABELS } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { audit } from "@/lib/audit";
 import { requireUser, type CurrentUser } from "@/lib/auth";
@@ -113,4 +113,28 @@ export async function simulateOpenAction(form: FormData): Promise<void> {
   ]);
   revalidatePath(`/brochures/${share.brochureId}`);
   revalidatePath("/envio-demo");
+}
+
+/** Guarda plantilla, fotos y secciones. Solo fotos de la propia ficha. Si estaba aprobado, vuelve a revisión. */
+export async function saveDesignAction(form: FormData): Promise<void> {
+  const user = await brochureEditor();
+  const b = await find(user, idOf(form));
+  if (!b || b.status === "archivado") redirect("/brochures");
+  const design = parseBrochureDesign(String(form.get("design") ?? ""));
+  if (b.propertyId && design.photoIds.length) {
+    const own = await prisma.propertyMedia.findMany({ where: { propertyId: b.propertyId, id: { in: design.photoIds } }, select: { id: true } });
+    const ok = new Set(own.map((m) => m.id));
+    design.photoIds = design.photoIds.filter((id) => ok.has(id));
+  } else if (!b.propertyId) {
+    design.photoIds = [];
+  }
+  if (!designChanged(parseBrochureDesign(b.design), design)) redirect(`/brochures/${b.id}/disenar?ok=sin-cambios`);
+  const backToReview = b.status === "aprobado";
+  await prisma.brochure.update({
+    where: { id: b.id },
+    data: { design, ...(backToReview ? { status: "en_revision", approvedById: null, approvedAt: null } : {}) },
+  });
+  await audit(user, "brochure.design", "brochure", b.id, { template: design.template, photos: design.photoIds.length, backToReview });
+  refresh(b.id);
+  redirect(`/brochures/${b.id}/disenar?ok=${backToReview ? "revision" : "guardado"}`);
 }

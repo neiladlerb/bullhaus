@@ -114,6 +114,7 @@ Plantillas de diseño:
   - "ARRENDADA" / "VENDIDA".
   - Post de captación (texto sobre fondo de marca o foto de una comuna).
   - Historia vertical con enlace a WhatsApp.
+- **Estado al 17/11/2026:** el brochure ya tiene editor de diseño en el back office (Brochures > Diseñar y vista previa): tres plantillas (portada con foto, editorial, mínimo), elección y orden de fotos, secciones visibles y una etiqueta de una lista cerrada (sin "Nuevo valor", que exige el precio anterior en el historial). La vista previa es el brochure real en celular o escritorio. Genera el post cuadrado (1080 x 1080) y la historia (1080 x 1920) con el logo oficial, más la vista de cómo se ve el enlace en WhatsApp. Cambiar el diseño de un brochure aprobado lo devuelve a revisión, y las imágenes solo se descargan con el brochure aprobado. La publicación en Instagram sigue siendo manual.
 - Alternativa si Bull Haus ya diseña en Canva: usar sus plantillas de Canva a través de la API de Canva. [PENDIENTE: preguntar a Bull Haus qué usa hoy]
 
 Tipos de post:
