@@ -4,6 +4,32 @@ import { prisma } from "@bullhaus/db";
 import { requireUser } from "@/lib/auth";
 import { ImportForm } from "./import-form";
 
+// Orden de lectura de las columnas, por tema. Solo presentación: la validación sigue en SHEET_COLUMNS.
+const GROUPS: { title: string; keys: string[] }[] = [
+  { title: "Identificación", keys: ["codigo", "operacion", "tipo", "corredor", "estado", "publicar_web"] },
+  { title: "Ubicación", keys: ["comuna", "sector", "direccion_exacta"] },
+  { title: "Precio", keys: ["precio", "moneda", "gastos_comunes_clp"] },
+  { title: "Características", keys: ["m2_utiles", "m2_terreno", "dormitorios", "banos", "estacionamientos", "bodegas", "mascotas", "amoblado", "disponible_desde"] },
+  { title: "Textos y anuncios", keys: ["descripcion", "url_instagram", "ids_anuncio"] },
+];
+const COLUMN_GROUPS = [
+  ...GROUPS.map((g) => ({ title: g.title, columns: SHEET_COLUMNS.filter((c) => g.keys.includes(c.key)) })),
+  { title: "Otras", columns: SHEET_COLUMNS.filter((c) => !GROUPS.some((g) => g.keys.includes(c.key))) },
+].filter((g) => g.columns.length > 0);
+
+// Ayuda para las columnas que en SHEET_COLUMNS no la traen.
+const COLUMN_HELP: Record<string, string> = {
+  comuna: "Comuna tal como se publica",
+  sector: "Barrio o sector, si aplica",
+  m2_utiles: "Metros cuadrados útiles, solo el número",
+  m2_terreno: "Metros cuadrados de terreno, solo el número",
+  dormitorios: "Cantidad",
+  banos: "Cantidad",
+  estacionamientos: "Cantidad",
+  bodegas: "Cantidad",
+  url_instagram: "Enlace a la publicación de la propiedad",
+};
+
 export default async function ImportPage({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const user = await requireUser("properties.import");
   const sp = await searchParams;
@@ -19,14 +45,31 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
       <h1 className="mt-2 text-2xl font-semibold">Importar planilla</h1>
       <p className="mt-1 text-sm text-muted">Una fila por propiedad. Si el código ya existe, la fila la actualiza. Las filas con errores no se cargan y se listan abajo.</p>
 
-      <section className="card mt-6 p-6">
-        <ol className="mb-5 list-decimal space-y-1 pl-5 text-sm">
-          <li><a href="/propiedades/plantilla" className="font-medium text-brand underline">Descarga la planilla modelo</a> (Excel, con una hoja de instrucciones).</li>
-          <li>Llénala o pega ahí tu planilla actual respetando los encabezados. También sirve un .csv con los mismos encabezados.</li>
-          <li>Súbela aquí.</li>
-        </ol>
-        <ImportForm />
-      </section>
+      {/* Tres pasos en orden, cada uno con su acción: el proceso se entiende sin leer las columnas. */}
+      <ol className="mt-6 grid gap-4 md:grid-cols-3">
+        <li className="card flex flex-col p-5">
+          <p className="text-sm font-semibold text-muted">Paso 1</p>
+          <h2 className="mt-1 font-semibold">Descarga la planilla modelo</h2>
+          <p className="mt-1 flex-1 text-sm text-muted">Excel con los encabezados correctos, una fila de ejemplo y una hoja de instrucciones.</p>
+          <a href="/propiedades/plantilla" className="btn-primary mt-4 self-start">Descargar planilla</a>
+        </li>
+        <li className="card flex flex-col p-5">
+          <p className="text-sm font-semibold text-muted">Paso 2</p>
+          <h2 className="mt-1 font-semibold">Completa una fila por propiedad</h2>
+          <p className="mt-1 flex-1 text-sm text-muted">
+            Las columnas marcadas como obligatorias en la tabla de abajo no pueden ir vacías. Si ya tienes tu planilla, copia tus datos debajo de los mismos encabezados. También sirve un .csv.
+          </p>
+          <a href="#columnas" className="btn-ghost mt-4 self-start">Ver qué va en cada columna</a>
+        </li>
+        <li className="card flex flex-col p-5">
+          <p className="text-sm font-semibold text-muted">Paso 3</p>
+          <h2 className="mt-1 font-semibold">Sube el archivo</h2>
+          <p className="mt-1 text-sm text-muted">Si el código ya existe, la fila actualiza esa propiedad. Las filas con errores no se cargan y te decimos qué corregir.</p>
+          <div className="mt-4">
+            <ImportForm />
+          </div>
+        </li>
+      </ol>
 
       {current && (
         <section className="card mt-6 p-6" aria-live="polite">
@@ -55,13 +98,38 @@ export default async function ImportPage({ searchParams }: { searchParams: Promi
         </section>
       )}
 
-      <section className="card mt-6 p-6">
-        <h2 className="mb-3 font-medium">Columnas</h2>
-        <div className="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-          {SHEET_COLUMNS.map((c) => (
-            <p key={c.key}><code className="text-xs">{c.key}</code>{c.required && <span className="text-brand"> *</span>} <span className="text-muted">{c.help}</span></p>
-          ))}
+      <section id="columnas" className="card mt-6 scroll-mt-6 overflow-hidden">
+        <div className="p-6 pb-2">
+          <h2 className="font-semibold">Qué va en cada columna</h2>
+          <p className="mt-1 text-sm text-muted">El encabezado debe quedar escrito igual que en la primera columna. El orden de las columnas no importa.</p>
         </div>
+        {COLUMN_GROUPS.map((g) => (
+          <div key={g.title} className="px-6 pb-4">
+            <h3 className="mt-4 text-sm font-semibold">{g.title}</h3>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[560px] text-sm">
+                <thead className="border-b border-line text-left text-xs text-muted">
+                  <tr>
+                    <th className="w-48 py-2 pr-4 font-medium">Encabezado</th>
+                    <th className="w-28 py-2 pr-4 font-medium">Obligatoria</th>
+                    <th className="py-2 pr-4 font-medium">Qué poner</th>
+                    <th className="w-44 py-2 font-medium">Ejemplo</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {g.columns.map((c) => (
+                    <tr key={c.key}>
+                      <td className="py-2 pr-4"><code className="rounded bg-paper px-1.5 py-0.5 text-xs">{c.key}</code></td>
+                      <td className="py-2 pr-4">{c.required ? <span className="chip bg-warning-soft text-warning">Obligatoria</span> : <span className="text-muted">Opcional</span>}</td>
+                      <td className="py-2 pr-4">{COLUMN_HELP[c.key] ?? c.help}</td>
+                      <td className="py-2 text-muted">{c.example || "–"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        ))}
       </section>
 
       {recent.length > 0 && (

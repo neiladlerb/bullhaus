@@ -5,6 +5,7 @@ import { comunaSlug, formatPrice, TYPE_LABELS, whatsappUrl } from "@bullhaus/cor
 import { UfCalculator } from "@bullhaus/ui/uf-calculator";
 import { ContactForm } from "@/components/contact-form";
 import { Header, priceLabel, PropertyCard, specs } from "@/components/site";
+import { VisitBooking } from "@/components/visit-booking";
 import { displayCode, getBrand, getProperties, getProperty, photoUrl } from "@/lib/api";
 import { breadcrumbJsonLd, JsonLd, listingJsonLd } from "@/lib/seo";
 import { getUf } from "@/lib/uf";
@@ -141,7 +142,7 @@ export default async function PropertyPage({ params }: Params) {
                   </div>
                 ))}
               </dl>
-              <p className="mt-3 text-xs text-muted">La dirección exacta se entrega al coordinar la visita.</p>
+              <p className="mt-3 text-xs text-muted">La dirección exacta se entrega al confirmar la visita.</p>
             </section>
           </article>
 
@@ -149,13 +150,16 @@ export default async function PropertyPage({ params }: Params) {
             <div className="rounded-3xl bg-paper p-6">
               <p className="text-xs text-muted">Corredor a cargo</p>
               <p className="font-semibold">{p.broker.name}</p>
+              <div id="agendar" className="mt-4 scroll-mt-6">
+                <VisitBooking code={p.code} brandName={brand.shortName} brokerName={p.broker.name} />
+              </div>
               {wa && (
-                <a href={wa} target="_blank" rel="noopener" className="btn mt-4 w-full bg-whatsapp-dark text-white hover:brightness-110">
+                <a href={wa} target="_blank" rel="noopener" className="btn mt-3 w-full bg-whatsapp-dark text-white hover:brightness-110">
                   Consultar por WhatsApp
                 </a>
               )}
-              <p className="my-5 text-center text-xs text-muted">o déjanos tus datos</p>
-              <ContactForm kind={p.operation === "venta" ? "comprador" : "arrendatario"} brandName={brand.shortName} propertyCode={p.code} submitLabel="Quiero visitarla" messagePlaceholder="¿Cuándo te acomoda visitarla?" />
+              <p className="my-5 text-center text-xs text-muted">o déjanos tus datos y te contactamos</p>
+              <ContactForm kind={p.operation === "venta" ? "comprador" : "arrendatario"} brandName={brand.shortName} propertyCode={p.code} submitLabel="Enviar consulta" messagePlaceholder="¿Qué te gustaría saber de la propiedad?" />
             </div>
           </aside>
         </div>

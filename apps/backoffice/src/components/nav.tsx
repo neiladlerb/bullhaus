@@ -1,5 +1,5 @@
 "use client";
-// Menú del back office (skill diseno-bullhaus, backoffice.md, Menú): enlaces agrupados por área de trabajo,
+// Menú del back office (skill diseno-bullhaus, backoffice.md, Menú): enlaces agrupados por área de trabajo y separados por una línea,
 // todos del mismo alto (44 px), y la página actual marcada con aria-current, fondo y barra blanca a la
 // izquierda (el magenta no se lee sobre ink: 2,65). También se marca en las subpáginas.
 // En el celular el menú completo se abre con el botón "Menú" en vez de una fila con scroll hacia el lado.
@@ -26,8 +26,9 @@ function Links({ groups, current }: { groups: NavGroup[]; current: string | null
   return (
     <>
       {groups.map((g) => (
-        <div key={g.title ?? "inicio"} className="mt-3 first:mt-0">
-          {g.title && <p className="px-3 pb-1 text-xs font-semibold text-white/70">{g.title}</p>}
+        // Los grupos se separan con una línea, sin título: un título gris junto a los enlaces se leía como
+        // una opción bloqueada ("Clientes", "Análisis") y "Operaciones" aparecía dos veces seguidas.
+        <div key={g.title ?? "inicio"} className="mt-2 border-t border-white/10 pt-2 first:mt-0 first:border-t-0 first:pt-0">
           <ul>
             {g.links.map((l) => {
               const on = l.href === current;
