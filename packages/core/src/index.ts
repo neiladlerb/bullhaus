@@ -21,3 +21,4 @@ export * from "./brand";
 export * from "./bullhaus-brand";
 export * from "./agenda";
 export * from "./dictation";
+export * from "./valuation";

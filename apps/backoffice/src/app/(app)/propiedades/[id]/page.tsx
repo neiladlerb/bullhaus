@@ -225,6 +225,11 @@ export default async function PropertyPage({ params, searchParams }: { params: P
               Dictar cómo es
             </Link>
           )}
+          {editable && (
+            <Link href={`/tasaciones/nueva?propiedad=${property.id}`} className="btn-ghost">
+              Tasar con comparables
+            </Link>
+          )}
         </div>
         <PropertyForm id={property.id} values={propertyToFormValues(property)} brokers={brokers} lockBroker={lock} readOnly={!editable} />
       </section>
