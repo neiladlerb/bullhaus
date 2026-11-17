@@ -252,39 +252,97 @@ export default async function PropertyPage({ params, searchParams }: { params: P
       </section>
 
       <section className="card mt-6 p-6">
-        <h2 className="mb-1 font-medium">
+        <h2 className="mb-1 font-semibold">
           Legal y contratos
           {legal?.isDemo && <DemoTag />}
         </h2>
-        <p className="mb-4 text-xs text-muted">Datos de los certificados (no de la ficha comercial), confirmados por una persona. Con ellos se arman los contratos.</p>
+        <p className="text-sm text-muted">Datos de los certificados (no de la ficha comercial), confirmados por una persona. Con ellos se arman los contratos.</p>
+
+        {/* Tres bloques con su título: datos del título, certificados y documentos. Cada dato con su etiqueta
+            arriba y el valor abajo, en columnas parejas, en vez de pares a la izquierda y derecha que se cortaban. */}
+        <h3 className="mt-5 text-sm font-semibold">Datos del título</h3>
         {legal ? (
-          <dl className="grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
-            <div className="flex justify-between gap-3"><dt className="text-muted">Dirección según título</dt><dd className="text-right">{legal.address}{legal.unit ? `, ${legal.unit}` : ""}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">Inscripción</dt><dd className="text-right">fs. {legal.fojas} N° {legal.registryNumber} de {legal.registryYear}, CBR {legal.conservador}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">Rol de avalúo</dt><dd>{legal.rolAvaluo}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">Avalúo fiscal</dt><dd className="tabular-nums">{formatPrice(legal.avaluoFiscalClp, "CLP")}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">Propietario inscrito</dt><dd className="text-right">{legal.registeredOwners}</dd></div>
-            <div className="flex justify-between gap-3"><dt className="text-muted">Gravámenes</dt><dd className="text-right">{legal.liens ?? "No registra"}</dd></div>
-            <div className="flex justify-between gap-3 sm:col-span-2"><dt className="text-muted">Certificados cargados</dt><dd className="text-right">{documents.map((d) => `${DOC_LABELS[d.kind] ?? d.kind} (${formatDate(d.issuedAt)})`).join(" · ") || "—"}</dd></div>
+          <dl className="mt-2 grid gap-x-6 gap-y-4 rounded-md bg-paper p-4 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div className="sm:col-span-2 lg:col-span-1">
+              <dt className="text-xs text-muted">Dirección según título</dt>
+              <dd className="mt-0.5 font-semibold">{legal.address}{legal.unit ? `, ${legal.unit}` : ""}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Propietario inscrito</dt>
+              <dd className="mt-0.5 font-semibold">{legal.registeredOwners}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Inscripción</dt>
+              <dd className="mt-0.5 font-semibold">Fs. {legal.fojas} N° {legal.registryNumber} de {legal.registryYear}</dd>
+              <dd className="text-muted">CBR {legal.conservador}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Rol de avalúo</dt>
+              <dd className="mt-0.5 font-semibold tabular-nums">{legal.rolAvaluo}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Avalúo fiscal</dt>
+              <dd className="mt-0.5 font-semibold tabular-nums">{formatPrice(legal.avaluoFiscalClp, "CLP")}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted">Gravámenes</dt>
+              <dd className="mt-0.5 font-semibold">{legal.liens ?? "No registra"}</dd>
+            </div>
           </dl>
         ) : (
-          <p className="text-sm text-muted">Faltan los certificados de la propiedad: sin ellos no se generan contratos.</p>
+          <p className="mt-2 rounded-md bg-warning-soft px-4 py-3 text-sm text-warning">Faltan los datos del título: sin ellos no se generan contratos.</p>
         )}
+
+        <h3 className="mt-6 text-sm font-semibold">
+          Certificados ({documents.length} de {Object.keys(DOC_LABELS).length})
+        </h3>
+        <ul className="mt-2 grid gap-2 text-sm sm:grid-cols-2">
+          {Object.entries(DOC_LABELS).map(([kind, label]) => {
+            const doc = documents.find((d) => d.kind === kind);
+            return (
+              <li key={kind} className="flex min-h-11 items-center justify-between gap-3 rounded-md border border-line px-3 py-2">
+                <span>{label}</span>
+                {doc ? (
+                  <span className="chip shrink-0 bg-success-soft text-success">Emitido {formatDate(doc.issuedAt)}</span>
+                ) : (
+                  <span className="chip shrink-0 bg-warning-soft text-warning">Falta</span>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+
         {(contracts.length > 0 || deals.length > 0) && (
-          <ul className="mt-4 divide-y divide-line border-t border-line text-sm">
-            {contracts.map((c) => (
-              <li key={c.id} className="flex justify-between py-2">
-                <Link href={`/contratos/${c.id}`} className="hover:underline">{CONTRACT_KIND_LABELS[c.kind]} N° {c.number}</Link>
-                <span className="text-xs text-muted">{formatDate(c.createdAt)} · {CONTRACT_STATUS_LABELS[c.status]}</span>
-              </li>
-            ))}
-            {deals.map((d) => (
-              <li key={d.id} className="flex justify-between py-2">
-                <Link href={`/operaciones/${d.id}`} className="hover:underline">Operación {d.number}</Link>
-                <span className="text-xs text-muted">{dealStageLabel(d.stage, d.operation)}</span>
-              </li>
-            ))}
-          </ul>
+          <>
+            <h3 className="mt-6 text-sm font-semibold">Contratos y operaciones</h3>
+            <div className="mt-2 overflow-x-auto">
+              <table className="w-full min-w-[420px] text-sm">
+                <thead className="border-b border-line text-left text-xs text-muted">
+                  <tr>
+                    <th className="py-2 pr-4 font-medium">Documento</th>
+                    <th className="w-32 py-2 pr-4 font-medium">Fecha</th>
+                    <th className="w-40 py-2 font-medium">Estado</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-line">
+                  {contracts.map((c) => (
+                    <tr key={c.id}>
+                      <td className="py-2 pr-4"><Link href={`/contratos/${c.id}`} className="font-semibold hover:underline">{CONTRACT_KIND_LABELS[c.kind]} N° {c.number}</Link></td>
+                      <td className="py-2 pr-4 tabular-nums">{formatDate(c.createdAt)}</td>
+                      <td className="py-2">{CONTRACT_STATUS_LABELS[c.status]}</td>
+                    </tr>
+                  ))}
+                  {deals.map((d) => (
+                    <tr key={d.id}>
+                      <td className="py-2 pr-4"><Link href={`/operaciones/${d.id}`} className="font-semibold hover:underline">Operación {d.number}</Link></td>
+                      <td className="py-2 pr-4 text-muted">–</td>
+                      <td className="py-2">{dealStageLabel(d.stage, d.operation)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </section>
 
