@@ -1,5 +1,5 @@
 import "server-only";
-import { BUSY_STATUSES, freeSlots, isSlotFree, normalizeAvailability, type DaySlots, type Interval } from "@bullhaus/core";
+import { BUSY_STATUSES, freeSlots, isSlotFree, normalizeAvailability, type DaySlots, type Interval, type WeeklyAvailability } from "@bullhaus/core";
 import { prisma, type Prisma } from "@bullhaus/db";
 import type { CurrentUser } from "./auth";
 
@@ -35,13 +35,28 @@ export async function brokerSlots(tenantId: string, brokerId: string, now = new 
   return freeSlots({ now, availability: normalizeAvailability(broker.availability), busy, days, ...settings });
 }
 
-/** Vuelve a comprobar el horario justo antes de guardar: otra persona pudo tomarlo mientras se llenaba el formulario. */
-export async function slotStillFree(tenantId: string, brokerId: string, start: Date, now = new Date(), db: Db = prisma): Promise<boolean> {
+export interface SlotContext {
+  availability: WeeklyAvailability;
+  durationMin: number;
+  minNoticeHours: number;
+}
+
+/** Horario y ajustes del corredor. Se leen ANTES de abrir la transacción (ver slotStillFree). */
+export async function slotContext(tenantId: string, brokerId: string): Promise<SlotContext | null> {
   const [broker, settings] = await Promise.all([
     prisma.user.findFirst({ where: { id: brokerId, tenantId, active: true }, select: { availability: true } }),
     visitSettings(tenantId),
   ]);
-  if (!broker) return false;
+  return broker ? { availability: normalizeAvailability(broker.availability), ...settings } : null;
+}
+
+/**
+ * Vuelve a comprobar el horario justo antes de guardar: otra persona pudo tomarlo mientras se llenaba el formulario.
+ * Dentro de una transacción solo usa `db` (la transacción): en producción hay una conexión por función
+ * (connection_limit=1, docs/despliegue.md) y una consulta fuera de la transacción espera esa conexión hasta el
+ * tiempo límite.
+ */
+export async function slotStillFree(tenantId: string, brokerId: string, start: Date, ctx: SlotContext, now = new Date(), db: Db = prisma): Promise<boolean> {
   const busy = await busyFor(tenantId, brokerId, new Date(start.getTime() - 86_400_000), new Date(start.getTime() + 86_400_000), db);
-  return isSlotFree(start, { now, availability: normalizeAvailability(broker.availability), busy, ...settings });
+  return isSlotFree(start, { now, busy, ...ctx });
 }
