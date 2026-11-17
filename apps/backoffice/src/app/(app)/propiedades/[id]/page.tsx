@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { APPOINTMENT_KIND_LABELS, APPOINTMENT_STATUS_LABELS, formatWhen, localDayKey, milestoneRows, nextMilestone } from "@bullhaus/core";
+import { setMilestoneAction } from "../../agenda/actions";
 import { can, canEditProperty, CONTRACT_KIND_LABELS, CONTRACT_STATUS_LABELS, daysUntil, dealStageLabel, formatDate, formatPrice, seesOnlyOwnProperties } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { ConfirmSubmit } from "@bullhaus/ui/confirm-submit";
@@ -33,12 +35,30 @@ export default async function PropertyPage({ params, searchParams }: { params: P
   const lock = seesOnlyOwnProperties(user.role);
   const brokers = lock ? [{ email: property.broker.email, name: property.broker.name }] : await activeBrokers(user.tenantId);
   const media = [...property.media].sort((a, b) => a.order - b.order);
-  const [legal, documents, contracts, deals] = await Promise.all([
+  const [legal, documents, contracts, deals, milestones, upcoming, doneVisits] = await Promise.all([
     prisma.propertyLegal.findUnique({ where: { propertyId: property.id } }),
     prisma.propertyDocument.findMany({ where: { propertyId: property.id }, orderBy: { issuedAt: "desc" } }),
     can(user.role, "contracts.read") ? prisma.contract.findMany({ where: { propertyId: property.id }, orderBy: { createdAt: "asc" }, select: { id: true, number: true, kind: true, status: true, createdAt: true } }) : [],
     can(user.role, "deals.read") ? prisma.deal.findMany({ where: { propertyId: property.id }, orderBy: { reservedAt: "asc" }, select: { id: true, number: true, stage: true, operation: true } }) : [],
+    prisma.propertyMilestone.findMany({ where: { propertyId: property.id }, select: { key: true, doneAt: true, dueAt: true } }),
+    prisma.appointment.findMany({
+      where: { propertyId: property.id, status: { in: ["por_confirmar", "confirmada"] }, startsAt: { gte: new Date() } },
+      orderBy: { startsAt: "asc" },
+      take: 5,
+      select: { id: true, kind: true, status: true, startsAt: true, contactName: true },
+    }),
+    prisma.appointment.count({ where: { propertyId: property.id, kind: "visita", status: "realizada" } }),
   ]);
+  const milestoneList = milestoneRows(property.operation, milestones, {
+    hasMandate: property.mandates.length > 0,
+    hasCertificates: documents.length > 0,
+    photoCount: property.media.length,
+    publishedOnWeb: property.status === "disponible" && property.publishWeb,
+    doneVisits,
+  });
+  const next = nextMilestone(milestoneList);
+  const doneCount = milestoneList.filter((m) => m.doneAt).length;
+  const dateInput = (d: Date | null) => (d ? localDayKey(d) : "");
 
   return (
     <div className="max-w-5xl">
@@ -50,6 +70,83 @@ export default async function PropertyPage({ params, searchParams }: { params: P
       </div>
       {sp.creada && <p className="mt-4 rounded-md bg-success-soft px-4 py-3 text-sm text-success">Propiedad creada. Ahora agrega fotos y el mandato.</p>}
       {!editable && <p className="mt-4 text-sm text-muted">Solo lectura: no tienes permiso para editar esta propiedad.</p>}
+
+      {/* Hitos hasta la venta o el arriendo: lo que falta hacer con la propiedad, en orden. Los automáticos salen de
+          los datos (mandato, certificados, fotos, publicación, visitas); el resto lo marca el corredor. */}
+      <section id="hitos" className="card mt-6 scroll-mt-6 p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-medium">Hitos hasta {property.operation === "arriendo" ? "el arriendo" : "la venta"}</h2>
+          <p className="text-sm text-muted">{doneCount} de {milestoneList.length} listos</p>
+        </div>
+        <div className="mt-3 h-2 overflow-hidden rounded-full bg-paper" role="progressbar" aria-valuemin={0} aria-valuemax={milestoneList.length} aria-valuenow={doneCount} aria-label="Avance de los hitos">
+          <div className="h-full rounded-full bg-success" style={{ width: `${(doneCount / milestoneList.length) * 100}%` }} />
+        </div>
+        {next && (
+          <p className="mt-3 text-sm">
+            <span className="font-semibold">Lo siguiente:</span> {next.label}
+            {next.dueAt ? `, para el ${formatDate(next.dueAt)}` : ""}
+          </p>
+        )}
+        <ol className="mt-4 divide-y divide-line text-sm">
+          {milestoneList.map((m) => (
+            <li key={m.key} className="flex flex-wrap items-center justify-between gap-3 py-2">
+              <span className="flex items-center gap-3">
+                <span aria-hidden="true" className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border ${m.doneAt ? "border-success bg-success text-white" : "border-line-strong bg-white"}`}>
+                  {m.doneAt && (
+                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12l5 5L20 7" /></svg>
+                  )}
+                </span>
+                <span>
+                  <span className={m.doneAt ? "text-muted" : "font-semibold"}>{m.label}</span>
+                  <span className="sr-only">{m.doneAt ? ", listo" : ", pendiente"}</span>
+                  {m.auto && <span className="block text-xs text-muted">Se marca solo</span>}
+                  {!m.auto && m.doneAt && <span className="block text-xs text-muted">Listo el {formatDate(m.doneAt)}</span>}
+                </span>
+              </span>
+              {editable && !m.auto && (
+                <span className="flex flex-wrap items-center gap-2">
+                  {!m.doneAt && (
+                    <form action={setMilestoneAction} className="flex items-center gap-2">
+                      <input type="hidden" name="propertyId" value={property.id} />
+                      <input type="hidden" name="key" value={m.key} />
+                      <label className="sr-only" htmlFor={`due-${m.key}`}>Fecha límite de {m.label}</label>
+                      <input id={`due-${m.key}`} name="dueAt" type="date" defaultValue={dateInput(m.dueAt)} className="input w-40" />
+                      <button className="btn-ghost w-28">Fijar fecha</button>
+                    </form>
+                  )}
+                  <form action={setMilestoneAction}>
+                    <input type="hidden" name="propertyId" value={property.id} />
+                    <input type="hidden" name="key" value={m.key} />
+                    <input type="hidden" name="done" value={m.doneAt ? "0" : "1"} />
+                    <button className={`${m.doneAt ? "btn-ghost" : "btn-primary"} w-28`}>{m.doneAt ? "Desmarcar" : "Marcar listo"}</button>
+                  </form>
+                </span>
+              )}
+            </li>
+          ))}
+        </ol>
+        <div className="mt-4 border-t border-line pt-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-semibold">Próximas citas</h3>
+            <Link href="/agenda?nueva=1" className="text-sm font-semibold text-ink underline-offset-4 hover:underline">Agendar en la agenda</Link>
+          </div>
+          {upcoming.length === 0 ? (
+            <p className="mt-2 text-sm text-muted">Sin citas agendadas.</p>
+          ) : (
+            <ul className="mt-2 divide-y divide-line text-sm">
+              {upcoming.map((a) => (
+                <li key={a.id} className="flex flex-wrap justify-between gap-2 py-2">
+                  <Link href={`/agenda?dia=${localDayKey(a.startsAt)}`} className="hover:underline">
+                    {APPOINTMENT_KIND_LABELS[a.kind]} el {formatWhen(a.startsAt)}
+                    {a.contactName ? `, con ${a.contactName}` : ""}
+                  </Link>
+                  <span className="text-muted">{APPOINTMENT_STATUS_LABELS[a.status]}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
       <section className="card mt-6 p-6">
         <h2 className="mb-1 font-medium">Fotos</h2>

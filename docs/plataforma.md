@@ -62,7 +62,8 @@ Conexión con los agentes:
 
 - El botón de WhatsApp de cada ficha abre el chat con un texto ya escrito que incluye el código de la propiedad ("Hola, me interesa la propiedad MK-014"). El agente de WhatsApp lee el código y sabe por cuál escribe, igual que con los anuncios.
 - El formulario de propietarios crea el contacto en el pipeline de captación y el agente de WhatsApp le escribe en menos de un minuto. Solo si la persona marcó que quiere que la contacten por WhatsApp, porque es ella la que inicia.
-- "Agendar visita" usa los mismos huecos de Cal.com que los agentes.
+- "Agendar visita" usa la agenda propia del back office (17/11/2026, en vez de Cal.com): la persona elige día y hora entre los horarios libres del corredor a cargo (su horario de visitas, menos sus citas, con la duración y la antelación de Agentes IA, Ajustes), deja nombre y celular y confirma el horario con un botón que lo repite. La cita entra "Por confirmar" y toma el horario; el corredor la confirma en Agenda y envía la confirmación con la dirección exacta desde su WhatsApp (enlace con el texto armado). El agente de WhatsApp debe usar los mismos horarios (`brokerSlots` en `apps/backoffice/src/lib/agenda.ts`).
+- Agenda del corredor (back office, menú Agenda): semana con visitas, tasaciones, llamadas, reuniones y firmas, tareas de seguimiento de los leads e hitos con fecha. Cada propiedad tiene su lista de hitos hasta la venta o el arriendo (`MILESTONES` en `packages/core/src/agenda.ts`); los que salen de los datos (mandato, certificados, fotos, publicada en la web, primera visita) se marcan solos.
 
 Medición:
 

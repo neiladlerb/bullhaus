@@ -34,6 +34,12 @@ declare global {
 }
 
 /** Avisa a GA4 y a Meta que hubo un lead. Solo existen si la persona aceptó las cookies. */
+/** Visita agendada desde la ficha (evento visita_agendada de docs/plataforma.md). Sin consentimiento no hay etiquetas cargadas y no pasa nada. */
+export function trackVisit(code: string) {
+  window.gtag?.("event", "visita_agendada", { property_code: code });
+  window.fbq?.("track", "Schedule", { content_ids: [code] });
+}
+
 export function trackLead(kind: string) {
   window.gtag?.("event", "generate_lead", { lead_type: kind });
   window.fbq?.("track", "Lead", { content_category: kind });

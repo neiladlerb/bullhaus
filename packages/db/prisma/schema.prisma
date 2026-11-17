@@ -112,6 +112,7 @@ model Tenant {
   brochures      Brochure[]
   leadTasks      LeadTask[]
   brand          TenantBrand?
+  appointments   Appointment[]
 }
 
 /// Ficha de marca de la corredora: nombre, logo, colores, contacto, redes, zonas, equipo y textos de la web.
@@ -146,6 +147,9 @@ model User {
   leads              Lead[]     @relation("LeadBroker")
   approvedCampaigns  Campaign[] @relation("CampaignApprover")
   tasks              LeadTask[] @relation("TaskOwner")
+  /// Horario en que acepta visitas, por día de la semana (packages/core/src/agenda.ts). Vacío = horario por defecto.
+  availability       Json?
+  appointments       Appointment[] @relation("AppointmentBroker")
 
   @@unique([tenantId, email])
 }
@@ -211,6 +215,8 @@ model Property {
   conversations     Conversation[]
   socialPosts       SocialPost[]
   brochures         Brochure[]
+  appointments      Appointment[]
+  milestones        PropertyMilestone[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
@@ -414,6 +420,7 @@ model Lead {
   /// Brochure desde el que dejó sus datos, si llegó por uno.
   brochureId     String?
   brochure       Brochure?       @relation(fields: [brochureId], references: [id], onDelete: SetNull)
+  appointments   Appointment[]
 
   @@index([tenantId, kind, stage])
   @@index([tenantId, createdAt])
@@ -1045,6 +1052,75 @@ model LeadTask {
   createdAt   DateTime   @default(now())
 
   @@index([tenantId, status, dueAt])
+}
+
+enum AppointmentKind {
+  visita
+  tasacion
+  llamada
+  reunion
+  firma
+  otro
+}
+
+enum AppointmentStatus {
+  por_confirmar
+  confirmada
+  realizada
+  no_asistio
+  cancelada
+}
+
+enum AppointmentSource {
+  web
+  backoffice
+  whatsapp
+}
+
+/// Cita en la agenda de un corredor: visita, tasación, llamada, reunión o firma. Las que pide un contacto desde
+/// la web entran "por_confirmar" y toman el horario; el corredor la confirma y envía la dirección por WhatsApp.
+model Appointment {
+  id           String            @id @default(cuid())
+  tenantId     String
+  tenant       Tenant            @relation(fields: [tenantId], references: [id])
+  kind         AppointmentKind
+  status       AppointmentStatus @default(confirmada)
+  source       AppointmentSource @default(backoffice)
+  startsAt     DateTime
+  endsAt       DateTime
+  brokerId     String
+  broker       User              @relation("AppointmentBroker", fields: [brokerId], references: [id])
+  propertyId   String?
+  property     Property?         @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  leadId       String?
+  lead         Lead?             @relation(fields: [leadId], references: [id], onDelete: SetNull)
+  contactName  String?
+  contactPhone String?
+  title        String?
+  notes        String?
+  confirmedAt  DateTime?
+  createdById  String?
+  isDemo       Boolean           @default(false)
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  @@index([tenantId, brokerId, startsAt])
+  @@index([tenantId, startsAt])
+}
+
+/// Hito de la propiedad hasta la venta o el arriendo (lista en packages/core/src/agenda.ts, MILESTONES).
+/// Los hitos automáticos (mandato, fotos, publicada…) se deducen de los datos y no se guardan aquí.
+model PropertyMilestone {
+  id         String    @id @default(cuid())
+  propertyId String
+  property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  key        String
+  dueAt      DateTime?
+  doneAt     DateTime?
+  doneById   String?
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([propertyId, key])
 }
 
 // Agente de redes sociales: prepara publicaciones desde las fichas aprobadas y la biblioteca de consejos,

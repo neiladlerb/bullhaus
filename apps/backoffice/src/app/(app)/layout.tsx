@@ -15,7 +15,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   // Grupos por área de trabajo (skill diseno-bullhaus, backoffice.md). Un grupo aparece solo si el rol
   // tiene al menos un enlace dentro.
   const groups: NavGroup[] = [
-    { title: null, links: [{ href: "/", label: "Inicio" }] },
+    { title: null, links: [{ href: "/", label: "Inicio" }, ...(can(user.role, "leads.read") ? [{ href: "/agenda", label: "Agenda" }] : [])] },
     {
       title: "Cartera",
       links: [
