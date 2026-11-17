@@ -16,7 +16,7 @@ Hoy son 19 enlaces sueltos, sin íconos y sin marcar dónde estás. Se agrupan p
 | Análisis | Control de gestión |
 | Administración | Usuarios, Marca y sitio web, Integraciones, Carga de datos, Auditoría |
 
-- Título de grupo 13 px semibold `white/60`, sin mayúsculas forzadas.
+- Sin títulos de grupo: los grupos se separan con una línea `white/10`. Un título gris junto a los enlaces se leía como una opción bloqueada (prueba con el usuario, 17/11/2026) y repetía "Operaciones". Los nombres de grupo de la tabla sirven solo para ordenar.
 - Ícono de 20 px + texto en cada enlace.
 - Activo: `aria-current="page"`, fondo `white/12`, barra izquierda blanca de 3 px. Se marca también al estar en una subpágina (`/propiedades/123` marca Propiedades).
 - Usuario, rol, "Mi cuenta" y "Cerrar sesión" abajo del menú.

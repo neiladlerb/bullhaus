@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { comunaSlug, TYPE_LABELS } from "@bullhaus/core";
 import { Header, PropertyCard } from "@/components/site";
+import { UfCalculator } from "@bullhaus/ui/uf-calculator";
 import { filterProperties, getBrand, getPropertiesStrict, type Filters } from "@/lib/api";
+import { getUf } from "@/lib/uf";
 
 export const revalidate = 300;
 // Los filtros generan muchas URLs; todas apuntan a la misma página canónica para no dividir el posicionamiento.
@@ -15,7 +17,7 @@ export const metadata: Metadata = {
 export default async function Propiedades({ searchParams }: { searchParams: Promise<Filters> }) {
   const f = await searchParams;
   // Estricto: si el back office falla se ve error.tsx, no "0 propiedades".
-  const [all, brand] = await Promise.all([getPropertiesStrict(), getBrand()]);
+  const [all, brand, uf] = await Promise.all([getPropertiesStrict(), getBrand(), getUf()]);
   const list = filterProperties(all, f, brand.zones);
   const zone = brand.zones.find((z) => z.key === f.zona);
   const scoped = filterProperties(all, { operacion: f.operacion });
@@ -28,10 +30,18 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
       <Header />
       <main className="wrap py-10">
         <h1 className="text-3xl font-light md:text-4xl">{title}</h1>
-        <p className="mt-1 text-muted">
-          {list.length} {list.length === 1 ? "propiedad" : "propiedades"}
-          {zone ? ` en ${zone.name}` : ""}
-        </p>
+        <div className="mt-1 flex flex-wrap items-center justify-between gap-x-6 gap-y-1">
+          <p className="text-muted">
+            {list.length} {list.length === 1 ? "propiedad" : "propiedades"}
+            {zone ? ` en ${zone.name}` : ""}
+          </p>
+          {/* A la vista, no solo en el pie: muchos precios están en UF. Valor del día, se actualiza cada hora. */}
+          <UfCalculator
+            uf={uf}
+            label={uf ? `Calcular UF en pesos (UF hoy $${uf.value.toLocaleString("es-CL", { maximumFractionDigits: 2 })})` : "Calculadora UF"}
+            className="inline-flex min-h-11 items-center text-sm font-semibold text-brand-dark underline-offset-4 hover:underline"
+          />
+        </div>
 
         <form className="mt-6 grid gap-2 rounded-2xl bg-paper p-3 sm:grid-cols-3 lg:grid-cols-6">
           <select name="operacion" defaultValue={f.operacion ?? ""} className="field" aria-label="Operación">
