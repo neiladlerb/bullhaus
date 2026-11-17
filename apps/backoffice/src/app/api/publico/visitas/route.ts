@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 import { AttributionSchema } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
-import { brokerSlots, slotStillFree, visitSettings } from "@/lib/agenda";
+import { brokerSlots, slotContext, slotStillFree, visitSettings } from "@/lib/agenda";
 import { publicTenantId, publicWhere } from "@/lib/public-api";
 
 // Agendar visita desde la web, sin escribirle a nadie. Solo la web (servidor a servidor, clave WEB_API_KEY).
@@ -61,13 +61,16 @@ export async function POST(req: Request) {
   if (!property) return Response.json({ error: "Propiedad no encontrada" }, { status: 404 });
 
   const start = new Date(d.start);
-  const { durationMin } = await visitSettings(tenantId);
-  const end = new Date(start.getTime() + durationMin * 60_000);
+  // Todo lo que no es la transacción se lee antes: dentro de ella solo se usa `tx` (una conexión por función).
+  const ctx = await slotContext(tenantId, property.brokerId);
+  if (!ctx) return Response.json({ error: "No disponible" }, { status: 503 });
+  const end = new Date(start.getTime() + ctx.durationMin * 60_000);
 
   const result = await prisma.$transaction(async (tx) => {
     // Un candado por corredor: dos personas que eligen el mismo horario al mismo tiempo no quedan las dos agendadas.
-    await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${property.brokerId}))`;
-    if (!(await slotStillFree(tenantId, property.brokerId, start, new Date(), tx))) return { taken: true as const };
+    // pg_advisory_xact_lock devuelve void; se envuelve para que la consulta devuelva una fila normal.
+    await tx.$queryRaw`SELECT 1 AS ok FROM (SELECT pg_advisory_xact_lock(hashtext(${property.brokerId}))) AS l`;
+    if (!(await slotStillFree(tenantId, property.brokerId, start, ctx, new Date(), tx))) return { taken: true as const };
 
     const lead = await tx.lead.create({
       data: {
