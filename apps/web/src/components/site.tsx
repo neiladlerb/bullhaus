@@ -35,60 +35,68 @@ export function Logo({ brand, light = false, size = 1 }: { brand: Brand; light?:
   );
 }
 
+// Cinco accesos como máximo (skill diseno-bullhaus, web.md). Servicios y Equipo siguen en el inicio y en el
+// menú del celular; redes e "Ingreso corredores" van al pie y al menú, no a la barra.
 const NAV = [
-  { href: "/propiedades?operacion=venta", label: "Venta" },
-  { href: "/propiedades?operacion=arriendo", label: "Arriendo" },
-  { href: "/vender", label: "Vende o arrienda tu propiedad" },
-  { href: "/#servicios", label: "Servicios" },
+  { href: "/propiedades?operacion=venta", label: "Comprar" },
+  { href: "/propiedades?operacion=arriendo", label: "Arrendar" },
+  { href: "/vender", label: "Vender" },
   { href: "/#como-vendemos", label: "Cómo vendemos" },
-  { href: "/#equipo", label: "Equipo" },
   { href: "/#contacto", label: "Contacto" },
+];
+const MORE = [
+  { href: "/#servicios", label: "Servicios" },
+  { href: "/#equipo", label: "Equipo" },
 ];
 
 export async function Header({ overlay = false }: { overlay?: boolean }) {
   const brand = await getBrand();
-  const nav = NAV.filter((n) => n.href !== "/#equipo" || brand.team.length > 0);
+  const more = MORE.filter((n) => n.href !== "/#equipo" || brand.team.length > 0);
+  // Botones de la barra: todos del mismo ancho y alto, en una sola línea. Sobre la foto del inicio van en
+  // carbón semitransparente para que se lean sobre cualquier imagen; en el resto de páginas, con borde.
+  const item = overlay
+    ? "border border-white/25 bg-black/55 text-white backdrop-blur-sm hover:bg-black/75"
+    : "border border-line-strong bg-white text-ink hover:bg-paper";
   return (
     <header className={overlay ? "absolute inset-x-0 top-0 z-20 text-white" : "border-b border-line bg-white text-ink"}>
       <div className="wrap flex items-center justify-between gap-4 py-4">
-        <Link href="/" aria-label="Inicio">
+        <Link href="/" aria-label="Inicio" className="shrink-0">
           <Logo brand={brand} light={overlay} size={0.85} />
         </Link>
-        <nav className="hidden items-center gap-6 text-sm font-medium lg:flex">
-          {nav.map((n) => (
-            <Link key={n.href} href={n.href} className="opacity-90 hover:opacity-100 hover:underline hover:underline-offset-8">
+        <nav aria-label="Principal" className="hidden grid-flow-col gap-2 [grid-auto-columns:minmax(0,1fr)] lg:grid">
+          {NAV.map((n) => (
+            <Link key={n.href} href={n.href} className={`flex h-11 items-center justify-center whitespace-nowrap rounded-full px-4 text-sm font-semibold transition-colors ${item}`}>
               {n.label}
             </Link>
           ))}
         </nav>
-        <div className="hidden items-center gap-4 sm:flex">
-          <SocialIcons brand={brand} className="hidden xl:inline-flex" />
-          <a href={BACKOFFICE_LOGIN} className="text-sm font-medium opacity-80 hover:opacity-100 hover:underline hover:underline-offset-8" rel="nofollow">
-            Ingreso corredores
-          </a>
+        <div className="flex shrink-0 items-center gap-2">
           {brand.contact.whatsapp && (
-            <a href={whatsappUrl(brand.contact.whatsapp)} className="btn-brand inline-flex" target="_blank" rel="noopener">
+            <a href={whatsappUrl(brand.contact.whatsapp)} className="btn hidden h-11 bg-whatsapp-dark px-5 text-white hover:brightness-110 sm:inline-flex" target="_blank" rel="noopener">
               WhatsApp
             </a>
           )}
+          <details className="relative lg:hidden">
+            <summary className={`flex h-11 cursor-pointer list-none items-center rounded-full px-5 text-sm font-semibold ${item}`}>Menú</summary>
+            <nav aria-label="Menú" className="absolute right-0 z-50 mt-2 w-64 rounded-[10px] bg-white p-2 text-ink shadow-[0_8px_24px_rgb(0_0_0/0.12)]">
+              {[...NAV, ...more].map((n) => (
+                <Link key={n.href} href={n.href} className="flex min-h-11 items-center rounded-md px-3 text-sm font-semibold hover:bg-paper">
+                  {n.label}
+                </Link>
+              ))}
+              <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 flex min-h-11 items-center rounded-md border-t border-line px-3 text-sm text-muted hover:bg-paper">
+                Ingreso corredores
+              </a>
+            </nav>
+          </details>
         </div>
-        <details className="relative lg:hidden">
-          <summary className="cursor-pointer list-none rounded-full border border-current px-3 py-1.5 text-sm">Menú</summary>
-          <nav className="absolute right-0 mt-2 w-64 rounded-xl bg-white p-2 text-ink shadow-xl">
-            {nav.map((n) => (
-              <Link key={n.href} href={n.href} className="block rounded-lg px-3 py-2 text-sm hover:bg-paper">
-                {n.label}
-              </Link>
-            ))}
-            <a href={BACKOFFICE_LOGIN} rel="nofollow" className="mt-1 block rounded-lg border-t border-line px-3 py-2 text-sm text-muted hover:bg-paper">
-              Ingreso corredores
-            </a>
-          </nav>
-        </details>
       </div>
     </header>
   );
 }
+
+// Enlaces del pie: todos del mismo alto, 44 px en el celular (se tocan con el dedo) y 32 px en el computador.
+const PIE_LINK = "inline-flex min-h-11 items-center hover:text-white md:min-h-8";
 
 export async function Footer() {
   const [brand, uf] = await Promise.all([getBrand(), getUf()]);
@@ -101,11 +109,11 @@ export async function Footer() {
         </div>
         <div className="text-sm">
           <p className="font-semibold text-white">Contacto</p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-2">
             {brand.contact.office && (
               <li>
                 {brand.contact.mapsUrl ? (
-                  <a href={brand.contact.mapsUrl} target="_blank" rel="noopener" className="hover:text-white">
+                  <a href={brand.contact.mapsUrl} target="_blank" rel="noopener" className={PIE_LINK}>
                     {brand.contact.office}
                   </a>
                 ) : (
@@ -115,14 +123,14 @@ export async function Footer() {
             )}
             {brand.contact.email && (
               <li>
-                <a href={`mailto:${brand.contact.email}`} className="hover:text-white">
+                <a href={`mailto:${brand.contact.email}`} className={PIE_LINK}>
                   {brand.contact.email}
                 </a>
               </li>
             )}
             {brand.contact.whatsapp && (
               <li>
-                <a href={whatsappUrl(brand.contact.whatsapp)} target="_blank" rel="noopener" className="hover:text-white">
+                <a href={whatsappUrl(brand.contact.whatsapp)} target="_blank" rel="noopener" className={PIE_LINK}>
                   {brand.contact.whatsapp}
                 </a>
               </li>
@@ -131,26 +139,26 @@ export async function Footer() {
         </div>
         <div className="text-sm">
           <p className="font-semibold text-white">Síguenos</p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-2">
             {socialLinks(brand).map((s) => (
               <li key={s.key}>
-                <a href={s.url} target="_blank" rel="noopener" className="hover:text-white">
+                <a href={s.url} target="_blank" rel="noopener" className={PIE_LINK}>
                   {s.label} {s.handle}
                 </a>
               </li>
             ))}
             <li>
-              <Link href="/privacidad" className="hover:text-white">
+              <Link href="/privacidad" className={PIE_LINK}>
                 Privacidad y cookies
               </Link>
             </li>
             <li>
-              <a href={BACKOFFICE_LOGIN} rel="nofollow" className="hover:text-white">
+              <a href={BACKOFFICE_LOGIN} rel="nofollow" className={PIE_LINK}>
                 Ingreso corredores (back office)
               </a>
             </li>
             <li>
-              <UfCalculator uf={uf} shortcut label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className="text-left hover:text-white hover:underline" />
+              <UfCalculator uf={uf} shortcut label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className={`${PIE_LINK} text-left hover:underline`} />
             </li>
           </ul>
         </div>
@@ -199,15 +207,13 @@ export async function SocialBand() {
     <section className="py-16">
       <div className="wrap flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
         <div>
-          <p className="eyebrow text-brand">Síguenos</p>
-          <h2 className="mt-2 text-3xl font-light">
-            Propiedades nuevas, recorridos y consejos <span className="font-semibold">cada semana</span>
-          </h2>
+          <h2 className="text-3xl font-light text-heading">Propiedades nuevas, recorridos y consejos cada semana</h2>
           <p className="mt-2 max-w-xl text-muted">Publicamos primero en nuestras redes. También puedes escribirnos por mensaje directo.</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        {/* Todas las tarjetas del mismo ancho: grilla de columnas iguales, no del ancho de su texto. */}
+        <div className="grid w-full shrink-0 gap-3 md:w-80">
           {links.map((s) => (
-            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex items-center gap-3 rounded-2xl bg-paper px-5 py-4 ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-lg">
+            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex min-h-[72px] w-full items-center gap-3 rounded-[10px] border border-line bg-paper px-5 py-4 transition-colors hover:border-line-strong">
               <span className={`flex h-10 w-10 items-center justify-center rounded-full text-white ${s.color}`}>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                   <path d={s.path} />

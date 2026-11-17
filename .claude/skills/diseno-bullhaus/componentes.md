@@ -12,6 +12,8 @@ Cada componente se escribe una vez y se reutiliza. Hoy las dos apps repiten unas
 
 ## Botones
 
+Los botones, chips y tarjetas que van juntos miden lo mismo: misma altura (`h-11`, 44 px) y, si están en una fila o columna, el mismo ancho mediante una grilla de columnas iguales. Nunca el ancho de su texto. Se comprueba con `scripts/tamanos-desiguales.js`.
+
 | Variante | Cuándo | Estilo |
 |---|---|---|
 | Principal | La acción más importante de la pantalla. **Una por pantalla.** | Fondo `brand-dark`, texto blanco, hover más oscuro (mezcla 12 % negro) |

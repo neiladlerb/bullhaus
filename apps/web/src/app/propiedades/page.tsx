@@ -71,9 +71,10 @@ export default async function Propiedades({ searchParams }: { searchParams: Prom
         </form>
 
         {comunas.length > 1 && (
-          <nav aria-label="Propiedades por comuna" className="mt-4 flex flex-wrap gap-2 text-sm">
+          // Todas del mismo ancho y alto (44 px): una grilla, no chips del ancho de su texto.
+          <nav aria-label="Propiedades por comuna" className="mt-4 grid grid-cols-2 gap-2 text-sm sm:grid-cols-3 lg:grid-cols-5">
             {comunas.map((c) => (
-              <Link key={c} href={`/comunas/${comunaSlug(c)}`} className="rounded-full px-3 py-1 ring-1 ring-line hover:bg-paper">
+              <Link key={c} href={`/comunas/${comunaSlug(c)}`} className="flex h-11 items-center justify-center truncate rounded-full border border-line-strong bg-white px-3 font-semibold text-ink hover:bg-paper">
                 {c}
               </Link>
             ))}
