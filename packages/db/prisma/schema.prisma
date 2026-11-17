@@ -84,36 +84,37 @@ enum ClientKind {
 }
 
 model Tenant {
-  id             String             @id @default(cuid())
-  name           String
-  slug           String             @unique
-  createdAt      DateTime           @default(now())
-  users          User[]
-  properties     Property[]
-  clients        Client[]
-  auditLogs      AuditLog[]
-  imports        ImportBatch[]
-  leads          Lead[]
-  campaigns      Campaign[]
-  deals          Deal[]
-  kycCases       KycCase[]
-  templates      ContractTemplate[]
-  contracts      Contract[]
-  invoices       Invoice[]
-  agentSettings  AgentSetting[]
-  socialAgent    SocialAgentSetting?
+  id                String              @id @default(cuid())
+  name              String
+  slug              String              @unique
+  createdAt         DateTime            @default(now())
+  users             User[]
+  properties        Property[]
+  clients           Client[]
+  auditLogs         AuditLog[]
+  imports           ImportBatch[]
+  leads             Lead[]
+  campaigns         Campaign[]
+  deals             Deal[]
+  kycCases          KycCase[]
+  templates         ContractTemplate[]
+  contracts         Contract[]
+  invoices          Invoice[]
+  agentSettings     AgentSetting[]
+  socialAgent       SocialAgentSetting?
   socialAgentEvents SocialAgentEvent[]
-  knowledge      KnowledgeItem[]
-  conversations  Conversation[]
-  socialAccounts SocialAccount[]
-  socialPosts    SocialPost[]
-  adMetrics      AdMetricDaily[]
-  webMetrics     WebMetricDaily[]
-  brochures      Brochure[]
-  leadTasks      LeadTask[]
-  brand          TenantBrand?
-  appointments   Appointment[]
-  dictations     PropertyDictation[]
+  knowledge         KnowledgeItem[]
+  conversations     Conversation[]
+  socialAccounts    SocialAccount[]
+  socialPosts       SocialPost[]
+  adMetrics         AdMetricDaily[]
+  webMetrics        WebMetricDaily[]
+  brochures         Brochure[]
+  leadTasks         LeadTask[]
+  brand             TenantBrand?
+  appointments      Appointment[]
+  dictations        PropertyDictation[]
+  valuations        Valuation[]
 }
 
 /// Ficha de marca de la corredora: nombre, logo, colores, contacto, redes, zonas, equipo y textos de la web.
@@ -127,27 +128,27 @@ model TenantBrand {
 }
 
 model User {
-  id                 String     @id @default(cuid())
+  id                 String        @id @default(cuid())
   tenantId           String
-  tenant             Tenant     @relation(fields: [tenantId], references: [id])
+  tenant             Tenant        @relation(fields: [tenantId], references: [id])
   name               String
   email              String
   phone              String?
   role               Role
   passwordHash       String
-  active             Boolean    @default(true)
+  active             Boolean       @default(true)
   // true tras crear el usuario o restablecer su contraseña: debe elegir una propia al entrar.
-  mustChangePassword Boolean    @default(false)
+  mustChangePassword Boolean       @default(false)
   passwordChangedAt  DateTime?
   // Usuarios que crea la demostración (Cumplimiento, Finanzas): se borran con ella.
-  isDemo             Boolean    @default(false)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
+  isDemo             Boolean       @default(false)
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
   sessions           Session[]
-  properties         Property[] @relation("PropertyBroker")
-  leads              Lead[]     @relation("LeadBroker")
-  approvedCampaigns  Campaign[] @relation("CampaignApprover")
-  tasks              LeadTask[] @relation("TaskOwner")
+  properties         Property[]    @relation("PropertyBroker")
+  leads              Lead[]        @relation("LeadBroker")
+  approvedCampaigns  Campaign[]    @relation("CampaignApprover")
+  tasks              LeadTask[]    @relation("TaskOwner")
   /// Horario en que acepta visitas, por día de la semana (packages/core/src/agenda.ts). Vacío = horario por defecto.
   availability       Json?
   appointments       Appointment[] @relation("AppointmentBroker")
@@ -219,6 +220,7 @@ model Property {
   appointments      Appointment[]
   milestones        PropertyMilestone[]
   dictations        PropertyDictation[]
+  valuations        Valuation[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
@@ -1179,15 +1181,87 @@ enum SocialAgentEventKind {
 
 /// Bitácora del agente de redes. El resumen describe la acción; nunca guarda el texto del mensaje del contacto.
 model SocialAgentEvent {
-  id        String               @id @default(cuid())
-  tenantId  String
-  tenant    Tenant               @relation(fields: [tenantId], references: [id])
-  kind      SocialAgentEventKind
-  platform  SocialPlatform
-  summary   String
-  postId    String?
-  at        DateTime             @default(now())
-  isDemo    Boolean              @default(false)
+  id       String               @id @default(cuid())
+  tenantId String
+  tenant   Tenant               @relation(fields: [tenantId], references: [id])
+  kind     SocialAgentEventKind
+  platform SocialPlatform
+  summary  String
+  postId   String?
+  at       DateTime             @default(now())
+  isDemo   Boolean              @default(false)
 
   @@index([tenantId, at])
+}
+
+// Tasación comercial por comparables (docs/tasacion.md). Los comparables se guardan como foto fija: el informe no
+// cambia si después se mueve la cartera.
+enum ValuationStatus {
+  borrador
+  entregada
+}
+
+enum ComparableSource {
+  cierre
+  cartera
+  manual
+}
+
+model Valuation {
+  id          String                @id @default(cuid())
+  tenantId    String
+  tenant      Tenant                @relation(fields: [tenantId], references: [id])
+  /// Propiedad de la cartera, si ya existe. Una tasación para captar puede no tenerla.
+  propertyId  String?
+  property    Property?             @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+  authorId    String
+  /// Para quién es el informe (nombre del propietario o "Propietario"). Sin RUT ni contacto.
+  preparedFor String?
+  operation   Operation
+  type        PropertyType
+  comuna      String
+  sector      String?
+  currency    Currency
+  m2Useful    Decimal?              @db.Decimal(10, 2)
+  m2Land      Decimal?              @db.Decimal(12, 2)
+  bedrooms    Int?
+  bathrooms   Int?
+  parking     Int?
+  /// Comentario del corredor para el informe (estado, remodelaciones, vista).
+  notes       String?
+  status      ValuationStatus       @default(borrador)
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+  comparables ValuationComparable[]
+
+  @@index([tenantId, createdAt])
+}
+
+model ValuationComparable {
+  id          String           @id @default(cuid())
+  valuationId String
+  valuation   Valuation        @relation(fields: [valuationId], references: [id], onDelete: Cascade)
+  source      ComparableSource
+  /// Origen en la cartera (cartera o cierre), solo como referencia; los datos de abajo son la foto fija.
+  propertyId  String?
+  dealId      String?
+  /// Cómo se muestra en el informe: código de la propiedad o título del aviso. Nunca la dirección exacta.
+  label       String
+  url         String?
+  operation   Operation
+  type        PropertyType
+  comuna      String
+  sector      String?
+  currency    Currency
+  price       Decimal          @db.Decimal(14, 2)
+  m2Useful    Decimal?         @db.Decimal(10, 2)
+  m2Land      Decimal?         @db.Decimal(12, 2)
+  bedrooms    Int?
+  bathrooms   Int?
+  /// Fecha del precio: cierre de la operación, publicación o cuando el corredor vio el aviso.
+  observedAt  DateTime?
+  included    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+
+  @@index([valuationId])
 }
