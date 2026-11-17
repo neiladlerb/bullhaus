@@ -26,6 +26,9 @@ importers:
       '@bullhaus/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@bullhaus/llm':
+        specifier: workspace:*
+        version: link:../../packages/llm
       '@bullhaus/ui':
         specifier: workspace:*
         version: link:../../packages/ui

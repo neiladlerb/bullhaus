@@ -218,7 +218,14 @@ export default async function PropertyPage({ params, searchParams }: { params: P
       </section>
 
       <section className="card mt-6 p-6">
-        <h2 className="mb-4 font-medium">Ficha</h2>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-medium">Ficha</h2>
+          {editable && (
+            <Link href={`/dictado?propiedad=${property.id}`} className="btn-ghost">
+              Dictar cómo es
+            </Link>
+          )}
+        </div>
         <PropertyForm id={property.id} values={propertyToFormValues(property)} brokers={brokers} lockBroker={lock} readOnly={!editable} />
       </section>
 
