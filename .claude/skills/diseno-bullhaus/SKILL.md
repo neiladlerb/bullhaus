@@ -24,6 +24,7 @@ Las decisiones de diseño de este proyecto ya están tomadas y escritas aquí. T
 | `textos.md` | Todo texto visible: botones, títulos, errores, vacíos, confirmaciones. |
 | `scripts/contraste.mjs` | Para verificar el contraste de un par de colores o de un cambio en la ficha de marca. |
 | `scripts/auditar.mjs` | Al terminar cualquier cambio de interfaz: cuenta en el código los rasgos de la lista "Nunca" y los colores o tamaños prohibidos, y los compara con la línea base. |
+| `scripts/tamanos-desiguales.js` | Al verificar en el navegador: se pega en la consola (o en javascript_tool) y lista tarjetas, botones o chips hermanos que no miden lo mismo. Vacío = sin hallazgos. |
 
 ## Proceso en cada tarea de interfaz
 
@@ -31,7 +32,7 @@ Las decisiones de diseño de este proyecto ya están tomadas y escritas aquí. T
 2. **Plan corto** antes de escribir código: qué componentes del sistema usas, qué es lo más importante de la pantalla (una sola cosa) y cómo se ve en 375 px.
 3. **Revisa el plan contra la lista de "Nunca"** de abajo. Si algo calza, cámbialo y di por qué.
 4. **Construye** con los tokens y las clases del sistema (`btn-*`, `field`, `chip-*`, etc.). Nada de colores de Tailwind sueltos (`violet-600`, `red-500`) para significar estados: usa los tokens semánticos.
-5. **Verifica** con el navegador integrado a 375 px y a 1280 px: captura, foco con teclado (Tab), y contraste de cualquier color nuevo con `scripts/contraste.mjs`.
+5. **Verifica** con el navegador integrado a 375 px y a 1280 px: captura, foco con teclado (Tab), y contraste de cualquier color nuevo con `scripts/contraste.mjs`. Corre también `scripts/tamanos-desiguales.js` en cada ancho: debe devolver un arreglo vacío.
 6. **Audita** desde la raíz: `node .claude/skills/diseno-bullhaus/scripts/auditar.mjs --base docs/ux/auditoria-base.json`. Ninguna regla puede subir (lo exige también `pnpm test`). Si bajaste cifras, guarda la nueva base con `--escribir-base docs/ux/auditoria-base.json` en el mismo commit. Nunca subas la base para tapar un retroceso; si una excepción es legítima (el verde de WhatsApp en su ícono), marca la línea con `diseno-ok: <motivo>`.
 
 ## Cómo se combina con otras skills
@@ -69,6 +70,7 @@ Son los rasgos que hoy hacen ver al proyecto genérico o hecho con IA. Ninguno s
 - Flechas "→" pegadas al texto de los botones.
 - Magenta para texto pequeño o enlaces sobre blanco (no pasa contraste: 3,98 a 1).
 - Más de un elemento flotante fijo en la pantalla del celular al mismo tiempo.
+- Elementos que van juntos (tarjetas de redes, botones de una fila, chips de comunas, enlaces de un menú o del pie) con anchos o altos distintos porque cada uno toma el tamaño de su texto. Usa una grilla de columnas iguales (`grid`, `grid-cols-*`, `auto-cols-fr`) y un alto fijo (`h-11`); los enlaces que se tocan, 44 px de alto en el celular.
 
 ## Reglas del proyecto que el diseño también cumple
 

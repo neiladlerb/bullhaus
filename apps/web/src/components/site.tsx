@@ -95,6 +95,9 @@ export async function Header({ overlay = false }: { overlay?: boolean }) {
   );
 }
 
+// Enlaces del pie: todos del mismo alto, 44 px en el celular (se tocan con el dedo) y 32 px en el computador.
+const PIE_LINK = "inline-flex min-h-11 items-center hover:text-white md:min-h-8";
+
 export async function Footer() {
   const [brand, uf] = await Promise.all([getBrand(), getUf()]);
   return (
@@ -106,11 +109,11 @@ export async function Footer() {
         </div>
         <div className="text-sm">
           <p className="font-semibold text-white">Contacto</p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-2">
             {brand.contact.office && (
               <li>
                 {brand.contact.mapsUrl ? (
-                  <a href={brand.contact.mapsUrl} target="_blank" rel="noopener" className="hover:text-white">
+                  <a href={brand.contact.mapsUrl} target="_blank" rel="noopener" className={PIE_LINK}>
                     {brand.contact.office}
                   </a>
                 ) : (
@@ -120,14 +123,14 @@ export async function Footer() {
             )}
             {brand.contact.email && (
               <li>
-                <a href={`mailto:${brand.contact.email}`} className="hover:text-white">
+                <a href={`mailto:${brand.contact.email}`} className={PIE_LINK}>
                   {brand.contact.email}
                 </a>
               </li>
             )}
             {brand.contact.whatsapp && (
               <li>
-                <a href={whatsappUrl(brand.contact.whatsapp)} target="_blank" rel="noopener" className="hover:text-white">
+                <a href={whatsappUrl(brand.contact.whatsapp)} target="_blank" rel="noopener" className={PIE_LINK}>
                   {brand.contact.whatsapp}
                 </a>
               </li>
@@ -136,26 +139,26 @@ export async function Footer() {
         </div>
         <div className="text-sm">
           <p className="font-semibold text-white">Síguenos</p>
-          <ul className="mt-3 space-y-2">
+          <ul className="mt-2">
             {socialLinks(brand).map((s) => (
               <li key={s.key}>
-                <a href={s.url} target="_blank" rel="noopener" className="hover:text-white">
+                <a href={s.url} target="_blank" rel="noopener" className={PIE_LINK}>
                   {s.label} {s.handle}
                 </a>
               </li>
             ))}
             <li>
-              <Link href="/privacidad" className="hover:text-white">
+              <Link href="/privacidad" className={PIE_LINK}>
                 Privacidad y cookies
               </Link>
             </li>
             <li>
-              <a href={BACKOFFICE_LOGIN} rel="nofollow" className="hover:text-white">
+              <a href={BACKOFFICE_LOGIN} rel="nofollow" className={PIE_LINK}>
                 Ingreso corredores (back office)
               </a>
             </li>
             <li>
-              <UfCalculator uf={uf} shortcut label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className="text-left hover:text-white hover:underline" />
+              <UfCalculator uf={uf} shortcut label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className={`${PIE_LINK} text-left hover:underline`} />
             </li>
           </ul>
         </div>
@@ -204,15 +207,13 @@ export async function SocialBand() {
     <section className="py-16">
       <div className="wrap flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
         <div>
-          <p className="eyebrow text-brand">Síguenos</p>
-          <h2 className="mt-2 text-3xl font-light">
-            Propiedades nuevas, recorridos y consejos <span className="font-semibold">cada semana</span>
-          </h2>
+          <h2 className="text-3xl font-light text-heading">Propiedades nuevas, recorridos y consejos cada semana</h2>
           <p className="mt-2 max-w-xl text-muted">Publicamos primero en nuestras redes. También puedes escribirnos por mensaje directo.</p>
         </div>
-        <div className="flex flex-wrap gap-3">
+        {/* Todas las tarjetas del mismo ancho: grilla de columnas iguales, no del ancho de su texto. */}
+        <div className="grid w-full shrink-0 gap-3 md:w-80">
           {links.map((s) => (
-            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex items-center gap-3 rounded-2xl bg-paper px-5 py-4 ring-1 ring-line transition hover:-translate-y-0.5 hover:shadow-lg">
+            <a key={s.key} href={s.url} target="_blank" rel="noopener" className="flex min-h-[72px] w-full items-center gap-3 rounded-[10px] border border-line bg-paper px-5 py-4 transition-colors hover:border-line-strong">
               <span className={`flex h-10 w-10 items-center justify-center rounded-full text-white ${s.color}`}>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true">
                   <path d={s.path} />
