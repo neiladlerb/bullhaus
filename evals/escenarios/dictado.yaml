@@ -1,0 +1,68 @@
+# Casos de prueba del dictado del corredor (packages/core/src/dictation.ts, v1.0).
+# Las reglas sin modelo ya se prueban en dictation.test.ts. Estos casos son para cuando haya modelo: cada uno se
+# corre contra cada proveedor (Claude, OpenAI) y se puntúa con "debe" y "no_debe".
+# Cada palabra mal interpretada en el piloto se agrega en "lenguaje_informal" con su lectura correcta.
+
+lenguaje_informal:
+  - id: piezas-banitos
+    dictado: "depa de 3 piezas y 2 bañitos, uno en suite"
+    debe: ["bedrooms 3", "bathrooms 2", "frase copiada tal cual del dictado"]
+    no_debe: ["inventar superficie"]
+  - id: est-y-gc-en-lucas
+    dictado: "tiene 1 est y bodega, gc como 180 lucas"
+    debe: ["parking 1", "storage 1", "commonExpensesClp 180000"]
+    no_debe: ["preguntar qué significa est o gc"]
+  - id: numeros-en-palabras
+    dictado: "son cuatro dormis y tres baños completos"
+    debe: ["bedrooms 4", "bathrooms 3"]
+  - id: mil-sin-lucas
+    dictado: "los gastos comunes son 95 mil"
+    debe: ["commonExpensesClp 95000"]
+  - id: dormis-abreviado
+    dictado: "2 dormis, 1 baño, piso 7, orientación oriente"
+    debe: ["bedrooms 2", "bathrooms 1", "floor '7'", "orientation 'Oriente'"]
+  - id: faltas-ortografia
+    dictado: "tiene pisina y kincho atras"
+    debe: ["features con Piscina y Quincho"]
+    no_debe: ["copiar la falta en el nombre de la característica"]
+
+negaciones:
+  - id: sin-calefaccion
+    dictado: "no tiene calefacción central pero sí aire acondicionado"
+    debe: ["features con Aire acondicionado"]
+    no_debe: ["features con Calefacción central"]
+  - id: no-acepta-mascotas
+    dictado: "el dueño no acepta mascotas"
+    debe: ["pets 'no'"]
+  - id: sin-amoblar
+    dictado: "se entrega sin amoblar"
+    debe: ["furnished false"]
+
+no_inventar:
+  - id: casa-grande
+    dictado: "casa grande y luminosa, bien cuidada"
+    debe: ["campos vacío"]
+    no_debe: ["proponer m2Useful", "proponer bedrooms"]
+  - id: cerca-del-metro
+    dictado: "queda a dos cuadras del metro Manquehue"
+    no_debe: ["agregar 'metro' como característica de la propiedad", "proponer cualquier cifra"]
+  - id: cifras-ambiguas
+    dictado: "tiene 120 o 130 metros, no me acuerdo bien"
+    debe: ["no proponer m2Useful"]
+  - id: datos-de-personas
+    dictado: "el dueño es Juan Pérez, su celular es 9 1234 5678, la casa tiene 3 dormitorios"
+    debe: ["bedrooms 3"]
+    no_debe: ["incluir el nombre o el celular en ningún campo"]
+  - id: frase-inventada
+    nota: "Si el modelo devuelve una frase que no está en el dictado, el código la descarta (parseModelExtraction)."
+    debe: ["el campo no aparece en la revisión", "se cuenta en 'descartados'"]
+
+descripcion:
+  - id: solo-datos-de-ficha
+    ficha: { tipo: "Casa", comuna: "Las Condes", m2Useful: 220, bedrooms: 4, bathrooms: 3, features: ["Piscina"] }
+    debe: ["mencionar 220 m², 4 dormitorios y 3 baños", "120 a 200 palabras"]
+    no_debe: ["mencionar el precio", "agregar 'a 5 minutos del metro' u otra cifra", "propiedad soñada", "oportunidad única", "exclamaciones o emojis", "piso por departamento, alquiler, móvil"]
+  - id: ficha-minima
+    ficha: { tipo: "Terreno", comuna: "Lo Barnechea" }
+    debe: ["un solo párrafo corto"]
+    no_debe: ["inventar superficie o servicios"]

@@ -113,6 +113,7 @@ model Tenant {
   leadTasks      LeadTask[]
   brand          TenantBrand?
   appointments   Appointment[]
+  dictations     PropertyDictation[]
 }
 
 /// Ficha de marca de la corredora: nombre, logo, colores, contacto, redes, zonas, equipo y textos de la web.
@@ -217,6 +218,7 @@ model Property {
   brochures         Brochure[]
   appointments      Appointment[]
   milestones        PropertyMilestone[]
+  dictations        PropertyDictation[]
 
   @@unique([tenantId, code])
   @@index([tenantId, status])
@@ -1121,6 +1123,34 @@ model PropertyMilestone {
   updatedAt  DateTime  @updatedAt
 
   @@unique([propertyId, key])
+}
+
+enum DictationStatus {
+  borrador
+  aplicado
+}
+
+/// Dictado del corredor sobre una propiedad (packages/core/src/dictation.ts). Guarda el texto dictado, los datos
+/// propuestos con su frase de origen y el borrador de descripción. Nada pasa a la ficha sin que el corredor lo
+/// confirme campo por campo, y la descripción solo se guarda en la ficha cuando él la aprueba.
+model PropertyDictation {
+  id               String          @id @default(cuid())
+  tenantId         String
+  tenant           Tenant          @relation(fields: [tenantId], references: [id])
+  propertyId       String
+  property         Property        @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  authorId         String
+  transcript       String
+  /// ExtractedField[]: { key, value, source }
+  extracted        Json?
+  /// "claude", "openai" o "reglas": qué propuso los datos.
+  engine           String?
+  descriptionDraft String?
+  status           DictationStatus @default(borrador)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@index([propertyId, createdAt])
 }
 
 // Agente de redes sociales: prepara publicaciones desde las fichas aprobadas y la biblioteca de consejos,

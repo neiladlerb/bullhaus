@@ -1,5 +1,6 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Raleway } from "next/font/google";
+import { BULLHAUS_BRAND } from "@bullhaus/core";
 import "./globals.css";
 
 const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", display: "swap" });
@@ -7,7 +8,12 @@ const raleway = Raleway({ subsets: ["latin"], variable: "--font-raleway", displa
 export const metadata: Metadata = {
   title: "Bull Haus · Back office",
   description: "Gestión de propiedades, agentes y operaciones de Bull Haus Intermediación y Gestión Inmobiliaria",
+  // App instalable en el celular (manifest.ts). En iPhone, el ícono y el modo pantalla completa salen de aquí.
+  appleWebApp: { capable: true, title: "Bull Haus", statusBarStyle: "default" },
+  icons: { apple: "/icono/180" },
 };
+
+export const viewport: Viewport = { themeColor: BULLHAUS_BRAND.colors.coal };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (

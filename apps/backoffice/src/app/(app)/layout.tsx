@@ -20,6 +20,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       title: "Cartera",
       links: [
         { href: "/propiedades", label: "Propiedades" },
+        ...(can(user.role, "properties.write") ? [{ href: "/dictado", label: "Dictar una propiedad" }] : []),
         ...(can(user.role, "properties.import") ? [{ href: "/propiedades/importar", label: "Importar planilla" }] : []),
         { href: "/propiedades/precios", label: "Revisión de precios" },
       ],
