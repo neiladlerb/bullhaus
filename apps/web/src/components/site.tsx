@@ -158,7 +158,7 @@ export async function Footer() {
               </a>
             </li>
             <li>
-              <UfCalculator uf={uf} shortcut label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className={`${PIE_LINK} text-left hover:underline`} />
+              <UfCalculator uf={uf} label={uf ? `Calculadora UF (${Math.round(uf.value).toLocaleString("es-CL")})` : "Calculadora UF"} className={`${PIE_LINK} text-left hover:underline`} />
             </li>
           </ul>
         </div>
@@ -228,6 +228,26 @@ export async function SocialBand() {
         </div>
       </div>
     </section>
+  );
+}
+
+/**
+ * Pestaña lateral de la calculadora UF, como estaba antes (pedido del cliente, 17/11/2026). Solo desde 768 px:
+ * en el celular tapaba contenido junto a WhatsApp y al aviso de cookies (revisión UX 14/11/2026, B5), así que ahí
+ * la calculadora sigue en Propiedades, en cada ficha en UF y en el pie. Fondo brand-dark: el magenta con texto
+ * blanco no pasa contraste.
+ */
+export async function UfSideTab() {
+  const uf = await getUf();
+  return (
+    <div className="fixed right-0 top-1/2 z-40 hidden -translate-y-1/2 md:block">
+      <UfCalculator
+        uf={uf}
+        shortcut
+        label={uf ? `UF $${Math.round(uf.value).toLocaleString("es-CL")}` : "Calculadora UF"}
+        className="flex min-w-11 items-center justify-center rounded-l-[10px] bg-brand-dark px-2.5 py-4 text-sm font-semibold text-white shadow-[0_8px_24px_rgb(0_0_0/0.12)] [writing-mode:vertical-rl] hover:bg-brand-deep"
+      />
+    </div>
   );
 }
 

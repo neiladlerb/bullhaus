@@ -22,7 +22,7 @@ Objetivo de cada pantalla: que la persona encuentre una propiedad que le sirve o
 Hecho el 16/11/2026: queda solo el botón de WhatsApp.
 
 - En celular, **un solo flotante**: el botón de WhatsApp, abajo a la derecha, 56 px.
-- La calculadora UF se mueve a la ficha de la propiedad (junto al precio: "Calcular en pesos") y al pie. Deja de ser una pestaña vertical fija.
+- La calculadora UF está en la ficha de la propiedad (junto al precio: "Calcular en pesos"), en Propiedades (junto al conteo), en el pie y, desde 768 px, como pestaña vertical fija a la derecha con el valor del día (`UfSideTab`, pedido del cliente 17/11/2026, fondo `brand-dark`). En el celular no hay pestaña: sería un segundo flotante junto a WhatsApp.
 - El aviso de cookies aparece abajo, de ancho completo en celular, y mientras está visible el botón de WhatsApp sube para no quedar tapado (`consent.tsx` fija `--cookie-offset` en `<html>` y el botón usa `bottom: calc(1.25rem + var(--cookie-offset, 0px))`). Botones "Aceptar" y "Solo necesarias" con el mismo peso visual: los dos con borde blanco, mismo tamaño, en dos columnas iguales.
 
 ## Listado de propiedades

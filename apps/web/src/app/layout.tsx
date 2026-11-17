@@ -3,7 +3,7 @@ import { brandCssVars } from "@bullhaus/core";
 import { Raleway } from "next/font/google";
 import { AttributionCapture } from "@/components/attribution";
 import { CookieConsent } from "@/components/consent";
-import { Footer, WhatsAppFloat } from "@/components/site";
+import { Footer, UfSideTab, WhatsAppFloat } from "@/components/site";
 import { getBrand } from "@/lib/api";
 import "./globals.css";
 
@@ -28,6 +28,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       <body className="min-h-screen font-sans antialiased">
         {children}
         <Footer />
+        <UfSideTab />
         <WhatsAppFloat />
         <AttributionCapture />
         <CookieConsent metaPixelId={process.env.NEXT_PUBLIC_META_PIXEL_ID} gaId={process.env.NEXT_PUBLIC_GA4_ID} />
