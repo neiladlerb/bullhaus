@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   description: "Gestión de propiedades, agentes y operaciones de Bull Haus Intermediación y Gestión Inmobiliaria",
   // App instalable en el celular (manifest.ts). En iPhone, el ícono y el modo pantalla completa salen de aquí.
   appleWebApp: { capable: true, title: "Bull Haus", statusBarStyle: "default" },
-  icons: { apple: "/icono/180" },
+  icons: { icon: "/iconos/icono-192.png", apple: "/iconos/icono-apple-180.png" },
 };
 
 export const viewport: Viewport = { themeColor: BULLHAUS_BRAND.colors.coal };

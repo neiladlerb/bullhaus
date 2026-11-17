@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { after } from "next/server";
-import { BULLHAUS_PUBLIC, formatPrice, SALES_PROCESS, TYPE_LABELS, waLink } from "@bullhaus/core";
+import { BULLHAUS_PUBLIC, formatPrice, orderedPhotos, parseBrochureDesign, SALES_PROCESS, showsSection, TYPE_LABELS, waLink, type BrochureDesign } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { Logo } from "@/components/logo";
 import { getCurrentUser } from "@/lib/auth";
@@ -10,24 +10,36 @@ import { BrochureForm } from "./form";
 
 // Brochure público: se abre desde WhatsApp, redes o email. Se arma con la ficha aprobada; nunca muestra
 // la dirección exacta. Mientras no esté aprobado, solo lo ve el equipo de Bull Haus como vista previa.
+// El diseño (plantilla, fotos, secciones) sale de `design`; el equipo puede pasar uno sin guardar en ?d= para la
+// vista previa del editor. Para el público siempre manda el guardado.
 
 type Params = { params: Promise<{ token: string }>; searchParams: Promise<Record<string, string | undefined>> };
 
 const load = (token: string) => prisma.brochure.findUnique({ where: { token }, include: { property: { select: brochurePropertySelect } } });
 
+const photoOf = (sizes: unknown, size: "lg" | "md" = "lg") => {
+  const s = sizes as Record<string, string>;
+  return s[size] ?? s.md ?? s.lg ?? null;
+};
+
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   const b = await load((await params).token);
   if (!b) return { title: "Bull Haus" };
-  const cover = (b.property?.media.find((m) => m.isCover) ?? b.property?.media[0])?.sizes as Record<string, string> | undefined;
+  const design = parseBrochureDesign(b.design);
+  const cover = b.property ? orderedPhotos(b.property.media, design)[0] : undefined;
+  const img = cover ? photoOf(cover.sizes) : null;
   return {
     metadataBase: new URL(new URL(await brochureUrl(b.token)).origin),
-    title: `${b.title} · Bull Haus`,
-    description: b.intro ?? "Bull Haus Propiedades · venta, arriendo y asesoría inmobiliaria",
+    title: `${b.title}, Bull Haus`,
+    description: b.intro ?? "Bull Haus Propiedades: venta, arriendo y asesoría inmobiliaria",
     robots: { index: false },
-    openGraph: { title: b.title, description: b.intro ?? undefined, images: cover?.lg ? [`/media/${cover.lg}`] : undefined },
+    openGraph: { title: b.title, description: b.intro ?? undefined, images: img ? [`/media/${img}`] : undefined },
   };
 }
 
+function Badge({ text }: { text: string }) {
+  return text ? <span className="inline-block rounded-full bg-brand-dark px-3 py-1 text-xs font-semibold text-white">{text}</span> : null;
+}
 
 export default async function BrochurePage({ params, searchParams }: Params) {
   const { token } = await params;
@@ -37,6 +49,8 @@ export default async function BrochurePage({ params, searchParams }: Params) {
   const team = await getCurrentUser();
   const preview = !!team && team.tenantId === b.tenantId;
   const live = canShare(b.status, b.property?.status, b.kind);
+  const editorPreview = preview && sp.d !== undefined;
+  const design: BrochureDesign = parseBrochureDesign(editorPreview ? sp.d : b.design);
 
   if (!live && !preview) {
     return (
@@ -62,19 +76,19 @@ export default async function BrochurePage({ params, searchParams }: Params) {
   }
 
   const p = b.property;
-  const photos = (p?.media ?? []).map((m) => (m.sizes as Record<string, string>).lg ?? (m.sizes as Record<string, string>).md).filter(Boolean) as string[];
+  const photos = (p ? orderedPhotos(p.media, design) : []).map((m) => photoOf(m.sizes)).filter((x): x is string => Boolean(x));
   const showcase = b.kind === "captacion" ? await captacionShowcase(b.tenantId) : [];
-  const heroImg = photos[0] ? `/media/${photos[0]}` : showcase[0] ? `/media/${(showcase[0].media[0]?.sizes as Record<string, string>).lg}` : null;
+  const showcaseCover = showcase[0]?.media[0] ? photoOf(showcase[0].media[0].sizes) : null;
+  const heroImg = photos[0] ? `/media/${photos[0]}` : showcaseCover ? `/media/${showcaseCover}` : null;
   const waText = p ? `Hola, vi el brochure de la propiedad ${p.code} y me gustaría coordinar una visita.` : "Hola, vi el brochure de Bull Haus y quiero una valorización de mi propiedad.";
   const brokerWa = waLink(waText, BULLHAUS_PUBLIC.whatsapp);
+  const kicker = b.kind === "captacion" ? "Vende o arrienda con Bull Haus" : `${TYPE_LABELS[p!.type]} en ${p!.operation}, ${p!.comuna}`;
+  const price = p ? `${formatPrice(Number(p.price), p.currency)}${p.operation === "arriendo" ? " / mes" : ""}` : null;
+  // En "Mínimo" no hay foto de portada: todas van a la galería.
+  const gallery = design.template === "minimo" ? photos : photos.slice(1);
 
-  return (
-    <main className="min-h-screen bg-white">
-      {preview && !live && (
-        <p className="bg-warning-soft px-4 py-2 text-center text-sm text-warning">Vista previa para el equipo: este brochure aún no está aprobado y no se puede compartir.</p>
-      )}
-      {b.isDemo && <p className="bg-info-soft px-4 py-1.5 text-center text-xs text-info">Brochure de demostración</p>}
-
+  const header =
+    design.template === "portada" ? (
       <header className="relative isolate overflow-hidden bg-ink text-white">
         {heroImg && (
           // eslint-disable-next-line @next/next/no-img-element
@@ -84,22 +98,54 @@ export default async function BrochurePage({ params, searchParams }: Params) {
         <div className="mx-auto max-w-4xl px-5 pb-10 pt-6">
           <Logo light />
           <div className="pt-24 sm:pt-36">
-            <p className="text-xs uppercase tracking-[0.3em] text-white/80">{b.kind === "captacion" ? "Vende o arrienda con Bull Haus" : `${TYPE_LABELS[p!.type]} en ${p!.operation} · ${p!.comuna}`}</p>
-            <h1 className="mt-3 text-3xl font-normal leading-tight drop-shadow sm:text-5xl">{b.title}</h1>
+            <Badge text={design.badge} />
+            <p className="mt-3 text-sm text-white/85">{kicker}</p>
+            <h1 className="mt-2 text-3xl font-normal leading-tight drop-shadow sm:text-5xl">{b.title}</h1>
             {b.intro && <p className="mt-4 max-w-2xl text-white/85">{b.intro}</p>}
-            {p && (
-              <p className="mt-5 text-2xl font-semibold">
-                {formatPrice(Number(p.price), p.currency)}
-                {p.operation === "arriendo" ? " / mes" : ""}
-              </p>
-            )}
+            {price && <p className="mt-5 text-2xl font-semibold">{price}</p>}
           </div>
         </div>
       </header>
+    ) : design.template === "editorial" ? (
+      <header className="mx-auto max-w-4xl px-5 pt-6">
+        <Logo />
+        {heroImg && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={heroImg} alt="" className="mt-6 aspect-[16/10] w-full rounded-2xl object-cover" />
+        )}
+        <div className="mt-6 border-l-4 border-brand pl-5">
+          <Badge text={design.badge} />
+          <p className="mt-2 text-sm text-muted">{kicker}</p>
+          <h1 className="mt-1 text-3xl font-semibold leading-tight sm:text-4xl">{b.title}</h1>
+          {b.intro && <p className="mt-3 max-w-2xl text-ink/85">{b.intro}</p>}
+          {price && <p className="mt-4 text-2xl font-semibold text-brand-dark">{price}</p>}
+        </div>
+      </header>
+    ) : (
+      <header className="mx-auto max-w-4xl px-5 pt-8 text-center">
+        <div className="flex justify-center"><Logo /></div>
+        <div className="mt-8">
+          <Badge text={design.badge} />
+          <p className="mt-2 text-sm text-muted">{kicker}</p>
+          <h1 className="mx-auto mt-1 max-w-2xl text-3xl font-light leading-tight sm:text-4xl">{b.title}</h1>
+          {b.intro && <p className="mx-auto mt-3 max-w-2xl text-ink/85">{b.intro}</p>}
+          {price && <p className="mt-4 text-2xl font-semibold">{price}</p>}
+        </div>
+      </header>
+    );
+
+  return (
+    <main className="min-h-screen bg-white">
+      {preview && !live && !editorPreview && (
+        <p className="bg-warning-soft px-4 py-2 text-center text-sm text-warning">Vista previa para el equipo: este brochure aún no está aprobado y no se puede compartir.</p>
+      )}
+      {b.isDemo && <p className="bg-info-soft px-4 py-1.5 text-center text-xs text-info">Brochure de demostración</p>}
+
+      {header}
 
       {p ? (
         <div className="mx-auto max-w-4xl space-y-10 px-5 py-10">
-          <section className="flex flex-wrap gap-2">
+          <section className={`flex flex-wrap gap-2 ${design.template === "minimo" ? "justify-center" : ""}`}>
             {brochureFacts(p).map((f) => (
               <span key={f} className="rounded-full bg-paper px-4 py-2 text-sm">{f}</span>
             ))}
@@ -108,16 +154,16 @@ export default async function BrochurePage({ params, searchParams }: Params) {
             <span className="rounded-full bg-paper px-4 py-2 text-sm text-muted">Código {p.code}</span>
           </section>
 
-          {photos.length > 1 && (
+          {showsSection(design, "gallery") && gallery.length > 0 && (
             <section className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              {photos.slice(1).map((src, i) => (
+              {gallery.map((src, i) => (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img key={src} src={`/media/${src}`} alt={`Foto ${i + 2} de la propiedad ${p.code}`} loading="lazy" className="aspect-[4/3] w-full rounded-lg object-cover" />
+                <img key={src} src={`/media/${src}`} alt={`Foto ${i + 1} de la propiedad ${p.code}`} loading="lazy" className="aspect-[4/3] w-full rounded-lg object-cover" />
               ))}
             </section>
           )}
 
-          {(p.headline || p.description) && (
+          {showsSection(design, "description") && (p.headline || p.description) && (
             <section>
               <h2 className="text-xl font-semibold">La propiedad</h2>
               {p.headline && <p className="mt-2 font-medium">{p.headline}</p>}
@@ -125,7 +171,7 @@ export default async function BrochurePage({ params, searchParams }: Params) {
             </section>
           )}
 
-          {p.features.length > 0 && (
+          {showsSection(design, "features") && p.features.length > 0 && (
             <section>
               <h2 className="text-xl font-semibold">Características</h2>
               <ul className="mt-3 grid gap-x-6 gap-y-1.5 text-sm sm:grid-cols-2">
@@ -152,37 +198,41 @@ export default async function BrochurePage({ params, searchParams }: Params) {
         </div>
       ) : (
         <div className="mx-auto max-w-4xl space-y-12 px-5 py-10">
-          <section>
-            <h2 className="text-2xl font-light">Así trabajamos <span className="font-semibold">tu propiedad</span></h2>
-            <ol className="mt-6 divide-y divide-line border-y border-line">
-              {SALES_PROCESS.map((step) => (
-                <li key={step.title} className="grid gap-2 py-5 sm:grid-cols-[10rem_1fr]">
-                  <h3 className="font-semibold">{step.title}</h3>
-                  <div>
-                    <p className="text-sm leading-relaxed">{step.tasks.join(". ")}.</p>
-                    <p className="mt-1.5 text-xs text-muted"><span className="font-medium text-brand">Tecnología.</span> {step.tech}.</p>
-                  </div>
-                </li>
-              ))}
-            </ol>
-          </section>
+          {showsSection(design, "process") && (
+            <section>
+              <h2 className="text-2xl font-light">Así trabajamos <span className="font-semibold">tu propiedad</span></h2>
+              <ol className="mt-6 divide-y divide-line border-y border-line">
+                {SALES_PROCESS.map((step) => (
+                  <li key={step.title} className="grid gap-2 py-5 sm:grid-cols-[10rem_1fr]">
+                    <h3 className="font-semibold">{step.title}</h3>
+                    <div>
+                      <p className="text-sm leading-relaxed">{step.tasks.join(". ")}.</p>
+                      <p className="mt-1.5 text-xs text-muted"><span className="font-medium text-brand">Tecnología.</span> {step.tech}.</p>
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </section>
+          )}
 
-          <section>
-            <h2 className="text-2xl font-light">Dónde estamos</h2>
-            <p className="mt-2 text-muted">{BULLHAUS_PUBLIC.zones.join(", ")}. Oficina en {BULLHAUS_PUBLIC.office}.</p>
-          </section>
+          {showsSection(design, "zones") && (
+            <section>
+              <h2 className="text-2xl font-light">Dónde estamos</h2>
+              <p className="mt-2 text-muted">{BULLHAUS_PUBLIC.zones.join(", ")}. Oficina en {BULLHAUS_PUBLIC.office}.</p>
+            </section>
+          )}
 
-          {showcase.length > 0 && (
+          {showsSection(design, "showcase") && showcase.length > 0 && (
             <section>
               <h2 className="text-2xl font-light">Parte de nuestra <span className="font-semibold">cartera</span></h2>
               <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {showcase.map((s) => {
-                  const img = (s.media[0]?.sizes as Record<string, string> | undefined)?.md;
+                  const img = s.media[0] ? photoOf(s.media[0].sizes, "md") : null;
                   return (
                     <figure key={s.id} className="overflow-hidden rounded-xl bg-paper">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       {img && <img src={`/media/${img}`} alt={`${TYPE_LABELS[s.type]} en ${s.comuna}`} loading="lazy" className="aspect-[4/3] w-full object-cover" />}
-                      <figcaption className="p-3 text-xs text-muted">{TYPE_LABELS[s.type]} en {s.operation} · {s.comuna}</figcaption>
+                      <figcaption className="p-3 text-xs text-muted">{TYPE_LABELS[s.type]} en {s.operation}, {s.comuna}</figcaption>
                     </figure>
                   );
                 })}
@@ -202,7 +252,7 @@ export default async function BrochurePage({ params, searchParams }: Params) {
       )}
 
       <footer className="border-t border-line py-6 text-center text-xs text-muted">
-        Bull Haus Propiedades · {BULLHAUS_PUBLIC.office} · {BULLHAUS_PUBLIC.instagram}
+        Bull Haus Propiedades, {BULLHAUS_PUBLIC.office}, {BULLHAUS_PUBLIC.instagram}
       </footer>
     </main>
   );

@@ -14,5 +14,5 @@ export function middleware(req: NextRequest) {
 
 export const config = {
   // manifest.webmanifest e icono/ son públicos: el celular los pide para instalar la app antes de iniciar sesión.
-  matcher: ["/((?!login|media|api/publico|verificacion|b/|_next|favicon.ico|manifest.webmanifest|icono/).*)"],
+  matcher: ["/((?!login|media|api/publico|verificacion|b/|_next|favicon.ico|manifest.webmanifest|iconos/|logo-bullhaus).*)"],
 };
