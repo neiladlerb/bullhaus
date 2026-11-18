@@ -2,7 +2,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
-import { CURRENCIES, OPERATIONS, PROPERTY_TYPES, suggestComparables, usesLandArea } from "@bullhaus/core";
+import { ADJUSTMENT_MAX_EACH, ADJUSTMENT_PRESETS, CURRENCIES, OPERATIONS, parseAdjustments, PROPERTY_TYPES, suggestComparables, usesLandArea } from "@bullhaus/core";
 import { prisma, Prisma } from "@bullhaus/db";
 import { audit } from "@/lib/audit";
 import { requireUser, type CurrentUser } from "@/lib/auth";
@@ -188,5 +188,36 @@ export async function markDeliveredAction(form: FormData) {
   const v = await ownValuation(user, String(form.get("valuationId") ?? ""));
   await prisma.valuation.update({ where: { id: v.id }, data: { status: v.status === "entregada" ? "borrador" : "entregada" } });
   await audit(user, v.status === "entregada" ? "valuation.reopen" : "valuation.deliver", "valuation", v.id);
+  back(v.id);
+}
+
+const adjustmentSchema = z.object({
+  label: z.enum(ADJUSTMENT_PRESETS),
+  other: optText(60),
+  percent: z.preprocess((v) => Number(String(v ?? "").replace(",", ".")), z.number().min(-ADJUSTMENT_MAX_EACH, `Máximo ${ADJUSTMENT_MAX_EACH} % por ajuste`).max(ADJUSTMENT_MAX_EACH, `Máximo ${ADJUSTMENT_MAX_EACH} % por ajuste`).refine((n) => n !== 0, "El porcentaje no puede ser 0")),
+  note: z.string().trim().min(5, "Explica el ajuste: va en el informe").max(300),
+});
+
+/** Ajuste del corredor por algo que los comparables no ven. Queda escrito en el informe con su motivo. */
+export async function addAdjustmentAction(form: FormData) {
+  const user = await requireUser("properties.write");
+  const v = await ownValuation(user, String(form.get("valuationId") ?? ""));
+  const parsed = adjustmentSchema.safeParse(Object.fromEntries(form));
+  if (!parsed.success) back(v.id, { error: parsed.error.issues[0]?.message ?? "Revisa el ajuste" });
+  const d = parsed.data;
+  const label = d.label === "Otro" ? (d.other ?? "Otro") : d.label;
+  const list = [...parseAdjustments(v.adjustments), { label, percent: Math.round(d.percent * 10) / 10, note: d.note }];
+  if (list.length > 8) back(v.id, { error: "Máximo 8 ajustes" });
+  await prisma.valuation.update({ where: { id: v.id }, data: { adjustments: list as unknown as Prisma.InputJsonValue } });
+  await audit(user, "valuation.adjust", "valuation", v.id, { label, percent: d.percent });
+  back(v.id, { ok: "Ajuste agregado" });
+}
+
+export async function removeAdjustmentAction(form: FormData) {
+  const user = await requireUser("properties.write");
+  const v = await ownValuation(user, String(form.get("valuationId") ?? ""));
+  const i = Number(form.get("index"));
+  const list = parseAdjustments(v.adjustments).filter((_, j) => j !== i);
+  await prisma.valuation.update({ where: { id: v.id }, data: { adjustments: list as unknown as Prisma.InputJsonValue } });
   back(v.id);
 }

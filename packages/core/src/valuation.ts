@@ -157,3 +157,52 @@ export function valuationResult(subject: ValuationSubject, comparables: Comparab
     : null;
   return { count: n, area, perM2: { p25, median: med, p75 }, value, confidence, outliers, closings };
 }
+
+// ---------------------------------------------------------------------------------------------------------
+// Ajustes del corredor: lo que los comparables no ven (estado de conservación, remodelaciones, vista, ruido).
+// Cada ajuste es un motivo con un porcentaje; se suman y mueven el valor y el rango. Quedan escritos en el informe.
+
+export const ADJUSTMENT_PRESETS = [
+  "Estado de conservación",
+  "Remodelación o terminaciones",
+  "Vista u orientación",
+  "Ruido o entorno",
+  "Distribución",
+  "Piso o altura",
+  "Antigüedad de la construcción",
+  "Otro",
+] as const;
+
+/** Tope por ajuste y total: más que esto ya no es la misma propiedad que los comparables. */
+export const ADJUSTMENT_MAX_EACH = 20;
+export const ADJUSTMENT_MAX_TOTAL = 30;
+
+export interface ValuationAdjustment {
+  /** Motivo, por ejemplo "Estado de conservación". */
+  label: string;
+  /** Porcentaje, positivo o negativo (-5 = 5 % menos). */
+  percent: number;
+  /** Por qué, en palabras del corredor. Va al informe. */
+  note: string;
+}
+
+export function parseAdjustments(raw: unknown): ValuationAdjustment[] {
+  if (!Array.isArray(raw)) return [];
+  return raw
+    .filter((a): a is ValuationAdjustment => !!a && typeof a === "object" && typeof (a as ValuationAdjustment).label === "string" && typeof (a as ValuationAdjustment).percent === "number")
+    .map((a) => ({ label: a.label, percent: a.percent, note: typeof a.note === "string" ? a.note : "" }));
+}
+
+/** Suma de los ajustes, acotada al tope total. */
+export function adjustmentPercent(adjustments: ValuationAdjustment[]): number {
+  const sum = adjustments.reduce((s, a) => s + Math.max(-ADJUSTMENT_MAX_EACH, Math.min(ADJUSTMENT_MAX_EACH, a.percent)), 0);
+  return Math.max(-ADJUSTMENT_MAX_TOTAL, Math.min(ADJUSTMENT_MAX_TOTAL, sum));
+}
+
+/** Valor y rango después de los ajustes del corredor. Null si no hay valor de comparables. */
+export function adjustedValue(result: ValuationResult, adjustments: ValuationAdjustment[], currency: Currency): { low: number; point: number; high: number; percent: number } | null {
+  if (!result.value) return null;
+  const percent = adjustmentPercent(adjustments);
+  const f = 1 + percent / 100;
+  return { low: roundValue(result.value.low * f, currency), point: roundValue(result.value.point * f, currency), high: roundValue(result.value.high * f, currency), percent };
+}

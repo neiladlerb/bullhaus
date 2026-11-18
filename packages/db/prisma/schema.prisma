@@ -1231,6 +1231,8 @@ model Valuation {
   parking     Int?
   /// Comentario del corredor para el informe (estado, remodelaciones, vista).
   notes       String?
+  /// Ajustes del corredor por lo que los comparables no ven: [{ label, percent, note }] (valuation.ts).
+  adjustments Json?
   status      ValuationStatus       @default(borrador)
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
