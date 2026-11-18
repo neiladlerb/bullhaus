@@ -1,6 +1,9 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
+  ADJUSTMENT_MAX_EACH,
+  ADJUSTMENT_PRESETS,
+  adjustedValue,
   COMPARABLE_SOURCE_LABELS,
   comparableProblem,
   comparisonArea,
@@ -8,6 +11,7 @@ import {
   formatDate,
   formatPrice,
   localDayKey,
+  parseAdjustments,
   perM2,
   TYPE_LABELS,
   usesLandArea,
@@ -16,7 +20,7 @@ import {
 import { prisma } from "@bullhaus/db";
 import { requireUser } from "@/lib/auth";
 import { comparableOf, subjectOf, valuationScope } from "@/lib/valuation";
-import { addManualComparableAction, markDeliveredAction, refreshComparablesAction, removeComparableAction, saveNotesAction, toggleComparableAction } from "../actions";
+import { addAdjustmentAction, addManualComparableAction, removeAdjustmentAction, markDeliveredAction, refreshComparablesAction, removeComparableAction, saveNotesAction, toggleComparableAction } from "../actions";
 
 const SOURCE_SHORT = { cierre: "Cierre", cartera: "Cartera", manual: "Portal" } as const;
 const CONF_TONE = { alta: "bg-success-soft text-success", media: "bg-warning-soft text-warning", baja: "bg-danger-soft text-danger" } as const;
@@ -39,6 +43,9 @@ export default async function TasacionPage({ params, searchParams }: { params: P
   const outlierIds = new Set(result.outliers.map((i) => included[i]!.row.id));
   const landArea = usesLandArea(v.type);
   const pm2 = (n: number) => `${formatPrice(n, v.currency)}/m²`;
+  const adjustments = parseAdjustments(v.adjustments);
+  const adjusted = adjustments.length ? adjustedValue(result, adjustments, v.currency) : null;
+  const shownValue = adjusted ?? result.value;
 
   return (
     <div className="max-w-6xl space-y-6">
@@ -71,10 +78,15 @@ export default async function TasacionPage({ params, searchParams }: { params: P
         {result.value && result.perM2 ? (
           <div>
             <p className="text-sm text-muted">Valor sugerido</p>
-            <p className="text-3xl font-semibold">{formatPrice(result.value.point, v.currency)}</p>
+            <p className="text-3xl font-semibold">{formatPrice(shownValue!.point, v.currency)}</p>
             <p className="mt-1">
-              Rango {formatPrice(result.value.low, v.currency)} a {formatPrice(result.value.high, v.currency)}
+              Rango {formatPrice(shownValue!.low, v.currency)} a {formatPrice(shownValue!.high, v.currency)}
             </p>
+            {adjusted && (
+              <p className="mt-1 text-sm">
+                Según comparables {formatPrice(result.value.point, v.currency)}, con ajustes del corredor de {adjusted.percent > 0 ? "+" : ""}{adjusted.percent.toLocaleString("es-CL")} %.
+              </p>
+            )}
             <p className="mt-2 text-sm text-muted">
               Mediana {pm2(result.perM2.median)} {landArea ? "de terreno" : "útil"} (entre {pm2(result.perM2.p25)} y {pm2(result.perM2.p75)}), con {result.count} comparables, {result.closings} de ellos cierres.
               {result.closings < result.count && " Los precios publicados suelen quedar sobre el precio de cierre."}
@@ -169,6 +181,52 @@ export default async function TasacionPage({ params, searchParams }: { params: P
             </table>
           </div>
         )}
+      </section>
+
+      <section className="card p-5">
+        <h2 className="font-semibold">Ajustes del corredor</h2>
+        <p className="mt-1 text-sm text-muted">
+          Lo que los comparables no ven: estado de conservación, remodelaciones, vista, ruido. Cada ajuste mueve el valor y el rango y aparece en el informe con tu explicación. Máximo {ADJUSTMENT_MAX_EACH} % por ajuste y 30 % en total.
+        </p>
+        {adjustments.length > 0 && (
+          <ul className="mt-3 divide-y divide-line">
+            {adjustments.map((a, i) => (
+              <li key={i} className="flex flex-wrap items-start justify-between gap-3 py-2">
+                <span>
+                  <span className="font-medium">{a.label}: {a.percent > 0 ? "+" : ""}{a.percent.toLocaleString("es-CL")} %</span>
+                  <span className="block text-sm text-muted">{a.note}</span>
+                </span>
+                <form action={removeAdjustmentAction}>
+                  <input type="hidden" name="valuationId" value={v.id} />
+                  <input type="hidden" name="index" value={i} />
+                  <button type="submit" className="btn-ghost">Quitar</button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+        <form action={addAdjustmentAction} className="mt-4 grid gap-3 sm:grid-cols-[1fr_8rem] lg:grid-cols-[14rem_10rem_8rem_1fr_auto] lg:items-end">
+          <input type="hidden" name="valuationId" value={v.id} />
+          <div>
+            <label className="label" htmlFor="aj-label">Motivo</label>
+            <select id="aj-label" name="label" className="input" defaultValue="Estado de conservación">
+              {ADJUSTMENT_PRESETS.map((p) => <option key={p} value={p}>{p}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="label" htmlFor="aj-other">Si es otro, cuál</label>
+            <input id="aj-other" name="other" maxLength={60} className="input" />
+          </div>
+          <div>
+            <label className="label" htmlFor="aj-pct">Porcentaje</label>
+            <input id="aj-pct" name="percent" required inputMode="decimal" className="input" placeholder="-5" />
+          </div>
+          <div className="sm:col-span-2 lg:col-span-1">
+            <label className="label" htmlFor="aj-note">Explicación para el informe</label>
+            <input id="aj-note" name="note" required maxLength={300} className="input" placeholder="Cocina y baños originales, requieren renovación" />
+          </div>
+          <button type="submit" className="btn-brand">Agregar ajuste</button>
+        </form>
       </section>
 
       <details className="card p-5" open={sp.aviso === "1"}>

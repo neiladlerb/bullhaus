@@ -13,6 +13,10 @@ No. El valor es una mediana del precio por m² de propiedades parecidas, y eso e
 3. **Resultado.** El valor sugerido es la mediana del precio por m² por la superficie. El rango va del percentil 25 al 75. El valor se redondea a la decena de UF o a la decena de mil pesos.
 4. **Confianza.** Alta con 6 comparables o más, media con 3 a 5 y baja con menos de 3. Un comparable a más de 40 % de la mediana se marca como atípico, y el corredor decide si lo saca del cálculo.
 
+## Ajustes del corredor
+
+Lo que los comparables no ven (estado de conservación, remodelación, vista, ruido, distribución...) se agrega como ajuste: un motivo, un porcentaje y una explicación. Los ajustes se suman y mueven el valor y el rango. Tope: 20 % por ajuste y 30 % en total, porque más que eso ya no es la misma propiedad que los comparables. El informe muestra el valor según comparables, el ajuste total y cada motivo con su explicación.
+
 ## De dónde salen los comparables
 
 | Fuente | Precio | Cómo entra |
@@ -23,7 +27,7 @@ No. El valor es una mediana del precio por m² de propiedades parecidas, y eso e
 
 No hay datos de demostración entre los comparables. Los comparables se guardan como foto fija al crear la tasación, así que el informe no cambia si después se mueve la cartera. "Buscar de nuevo en Bull Haus" agrega los nuevos sin tocar los que ya se revisaron.
 
-No se descargan datos de portales en forma automática, porque sus condiciones de uso lo prohíben. Si la cartera propia no alcanza, la opción es contratar datos de mercado (por ejemplo TocToc, Data Inmobiliaria o GI) y sumarlos como cuarta fuente. Antes hay que comparar su precio y su cobertura por comuna.
+No se descargan datos de portales en forma automática, porque sus condiciones de uso lo prohíben. Si la cartera propia no alcanza, la opción recomendada es la API de Data Inmobiliaria (compraventas reales del SII y los CBR) como cuarta fuente, y los canales oficiales de Mercado Libre para los avisos de Portal Inmobiliario. El análisis de fuentes, costos y riesgos del scraping está en `docs/agentes-marketing.md`, sección 3.
 
 ## Informe para el cliente (`/informe-tasacion/[id]`)
 

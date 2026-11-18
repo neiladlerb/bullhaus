@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { comparisonArea, CONFIDENCE_LABELS, formatDate, formatPrice, perM2, TYPE_LABELS, usesLandArea, valuationResult } from "@bullhaus/core";
+import { adjustedValue, comparisonArea, CONFIDENCE_LABELS, formatDate, formatPrice, parseAdjustments, perM2, TYPE_LABELS, usesLandArea, valuationResult } from "@bullhaus/core";
 import { prisma } from "@bullhaus/db";
 import { PrintButton } from "@/app/(app)/contratos/print-button";
 import { Logo } from "@/components/logo";
@@ -27,6 +27,9 @@ export default async function InformeTasacionPage({ params }: { params: Promise<
   const subject = subjectOf(v);
   const result = valuationResult(subject, v.comparables.map(comparableOf));
   const landArea = usesLandArea(v.type);
+  const adjustments = parseAdjustments(v.adjustments);
+  const adjusted = adjustments.length ? adjustedValue(result, adjustments, v.currency) : null;
+  const shownValue = adjusted ?? result.value;
   const pm2 = (n: number) => `${formatPrice(n, v.currency)}/m²`;
   const shown = v.comparables
     .map((c) => ({ c, input: comparableOf(c) }))
@@ -72,19 +75,41 @@ export default async function InformeTasacionPage({ params }: { params: Promise<
         {result.value && result.perM2 ? (
           <>
             <p className="text-sm text-muted">Valor comercial estimado</p>
-            <p className="text-3xl font-semibold">{formatPrice(result.value.point, v.currency)}</p>
+            <p className="text-3xl font-semibold">{formatPrice(shownValue!.point, v.currency)}</p>
             <p className="mt-1">
-              Rango de {formatPrice(result.value.low, v.currency)} a {formatPrice(result.value.high, v.currency)}
+              Rango de {formatPrice(shownValue!.low, v.currency)} a {formatPrice(shownValue!.high, v.currency)}
             </p>
             <p className="mt-3 text-sm">
               Sale de multiplicar {result.area ? fmtM2(result.area) : ""} {landArea ? "de terreno" : "útiles"} por el valor por m² de {result.count} propiedades comparables: mediana de {pm2(result.perM2.median)}, y la mitad central entre {pm2(result.perM2.p25)} y {pm2(result.perM2.p75)}.
             </p>
+            {adjusted && (
+              <p className="mt-1 text-sm">
+                Según los comparables, {formatPrice(result.value.point, v.currency)}. El corredor lo ajustó en {adjusted.percent > 0 ? "+" : ""}{adjusted.percent.toLocaleString("es-CL")} % por las características de la propiedad que se detallan abajo.
+              </p>
+            )}
             <p className="mt-1 text-sm text-muted">Confianza {CONFIDENCE_LABELS[result.confidence].toLowerCase()}.</p>
           </>
         ) : (
           <p>No hay comparables suficientes para estimar un valor.</p>
         )}
       </section>
+
+      {adjustments.length > 0 && (
+        <section className="mt-6 break-inside-avoid">
+          <h2 className="text-lg font-semibold">Ajustes por características de la propiedad</h2>
+          <table className="mt-2 w-full text-sm">
+            <tbody className="divide-y divide-line">
+              {adjustments.map((a, i) => (
+                <tr key={i}>
+                  <td className="py-2 pr-3 font-medium">{a.label}</td>
+                  <td className="py-2 pr-3">{a.note}</td>
+                  <td className="py-2 text-right tabular-nums">{a.percent > 0 ? "+" : ""}{a.percent.toLocaleString("es-CL")} %</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       {v.notes && (
         <section className="mt-6">

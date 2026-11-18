@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { comparableProblem, quantile, roundValue, suggestComparables, valuationResult, type ComparableInput, type ValuationSubject } from "./valuation";
+import { adjustedValue, adjustmentPercent, comparableProblem, parseAdjustments, quantile, roundValue, suggestComparables, valuationResult, type ComparableInput, type ValuationSubject } from "./valuation";
 
 const casa: ValuationSubject = { operation: "venta", type: "casa", comuna: "Las Condes", sector: "Los Dominicos", currency: "UF", m2Useful: 200, m2Land: 700, bedrooms: 4, bathrooms: 3 };
 const comp = (over: Partial<ComparableInput>): ComparableInput => ({
@@ -73,5 +73,24 @@ describe("tasación: resultado", () => {
     expect(roundValue(18456, "UF")).toBe(18460);
     expect(roundValue(1_456_789, "CLP")).toBe(1_460_000);
     expect(quantile([1], 0.25)).toBe(1);
+  });
+});
+
+describe("tasación: ajustes del corredor", () => {
+  const r = valuationResult(casa, [100, 110, 120, 130, 140, 150].map((m2Price) => comp({ price: m2Price * 200 })));
+
+  it("mueven el valor y el rango con la suma de porcentajes", () => {
+    const v = adjustedValue(r, [{ label: "Estado de conservación", percent: -10, note: "Requiere pintura y baños" }, { label: "Vista u orientación", percent: 4, note: "" }], "UF");
+    expect(v).toEqual({ low: 21150, point: 23500, high: 25850, percent: -6 });
+  });
+
+  it("acota cada ajuste a 20 % y el total a 30 %", () => {
+    expect(adjustmentPercent([{ label: "Otro", percent: 50, note: "" }])).toBe(20);
+    expect(adjustmentPercent([{ label: "A", percent: 20, note: "" }, { label: "B", percent: 20, note: "" }])).toBe(30);
+  });
+
+  it("sin valor de comparables no hay valor ajustado, y descarta ajustes mal formados", () => {
+    expect(adjustedValue(valuationResult(casa, []), [{ label: "Otro", percent: 5, note: "" }], "UF")).toBeNull();
+    expect(parseAdjustments([{ label: "Ok", percent: 3 }, { label: 1 }, null, "x"])).toEqual([{ label: "Ok", percent: 3, note: "" }]);
   });
 });
